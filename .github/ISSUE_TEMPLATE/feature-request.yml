@@ -1,0 +1,100 @@
+name: 💡 Özellik İsteği
+description: Yeni bir özellik veya geliştirme önerin
+title: "[Özellik] "
+labels: ["enhancement", "needs-triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 💡 Özellik Önerisi
+        
+        Yeni bir özellik önermek için zaman ayırdığınız için teşekkürler!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem veya İhtiyaç
+      description: Bu özellik hangi problemi çözüyor? Hangi ihtiyacı karşılıyor?
+      placeholder: |
+        Örnek: "... yaparken zorluk çekiyorum çünkü..."
+        veya "... özelliği olsaydı ... yapabilirdim"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Önerilen Çözüm
+      description: İstediğiniz özelliği detaylı olarak açıklayın
+      placeholder: |
+        Nasıl çalışmalı? Ne yapmalı?
+        Kullanıcı deneyimi nasıl olmalı?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif Çözümler
+      description: Düşündüğünüz diğer yaklaşımlar var mı?
+      placeholder: |
+        Başka hangi yöntemler denediniz veya düşündünüz?
+        Neden önerdiğiniz çözüm daha iyi?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Sizin İçin Öncelik
+      description: Bu özellik sizin için ne kadar önemli?
+      options:
+        - 🔴 Çok Önemli - Kullanımı engelliyor
+        - 🟡 Orta - İşimi kolaylaştırır
+        - 🟢 Düşük - Nice to have
+    validations:
+      required: false
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Kullanım Örnekleri
+      description: Bu özellik hangi senaryolarda kullanılabilir?
+      placeholder: |
+        Senaryo 1: ...
+        Senaryo 2: ...
+        Senaryo 3: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referanslar
+      description: Benzer özellikler, makaleler, örnekler (varsa linkler)
+      placeholder: |
+        - https://example.com/similar-feature
+        - Başka proje X'te şöyle yapılmış
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Ek Bilgiler
+      description: Eklemek istediğiniz başka bir şey? (mockup, ekran görüntüsü, vb.)
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Kontrol Listesi
+      options:
+        - label: Benzer bir özellik isteği olmadığını kontrol ettim
+          required: true
+        - label: Bu özelliğin projenin kapsamına uygun olduğunu düşünüyorum
+          required: false
+        - label: Davranış Kurallarını kabul ediyorum
+          required: true
