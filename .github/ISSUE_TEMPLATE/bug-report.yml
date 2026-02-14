@@ -1,0 +1,115 @@
+name: 🐛 Hata Bildirimi
+description: Yazılım hatalarını ve beklenmeyen davranışları bildirin
+title: "[Hata] "
+labels: ["bug", "needs-triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Hata Raporu
+        
+        Hata bildirimi için zaman ayırdığınız için teşekkürler!
+        Lütfen formu eksiksiz doldurun.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Hata Açıklaması
+      description: Hatanın net ve kısa bir açıklaması
+      placeholder: Ne oldu? Neyin yanlış gittiğini açıklayın
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen Davranış
+      description: Ne olmasını bekliyordunuz?
+      placeholder: Normal koşullarda ne olmalıydı?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Tekrar Etme Adımları
+      description: Hatayı nasıl tekrar edebiliriz?
+      placeholder: |
+        1. '...' sayfasına git
+        2. '...' butonuna tıkla
+        3. '...' alanına veri gir
+        4. Hatayı gözlemle
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Önem Derecesi
+      description: Bu hata ne kadar ciddi?
+      options:
+        - 🔴 Kritik - Uygulama çalışmıyor
+        - 🟠 Yüksek - Önemli özellik çalışmıyor
+        - 🟡 Orta - Bazı özellikler etkilendi
+        - 🟢 Düşük - Küçük sorun
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ortam Bilgisi
+      description: Hangi ortamda hatayı yaşıyorsunuz?
+      value: |
+        - **İşletim Sistemi:** [örn. Windows 11, macOS 14, Ubuntu 22.04]
+        - **Tarayıcı:** [örn. Chrome 120, Firefox 121, Safari 17]
+        - **Versiyon/Commit:** [örn. v1.2.3 veya commit hash]
+        - **Node.js Versiyonu:** [örn. 20.10.0]
+        - **Diğer:** [İlgili paket versiyonları]
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Hata Logları
+      description: İlgili hata mesajları veya console çıktıları
+      placeholder: Console veya terminal çıktılarını buraya yapıştırın
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Ekran Görüntüleri
+      description: Varsa ekran görüntüleri ekleyin (buraya sürükleyip bırakın)
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Ek Bilgiler
+      description: Başka bilmemiz gereken bir şey var mı?
+      placeholder: Ek context, notlar, ilgili issue'lar
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Kontrol Listesi
+      options:
+        - label: Mevcut issue'larda bu hatayı aradım ve bulamadım
+          required: true
+        - label: Dokümantasyonu kontrol ettim
+          required: false
+        - label: Bu projenin Davranış Kurallarını kabul ediyorum
+          required: true
