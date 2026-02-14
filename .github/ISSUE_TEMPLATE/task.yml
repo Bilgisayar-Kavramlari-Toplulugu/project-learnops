@@ -1,0 +1,55 @@
+name: Görev
+description: Yeni bir görev oluştur
+title: "[Görev]"
+labels: ["görev", "needs-triage"]
+assignees: []
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Açıklama
+      description: Görev hakkında detaylı bir açıklama girin
+      placeholder: "Görevi detaylı bir şekilde açıklayın..."
+      render: markdown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Öncelik
+      description: Öncelik seviyesini seçin
+      options:
+        - Yüksek
+        - Orta
+        - Düşük
+    validations:
+      required: true
+
+  - type: input
+    id: assignee
+    attributes:
+      label: Atanan Kişi
+      description: Görevi atamak istediğiniz GitHub kullanıcı adı
+      placeholder: "kullaniciadi"
+    validations:
+      required: false
+
+  - type: input
+    id: due_date
+    attributes:
+      label: Bitiş Tarihi
+      description: Görev için bitiş tarihini belirtin (YYYY-AA-GG)
+      placeholder: "2025-12-31"
+    validations:
+      required: false
+
+  - type: input
+    id: labels
+    attributes:
+      label: Etiketler
+      description: Görevi kategorize etmek için etiketler ekleyin
+      placeholder: "frontend, hata"
+    validations:
+      required: false
