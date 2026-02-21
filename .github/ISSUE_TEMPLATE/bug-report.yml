@@ -1,5 +1,5 @@
 name: 🐛 Hata Bildirimi
-description: Yazılım hatalarını ve beklenmeyen davranışları bildirin
+description: LearnOps'ta karşılaştığınız yazılım hatalarını ve beklenmeyen davranışları bildirin
 title: "[Hata] "
 labels: ["bug", "needs-triage"]
 
@@ -8,33 +8,35 @@ body:
     attributes:
       value: |
         ## 🐛 Hata Raporu
-        
+
         Hata bildirimi için zaman ayırdığınız için teşekkürler!
-        Lütfen formu eksiksiz doldurun.
+        Lütfen formu eksiksiz doldurun — ne kadar detaylı olursa o kadar hızlı çözülür.
+
+        > Mevcut issue'lara göz atmayı unutmayın: belki aynı hata zaten raporlanmıştır.
 
   - type: textarea
     id: description
     attributes:
-      label: Hata Açıklaması
-      description: Hatanın net ve kısa bir açıklaması
-      placeholder: Ne oldu? Neyin yanlış gittiğini açıklayın
+      label: 🔍 Hata Açıklaması
+      description: Hatanın net ve kısa bir açıklaması. Ne oldu, ne yanlış gitti?
+      placeholder: "Örn: Quiz submit ettikten sonra sonuç ekranı açılmıyor, 500 hatası alıyorum."
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Beklenen Davranış
-      description: Ne olmasını bekliyordunuz?
-      placeholder: Normal koşullarda ne olmalıydı?
+      label: ✅ Beklenen Davranış
+      description: Normal koşullarda ne olmasını bekliyordunuz?
+      placeholder: "Örn: Submit sonrası skor ve doğru/yanlış detaylarını gösteren sonuç ekranı açılmalıydı."
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: Tekrar Etme Adımları
-      description: Hatayı nasıl tekrar edebiliriz?
+      label: 🔁 Tekrar Etme Adımları
+      description: Hatayı adım adım nasıl tekrar edebiliriz?
       placeholder: |
         1. '...' sayfasına git
         2. '...' butonuna tıkla
@@ -44,33 +46,54 @@ body:
         1. 
         2. 
         3. 
+        4. 
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 📦 Etkilenen Alan
+      description: Hata platformun hangi bölümünde oluşuyor?
+      options:
+        - 🔐 Kimlik Doğrulama (OAuth giriş, token, oturum)
+        - 👤 Kullanıcı Profili (avatar, bilgi güncelleme, hesap silme)
+        - 📚 Kurs Listeleme / Filtreleme
+        - 📖 Kurs Detay / Section İçeriği
+        - 📊 İlerleme Takibi (progress bar, tamamlama)
+        - 🧪 Quiz Sistemi (başlatma, sorular, submit, sonuç)
+        - 🏠 Dashboard
+        - 🗺️ Navigasyon / Sidebar
+        - ⚙️ Altyapı / Deployment
+        - 📄 Diğer
     validations:
       required: true
 
   - type: dropdown
     id: severity
     attributes:
-      label: Önem Derecesi
-      description: Bu hata ne kadar ciddi?
+      label: 🚨 Önem Derecesi
+      description: Bu hata kullanımı ne ölçüde etkiliyor?
       options:
-        - 🔴 Kritik - Uygulama çalışmıyor
-        - 🟠 Yüksek - Önemli özellik çalışmıyor
-        - 🟡 Orta - Bazı özellikler etkilendi
-        - 🟢 Düşük - Küçük sorun
+        - 🔴 Kritik — Platform kullanılamıyor (giriş yapılamıyor, veri kaybı)
+        - 🟠 Yüksek — Önemli bir özellik çalışmıyor (quiz submit, kurs kaydı)
+        - 🟡 Orta — Özellik kısmen çalışıyor veya beklenmedik davranış var
+        - 🟢 Düşük — Küçük görsel/işlevsel sorun, geçici çözüm mevcut
     validations:
       required: true
 
   - type: textarea
     id: environment
     attributes:
-      label: Ortam Bilgisi
-      description: Hangi ortamda hatayı yaşıyorsunuz?
+      label: 💻 Ortam Bilgisi
+      description: Hatayı hangi ortamda yaşıyorsunuz?
       value: |
-        - **İşletim Sistemi:** [örn. Windows 11, macOS 14, Ubuntu 22.04]
+        - **Ortam:** [ ] Local (Docker Compose)  [ ] Staging  [ ] Production (learnops.io)
+        - **İşletim Sistemi:** [örn. macOS 14, Ubuntu 22.04, Windows 11]
         - **Tarayıcı:** [örn. Chrome 120, Firefox 121, Safari 17]
-        - **Versiyon/Commit:** [örn. v1.2.3 veya commit hash]
-        - **Node.js Versiyonu:** [örn. 20.10.0]
-        - **Diğer:** [İlgili paket versiyonları]
+        - **Docker Versiyonu:** [örn. 24.0.5]
+        - **Git Commit / Versiyon:** [örn. `git log --oneline -1` çıktısı]
+        - **Diğer:** [ilgili paket versiyonları veya ek bilgi]
       render: markdown
     validations:
       required: false
@@ -78,9 +101,12 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: Hata Logları
-      description: İlgili hata mesajları veya console çıktıları
-      placeholder: Console veya terminal çıktılarını buraya yapıştırın
+      label: 📋 Hata Logları
+      description: |
+        İlgili hata mesajları, stack trace veya console çıktıları.
+        Backend logları için: `docker compose logs backend`
+        Frontend konsol için: Tarayıcı geliştirici araçları → Console sekmesi
+      placeholder: Hata mesajı veya log çıktısını buraya yapıştırın
       render: shell
     validations:
       required: false
@@ -88,28 +114,28 @@ body:
   - type: textarea
     id: screenshots
     attributes:
-      label: Ekran Görüntüleri
-      description: Varsa ekran görüntüleri ekleyin (buraya sürükleyip bırakın)
+      label: 🖼️ Ekran Görüntüleri
+      description: Hatayı gösteren ekran görüntüleri varsa buraya sürükleyip bırakın veya yapıştırın.
     validations:
       required: false
 
   - type: textarea
     id: additional
     attributes:
-      label: Ek Bilgiler
-      description: Başka bilmemiz gereken bir şey var mı?
-      placeholder: Ek context, notlar, ilgili issue'lar
+      label: 💬 Ek Bilgiler
+      description: Başka bilmemiz gereken bir şey var mı? İlgili issue'lar, geçici çözümler, ek bağlam.
+      placeholder: "Örn: Yalnızca LinkedIn ile giriş yapıldığında oluşuyor. Google ile giriş yapıldığında sorun yok."
     validations:
       required: false
 
   - type: checkboxes
     id: checklist
     attributes:
-      label: Kontrol Listesi
+      label: ✅ Kontrol Listesi
       options:
         - label: Mevcut issue'larda bu hatayı aradım ve bulamadım
           required: true
-        - label: Dokümantasyonu kontrol ettim
-          required: false
-        - label: Bu projenin Davranış Kurallarını kabul ediyorum
+        - label: Hatayı en az bir kez tekrar edebildim
           required: true
+        - label: Bu projenin Katkıda Bulunma Rehberi'ni (`CONTRIBUTING.md`) okudum
+          required: false

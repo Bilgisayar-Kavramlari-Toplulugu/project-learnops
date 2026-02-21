@@ -1,5 +1,5 @@
 name: 💡 Özellik İsteği
-description: Yeni bir özellik veya geliştirme önerin
+description: LearnOps için yeni bir özellik veya geliştirme önerin
 title: "[Özellik] "
 labels: ["enhancement", "needs-triage"]
 
@@ -8,93 +8,125 @@ body:
     attributes:
       value: |
         ## 💡 Özellik Önerisi
-        
-        Yeni bir özellik önermek için zaman ayırdığınız için teşekkürler!
 
+        Yeni bir özellik önermek için zaman ayırdığınız için teşekkürler!
+        Lütfen formu eksiksiz doldurun — fikrinizi en iyi şekilde değerlendirebilmemiz için detay çok önemli.
+
+        > Önce mevcut issue'lara ve [Proje Tanımı](../docs/Project-Definition.md)'na göz atın:
+        > bazı özellikler zaten v2.0 yol haritasında olabilir.
+  - type: dropdown
+    id: area
+    attributes:
+      label: 📦 İlgili Alan
+      description: Öneriniz platformun hangi bölümüyle ilgili?
+      options:
+        - 🔐 Kimlik Doğrulama / Hesap Yönetimi
+        - 👤 Kullanıcı Profili
+        - 📚 Kurs ve İçerik Sistemi
+        - 📊 İlerleme Takibi
+        - 🧪 Quiz Sistemi
+        - 🏠 Dashboard
+        - 🗺️ Navigasyon / Arayüz
+        - ⚙️ Altyapı / Geliştirici Deneyimi
+        - 📄 Diğer
+    validations:
+      required: true
   - type: textarea
     id: problem
     attributes:
-      label: Problem veya İhtiyaç
-      description: Bu özellik hangi problemi çözüyor? Hangi ihtiyacı karşılıyor?
+      label: 🎯 Problem veya İhtiyaç
+      description: Bu özellik hangi problemi çözüyor ya da hangi ihtiyacı karşılıyor?
       placeholder: |
-        Örnek: "... yaparken zorluk çekiyorum çünkü..."
-        veya "... özelliği olsaydı ... yapabilirdim"
+        Örn: "Quiz sonuçlarını geçmişte incelemek istiyorum ama geçmiş denemeler listesine kolay erişemiyorum."
+        veya "Kursu tamamladığımda bir başarı belgesi alabilsem motivasyonum artardı."
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: Önerilen Çözüm
-      description: İstediğiniz özelliği detaylı olarak açıklayın
+      label: 💡 Önerilen Çözüm
+      description: İstediğiniz özelliği detaylı olarak açıklayın. Nasıl çalışmalı, kullanıcı deneyimi nasıl olmalı?
       placeholder: |
-        Nasıl çalışmalı? Ne yapmalı?
-        Kullanıcı deneyimi nasıl olmalı?
+        Örn: "Dashboard'da 'Quiz Geçmişim' sekmesi olsun. Her girişimde tarih, skor ve geçti/kaldı bilgisi görünsün.
+        İlgili kursa tek tıkla dönülebilinsin."
     validations:
       required: true
-
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatif Çözümler
-      description: Düşündüğünüz diğer yaklaşımlar var mı?
+      label: 🔄 Alternatif Çözümler
+      description: Başka yaklaşımlar düşündünüz mü? Neden önerdiğiniz yöntem daha iyi?
       placeholder: |
-        Başka hangi yöntemler denediniz veya düşündünüz?
-        Neden önerdiğiniz çözüm daha iyi?
+        Örn: "Quiz detay sayfasına geçmiş bölümü eklenebilir; ancak Dashboard'da görmek daha hızlı erişim sağlar."
     validations:
       required: false
-
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 🗺️ MVP Kapsamı
+      description: Bu özelliğin hangi versiyona uygun olduğunu düşünüyorsunuz?
+      options:
+        - 🚀 MVP (v1.0) — Temel kullanım için kritik
+        - 📦 v2.0 — Önemli ama MVP'yi bekletmez
+        - 🌱 v3.0+ — Uzun vadeli, büyük değişiklik gerektirir
+        - ❓ Bilmiyorum
+    validations:
+      required: true
   - type: dropdown
     id: priority
     attributes:
-      label: Sizin İçin Öncelik
+      label: ⭐ Sizin İçin Öncelik
       description: Bu özellik sizin için ne kadar önemli?
       options:
-        - 🔴 Çok Önemli - Kullanımı engelliyor
-        - 🟡 Orta - İşimi kolaylaştırır
-        - 🟢 Düşük - Nice to have
+        - 🔴 Çok Önemli — Olmadan platformu tam kullanamıyorum
+        - 🟡 Orta — İşimi kolaylaştırır, geçici çözümle idare edebiliyorum
+        - 🟢 Düşük — Güzel olur ama acil değil
     validations:
       required: false
-
+  
   - type: textarea
     id: examples
     attributes:
-      label: Kullanım Örnekleri
-      description: Bu özellik hangi senaryolarda kullanılabilir?
+      label: 📖 Kullanım Senaryoları
+      description: Bu özellik hangi durumlarda, kim tarafından kullanılabilir?
       placeholder: |
-        Senaryo 1: ...
-        Senaryo 2: ...
+        Senaryo 1: Kursu bitiren bir kullanıcı quiz sonucunu arkadaşıyla paylaşmak istiyor.
+        Senaryo 2: Kullanıcı hangi sorularda hata yaptığını tekrar inceleyerek çalışmak istiyor.
         Senaryo 3: ...
     validations:
       required: false
-
+  
   - type: textarea
     id: references
     attributes:
-      label: Referanslar
-      description: Benzer özellikler, makaleler, örnekler (varsa linkler)
+      label: 🔗 Referanslar
+      description: Benzer özellikler, ilham alınan platformlar veya tasarım örnekleri (varsa linkler)
       placeholder: |
-        - https://example.com/similar-feature
-        - Başka proje X'te şöyle yapılmış
+        - Udemy'de şöyle çalışıyor: https://...
+        - Benzer bir yaklaşım: https://...
     validations:
       required: false
-
+  
   - type: textarea
     id: additional
     attributes:
-      label: Ek Bilgiler
-      description: Eklemek istediğiniz başka bir şey? (mockup, ekran görüntüsü, vb.)
+      label: 💬 Ek Bilgiler
+      description: Mockup, eskiz, ekran görüntüsü veya eklemek istediğiniz başka bir şey var mı?
+      placeholder: Görsel veya ek bağlamı buraya ekleyebilirsiniz.
     validations:
       required: false
-
+  
   - type: checkboxes
-    id: terms
+    id: checklist
     attributes:
-      label: Kontrol Listesi
+      label: ✅ Kontrol Listesi
       options:
-        - label: Benzer bir özellik isteği olmadığını kontrol ettim
+        - label: Mevcut issue'larda benzer bir öneri olmadığını kontrol ettim
           required: true
-        - label: Bu özelliğin projenin kapsamına uygun olduğunu düşünüyorum
+        - label: Proje Tanımı'ndaki v2.0+ yol haritasını inceledim, bu özellik orada yok
           required: false
-        - label: Davranış Kurallarını kabul ediyorum
-          required: true
+        - label: Bu özelliğin projenin genel kapsamına uygun olduğunu düşünüyorum
+          required: false
+        - label: Bu projenin Katkıda Bulunma Rehberi'ni (CONTRIBUTING.md) okudum
+          required: false

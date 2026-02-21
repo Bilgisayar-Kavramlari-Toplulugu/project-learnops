@@ -1,9 +1,10 @@
 # 🤝 Katkıda Bulunma Rehberi | Contributing Guide
 
-> **Hoş geldiniz!** Bu rehber, Bilgisayar Kavramları topluluğuna katkıda bulunmak isteyen herkes için hazırlanmıştır. Sizi aramızda görmekten mutluluk duyuyoruz! 🎉
-Lütfen Türkçe veya İngilizce dil seçeneklerinden birini seçiniz.
+> **Hoş geldiniz!** Bu rehber, LearnOps topluluğuna katkıda bulunmak isteyen herkes için hazırlanmıştır. Sizi aramızda görmekten mutluluk duyuyoruz! 🎉
+> Lütfen Türkçe veya İngilizce dil seçeneklerinden birini seçiniz.
 
-> **Welcome!** This guide is designed for anyone who wants to contribute to the Bilgisayar Kavramları community. We're happy to have you join us! 🎉Please choose between Turkish or English.
+> **Welcome!** This guide is designed for anyone who wants to contribute to the LearnOps community. We're happy to have you join us! 🎉
+> Please choose between Turkish or English.
 
 ---
 
@@ -13,10 +14,10 @@ Lütfen Türkçe veya İngilizce dil seçeneklerinden birini seçiniz.
 ## 💫 Neden Katkıda Bulunmalısınız?
 
 Açık kaynak topluluğuna katkıda bulunmak:
-- 🚀 **Becerilerinizi geliştirir** - Gerçek projelerde çalışarak öğrenirsiniz
-- 🤝 **Bağlantılar kurarsınız** - Benzer ilgi alanlarına sahip insanlarla tanışırsınız
-- 📚 **Deneyim kazanırsınız** - CV'nize ekleyebileceğiniz somut projeler
-- 💪 **Topluluğa katkı sağlarsınız** - Herkesin faydalanacağı bir şey inşa edersiniz
+- 🚀 **Becerilerinizi geliştirir** — Gerçek projelerde çalışarak öğrenirsiniz
+- 🤝 **Bağlantılar kurarsınız** — DevOps topluluğunda benzer ilgi alanlarına sahip insanlarla tanışırsınız
+- 📚 **Deneyim kazanırsınız** — CV'nize ekleyebileceğiniz somut, full-stack bir proje
+- 💪 **Topluluğa katkı sağlarsınız** — Türkçe DevOps eğitimini herkes için daha iyi hale getirirsiniz
 
 **İlk katkınızı yapmaya hazır mısınız? Hadi başlayalım!** 🎯
 
@@ -27,83 +28,107 @@ Açık kaynak topluluğuna katkıda bulunmak:
 ### 🐛 Hata Buldum!
 Projede bir hata mı buldunuz? Harika! İşte yapmanız gerekenler:
 
-1. **Hemen bir issue açın** - Başkaları da aynı sorunla karşılaşmış olabilir
-2. **Sorunu detaylı açıklayın** - Ne bekliyordunuz, ne oldu?
-3. **Düzeltmeyi deneyin** - Kodlamaya aşina iseniz, PR gönderin!
+1. **Önce mevcut issue'lara bakın** — Aynı sorun zaten raporlanmış olabilir
+2. **Yeni bir issue açın** — Sorunu detaylı ve tekrarlanabilir şekilde anlatın
+3. **Düzeltmeyi deneyin** — Kodlamaya aşinaysanız PR gönderin!
 
-**Örnek:** "Repository oluşturma sırasında hata alıyorum"
+**Örnek:** "Quiz submit sonrası 500 hatası alıyorum"
 ```
 Adımlar:
-1. terraform init çalıştırıyorum
-2. terraform plan diyorum
-3. "token hatası" alıyorum
+1. Kursa kayıt oluyorum
+2. Quiz'i başlatıyorum
+3. Cevapları seçiyorum ve "Gönder"e tıklıyorum
+4. 500 Internal Server Error alıyorum
 
-Beklenen: Plan başarılı olmalı
-Gerçekleşen: Token hatası veriyor
+Beklenen: Skor ekranı gelmeli
+Gerçekleşen: 500 hatası veriyor
+
+Ortam: Docker Compose, Python 3.11, Node 20
 ```
 
 ### ✨ Fikrim Var!
 Yeni bir özellik mi istiyorsunuz? Süper!
 
-1. **Önce Discussions'a bakın** - Belki başkaları da aynı şeyi istiyor
-2. **Feature Request açın** - Fikrinizi detaylı anlatın
-3. **Toplulukla tartışın** - Geri bildirim alın, fikri geliştirin
-4. **Kodlamaya başlayın** - Onay aldıktan sonra PR gönderin
+1. **Önce Discussions'a bakın** — Belki başkaları da aynı şeyi istiyor
+2. **Feature Request açın** — Fikrinizi detaylı anlatın
+3. **Toplulukla tartışın** — Geri bildirim alın, fikri geliştirin
+4. **Kodlamaya başlayın** — Onay aldıktan sonra PR gönderin
 
-**Örnek:** "Otomatik wiki sayfası oluşturma özelliği"
+**Örnek:** "Kurs tamamlama sertifikası"
 ```
 Motivasyon:
-Her yeni repo için manuel wiki oluşturmak zaman alıyor.
+Kullanıcıların kursu tamamladığında bir başarı belgesi alması
+motivasyonu artırabilir.
 
 Önerim:
-Terraform ile otomatik wiki page template oluşturma
+v2.0 sertifika sistemine zemin hazırlamak için completed_at
+alanını kullanan PDF export özelliği.
 
 Faydası:
-- Zaman tasarrufu
-- Standart dokümantasyon
-- Daha az manuel iş
+- Kullanıcı motivasyonu artar
+- Paylaşılabilir başarı belgesi
+- Topluluğa değer katar
 ```
 
-### 📖 Dokümantasyon İyileştirmesi
-Kod yazmak zorunda değilsiniz! Dokümantasyon da çok değerli:
+### 📖 Kurs İçeriği Katkısı
+Kod yazmak zorunda değilsiniz! Kurs içeriği de büyük değer taşır:
 
-- **README'yi iyileştirin** - Daha açık, daha anlaşılır
-- **Örnekler ekleyin** - Nasıl kullanılır gösterin
-- **Typo düzeltin** - Küçük ama önemli
-- **Türkçe çeviri** - Anadil desteği harika!
+- **Yeni DevOps kursu ekleyin** — MDX formatında, `content/courses/` altına
+- **Mevcut dersleri güncelleyin** — Güncel araç versiyonları, yeni örnekler
+- **Typo ve dil hataları düzeltin** — Küçük ama önemli
+- **Quiz soruları ekleyin / iyileştirin** — Daha anlamlı sorular, açıklamalar
+
+### 📝 Dokümantasyon İyileştirmesi
+- **README'yi iyileştirin** — Daha açık, daha anlaşılır
+- **API örnekleri ekleyin** — Endpoint'lerin nasıl kullanıldığını gösterin
+- **Kurulum adımlarını netleştirin** — İlk kurulumu kolaylaştıracak her şey değerlidir
 
 ### 🎯 İlk Katkı İçin İdeal
 Yeni başlıyorsanız, bu işlerle başlayın:
 
-- 🏷️ `good-first-issue` etiketi olan issue'lar
+- 🏷️ `good-first-issue` etiketli issue'lar
 - 📝 Dokümantasyon iyileştirmeleri
 - 🐛 Basit hata düzeltmeleri
-- 💬 Başkalarının PR'larını inceleme
+- 📚 Kurs içeriğinde typo düzeltmesi
 
 ---
 
-## 🚀 Hızlı Başlangıç (5 Dakikada!)
+## 🚀 Hızlı Başlangıç
 
 ### 1️⃣ Repository'yi Hazırlayın
 ```bash
 # Repository'yi fork edin (GitHub'da "Fork" butonuna tıklayın)
 
 # Bilgisayarınıza klonlayın
-git clone https://github.com/KULLANICI-ADINIZ/github-infra.git
-cd 01-github-infra
+git clone https://github.com/KULLANICI-ADINIZ/project-learnops.git
+cd project-learnops
 
 # Ana repo'yu upstream olarak ekleyin
-git remote add upstream https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra.git
+git remote add upstream https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops.git
+```
 
+### 2️⃣ Geliştirme Ortamını Ayağa Kaldırın
+```bash
+# Ortam değişkenlerini ayarla
+cp .env.example .env
+# .env dosyasını açıp OAuth credentials ve JWT_SECRET değerlerini gir
+
+# Tüm servisleri başlat (Backend + Frontend + PostgreSQL)
+docker compose up --build
+
+# İlk kurulumda içerikleri seed et
+docker compose exec backend python scripts/seed_content.py --env development
 ```
 
 ### 3️⃣ Branch Oluşturun
 ```bash
-# Yeni bir branch oluşturun
+# develop branch'inden yeni branch oluşturun
+git checkout develop
+git pull upstream develop
 git checkout -b feature/benim-harika-ozelligim
 
 # Değişikliklerinizi yapın
-# ... kod düzenlemeleri ...
+```
 
 ### 4️⃣ Değişiklikleri Gönderin
 ```bash
@@ -114,37 +139,39 @@ git commit -m "feat: harika yeni özellik eklendi"
 # GitHub'a gönderin
 git push origin feature/benim-harika-ozelligim
 
-# GitHub'da Pull Request açın 🎉
+# GitHub'da develop branch'ine Pull Request açın 🎉
 ```
 
 **Tebrikler! İlk katkınızı yaptınız!** 🎊
 
+---
 
 ## 📝 Katkı Akışı (Workflow)
 
 ### Adım 1: Bir Issue Seçin veya Oluşturun
 
 **Mevcut Issue'lara Bakın:**
-- [Issues sayfası](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/issues)
+- [Issues sayfası](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/issues)
 - `good-first-issue` etiketi → Yeni başlayanlar için
 - `help-wanted` etiketi → Yardım gereken konular
+- `content` etiketi → Kurs içeriği katkıları
 
 **Issue'ya Yorum Yapın:**
 ```
-Merhaba! Bu issue üzerinde çalışmak istiyorum. 
+Merhaba! Bu issue üzerinde çalışmak istiyorum.
 Yaklaşık [X gün/hafta] içinde PR göndereceğim.
 ```
 
-**Yeni Issue Açın:**
+**Yeni Issue Şablonları:**
 
-**Hata Bildirimi Şablonu:**
+**Hata Bildirimi:**
 ```markdown
 ## 🐛 Hata Açıklaması
 Kısa ve net açıklama
 
 ## 📋 Adımlar
-1. Bu komutu çalıştır
-2. Şu dosyayı düzenle
+1. Bu sayfaya git
+2. Bu butona tıkla
 3. Hatayı gör
 
 ## ✅ Beklenen Davranış
@@ -154,33 +181,33 @@ Ne olmasını bekliyordunuz?
 Ne oldu?
 
 ## 💻 Ortam
-- OS: [örn. macOS 13, Ubuntu 22.04]
-- Terraform: [örn. v1.5.0]
-- Provider: [örn. hashicorp/github v5.0.0]
+- OS: [örn. macOS 14, Ubuntu 22.04]
+- Docker: [örn. 24.0.5]
+- Tarayıcı: [örn. Chrome 120] (frontend hataları için)
+- Backend/Frontend versiyonu: [git commit SHA]
 
 ## 📎 Ekler
-- Hata mesajı
+- Hata mesajı / stack trace
 - Ekran görüntüsü
-- Terraform plan çıktısı
+- `docker compose logs` çıktısı
 ```
 
-**Özellik İsteği Şablonu:**
+**Özellik İsteği:**
 ```markdown
 ## ✨ Özellik İsteği
 Ne istiyorsunuz?
 
 ## 🎯 Motivasyon
-Neden bu özellik gerekli?
-Hangi problemi çözüyor?
+Neden bu özellik gerekli? Hangi problemi çözüyor?
 
 ## 💡 Önerilen Çözüm
-Nasıl implement edilebilir?
+Nasıl implement edilebilir? (API değişikliği, UI değişikliği vs.)
 
 ## 🔄 Alternatifler
 Başka çözümler düşündünüz mü?
 
 ## 📚 Ek Bağlam
-Başka eklemek istediğiniz var mı?
+MVP kapsamında mı, v2.0'a mı uygun? Başka eklemek istediğiniz var mı?
 ```
 
 ### Adım 2: Branch Oluşturun ve Çalışın
@@ -188,29 +215,36 @@ Başka eklemek istediğiniz var mı?
 **Branch İsimlendirme:**
 ```bash
 # Özellik eklerken
-git checkout -b feature/wiki-automation
+git checkout -b feature/quiz-timer-pause
 
 # Hata düzeltirken
-git checkout -b bugfix/team-permission-fix
+git checkout -b bugfix/oauth-callback-redirect
 
 # Dokümantasyon
-git checkout -b docs/update-contributing-guide
+git checkout -b docs/update-api-examples
+
+# Kurs içeriği
+git checkout -b content/add-docker-fundamentals-course
 
 # Refactoring
-git checkout -b refactor/simplify-variables
+git checkout -b refactor/progress-service-cleanup
 ```
+
+> ⚠️ **Önemli:** Tüm PR'lar `develop` branch'ine açılır. `main` veya `release` branch'lerine doğrudan PR açmayın.
 
 **Küçük Commitler Yapın:**
 ```bash
-# Her mantıksal değişiklik için ayrı commit
-git add main.tf
-git commit -m "feat: add wiki resource"
+# Backend değişikliği
+git add backend/app/routers/quiz.py
+git commit -m "feat(quiz): add pause functionality to quiz timer"
 
-git add variables.tf
-git commit -m "feat: add wiki configuration variables"
+# Frontend değişikliği
+git add frontend/components/quiz/Timer.tsx
+git commit -m "feat(timer): display pause button on quiz page"
 
-git add README.md
-git commit -m "docs: document wiki feature"
+# Test
+git add backend/tests/test_quiz.py
+git commit -m "test(quiz): add test cases for timer pause"
 ```
 
 ### Adım 3: Commit Mesajları
@@ -228,57 +262,52 @@ git commit -m "docs: document wiki feature"
 - `feat:` → Yeni özellik
 - `fix:` → Hata düzeltme
 - `docs:` → Dokümantasyon
+- `content:` → Kurs içeriği ekleme/güncelleme
 - `style:` → Format (kod davranışı değişmez)
 - `refactor:` → Kod iyileştirme
-- `test:` → Test ekleme
-- `chore:` → Yapı, konfigürasyon
+- `test:` → Test ekleme/güncelleme
+- `chore:` → Yapı, konfigürasyon, bağımlılık
+
+**Kapsam Örnekleri:** `auth`, `quiz`, `dashboard`, `enrollment`, `progress`, `content`, `ui`
 
 **✅ İyi Örnekler:**
 ```bash
-feat: add automatic wiki page creation
+feat(quiz): add configurable pass threshold per quiz
 
-docs: update README with wiki usage examples
+fix(auth): resolve OAuth callback redirect on first login
+Fixes #42
 
-fix: resolve team permission conflict on private repos
-Fixes #123
+docs(api): add quiz submit request/response examples
 
-refactor: extract repository config to module
+content(python): add loops and conditionals section to python course
 
-test: add validation for repository names
+refactor(progress): simplify section completion calculation
 
-chore: update GitHub provider to v6.0
+test(enrollment): add concurrent enrollment edge case tests
+
+chore(deps): update FastAPI to 0.110.0
 ```
 
 **❌ Kötü Örnekler:**
 ```bash
-update
-# Çok genel, ne güncellendiği belli değil
-
-fixed bug
-# Hangi bug? Nasıl düzeltildi?
-
-added stuff
-# Ne eklendi? Neden?
-
-WIP
-# Commit history'de WIP kalmamalı
+update         # Çok genel
+fixed bug      # Hangi bug?
+changes        # Ne değişti?
+WIP            # Commit history'de WIP kalmamalı
 ```
 
 ### Adım 4: Pull Request Gönderin
-
-**PR Oluşturma:**
-1. GitHub'da repository'nize gidin
-2. Sarı banner'da **Compare & pull request**
-3. Veya: **Pull requests** → **New pull request** → **compare across forks**
-
 **PR Başlığı:**
+
 ```
 [TİP] Açıklayıcı başlık
 
 Örnekler:
-[FEATURE] Add automatic wiki page creation
-[BUGFIX] Fix team permission on private repos
-[DOCS] Update installation guide with examples
+[FEATURE] Add pause functionality to quiz timer
+[BUGFIX] Fix OAuth redirect loop on first login
+[CONTENT] Add Docker Fundamentals course
+[DOCS] Update API endpoint examples in README
+
 ```
 
 **PR Açıklaması Şablonu:**
@@ -287,178 +316,242 @@ WIP
 [Kısa özet - 1-2 cümle]
 
 ## 💡 Neden?
-[Bu değişiklik neden gerekli? Hangi problemi çözüyor?]
+[Bu değişiklik neden gerekli? Hangi issue'yu kapatıyor?]
 
 ## 🔧 Değişiklikler
-- [ ] Değişiklik 1
-- [ ] Değişiklik 2
-- [ ] Değişiklik 3
+- [ ] Backend: ...
+- [ ] Frontend: ...
+- [ ] Veritabanı / Migration: ...
+- [ ] İçerik: ...
+- [ ] Testler: ...
 
 ## 🧪 Nasıl Test Edildi?
-- [ ] Lokal olarak test edildi
-- [ ] terraform fmt çalıştırıldı
-- [ ] terraform validate başarılı
-- [ ] terraform plan incelendi
-- [ ] Manuel test senaryoları yapıldı
+- [ ] `docker compose up --build` ile lokal test edildi
+- [ ] Backend testleri geçti (`pytest tests/`)
+- [ ] Frontend testleri geçti (`npm test`)
+- [ ] Manuel test senaryoları yapıldı (açıklayın)
 
 ## 📸 Ekran Görüntüleri
-[Varsa ekran görüntüleri, terraform plan çıktısı]
+[Varsa UI değişikliği için ekran görüntüsü]
 
 ## 📚 Dokümantasyon
-- [ ] README güncellendi
+- [ ] README güncellendi (gerekiyorsa)
 - [ ] Kod yorumları eklendi
-- [ ] CHANGELOG güncellendi
-- [ ] Kullanım örnekleri eklendi
+- [ ] API değişikliği varsa belgelendi
 
 ## 🔗 İlişkili Issue'lar
-Task Ticket Number #123
+Closes #123
 Relates to #456
 
 ## ✅ Checklist
-- [ ] Kod formatlandı (terraform fmt)
+- [ ] Kodlar formatlandı (`ruff format` / `npm run lint`)
 - [ ] Testler geçti
-- [ ] Dokümantasyon tamamlandı
-- [ ] Breaking change yok (varsa belirtildi)
-- [ ] Commit mesajları anlamlı
+- [ ] Breaking change yok (varsa belirtildi ve migration guide eklendi)
+- [ ] Commit mesajları anlamlı ve conventional commit formatında
 
-## 💬 Notlar
-[Gözden geçirenler için özel notlar, sorular, vs.]
+## 💬 Gözden Geçirenler İçin Notlar
+[Özellikle dikkat edilmesini istediğiniz noktalar, sorular]
 ```
 
 ### Adım 5: Code Review Süreci
 
 **Ne Olur:**
-1. ✅ **Otomatik Kontroller** - CI/CD pipeline çalışır
-2. 👀 **Maintainer İncelemesi** - Kod gözden geçirilir
-3. 💬 **Geri Bildirim** - Öneriler ve sorular gelir
-4. 🔄 **Güncelleme** - Gerekli değişiklikleri yaparsınız
-5. ✨ **Onay** - Kod onaylanır
-6. 🎉 **Merge** - Ana branch'e eklenir
+1. ✅ **Otomatik Kontroller** — CI/CD pipeline çalışır (test + lint)
+2. 👀 **Maintainer İncelemesi** — Kod gözden geçirilir
+3. 💬 **Geri Bildirim** — Öneriler ve sorular gelir
+4. 🔄 **Güncelleme** — Gerekli değişiklikleri yaparsınız
+5. ✨ **Onay** — Kod onaylanır
+6. 🎉 **Merge** — `develop` branch'ine eklenir
 
 **Geri Bildirime Nasıl Yanıt Verilir:**
-
-**Örnek Feedback:**
-```
-Maintainer: "Bu fonksiyonu daha basit yazabilir miyiz?"
-
-Siz: "Haklısınız! Şöyle değiştirsem daha iyi olur mu:
-[kod örneği]
-
-Veya başka bir öneriniz var mı?"
-```
-
-**Değişiklikleri Uygulama:**
 ```bash
-# Feedbackleri uygulayın
+# Feedback'i uygulayın
 git add .
-git commit -m "refactor: simplify function per review feedback"
+git commit -m "refactor(quiz): simplify score calculation per review"
 
-# Aynı branch'e push edin
+# Aynı branch'e push edin — PR otomatik güncellenir
 git push origin feature/your-branch
-
-# PR otomatik güncellenir!
 ```
 
 **İyi PR Davranışları:**
 - 🤝 Saygılı ve yapıcı olun
 - 🙏 Geri bildirimlere teşekkür edin
 - 💬 Anlamadığınız şeyleri sorun
-- 🎯 Önerileri deneyin ve deneyimizi paylaşın
-- ⏱️ Yanıt vermekte acele etmeyin, düşünün
+- 🎯 Önerileri deneyin ve deneyiminizi paylaşın
 
 ---
 
 ## 📚 Kod Standartları
 
-### Terraform Stili (Örnek)
+### Backend (FastAPI / Python)
 
 **✅ İyi Kod:**
-```hcl
-# 1. Temiz ve okunaklı
-resource "github_repository" "docs" {
-  name        = "documentation"
-  description = "Project documentation and guides"
-  visibility  = "public"
-  
-  # Feature flags
-  has_wiki   = true
-  has_issues = true
-  
-  # Templates
-  template {
-    owner      = "BKT-DevOps"
-    repository = "template-docs"
-  }
-}
+```python
+# 1. Type hint'leri eksiksiz kullanın
+async def complete_section(
+    section_id_str: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProgressResponse:
+    """
+    Belirtilen section'ı tamamlandı olarak işaretler.
+    Progress yüzdesi ve enrollment completed_at otomatik güncellenir.
+    """
+    ...
 
-# 2. Açıklayıcı değişkenler
-variable "enable_branch_protection" {
-  description = "Enable branch protection rules for main branch"
-  type        = bool
-  default     = true
-}
+# 2. Service katmanına iş mantığını taşıyın (router'da yapmayin)
+# routers/enrollments.py — DOĞRU
+@router.post("/progress/sections/{section_id_str}/complete")
+async def complete_section(section_id_str: str, ...):
+    return await progress_service.complete_section(section_id_str, user.id, db)
 
-# 3. Input validation
-variable "repository_name" {
-  description = "Name of the repository (lowercase, hyphens only)"
-  type        = string
-  
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.repository_name))
-    error_message = "Repository name must be lowercase with hyphens only."
-  }
-}
-
-# 4. Mantıklı yorumlar
-# Create team with read access for all organization members
-# This ensures everyone can view the repository
-resource "github_team" "readers" {
-  name        = "readers"
-  description = "Read-only access for all members"
-  privacy     = "closed"
-}
+# 3. Hata durumlarını net HTTPException ile döndürün
+if not enrollment:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Bu kursa kayıtlı değilsiniz.",
+    )
 ```
 
 **❌ Kötü Kod:**
-```hcl
-# Kötü format, okunamaz
-resource "github_repository" "r" {
-name="test"
-description="test repo"
-visibility="public"
-has_wiki=true
-has_issues=true}
+```python
+# Tip belirtilmemiş
+async def complete_section(section_id, user, db):
+    ...
 
-# Belirsiz değişken
-variable "x" {
-  type = bool
+# İş mantığı router'da
+@router.post("/progress/sections/{section_id_str}/complete")
+async def complete_section(section_id_str: str, ...):
+    section = await db.execute(...)   # Burada olmamalı
+    section.completed = True          # Burada olmamalı
+    ...
+```
+
+### Frontend (Next.js / TypeScript)
+
+**✅ İyi Kod:**
+```typescript
+// 1. Props tiplerini tanımlayın
+interface CourseProgressCardProps {
+  title: string;
+  slug: string;
+  progressPercent: number;
+  lastSectionIdStr: string;
+  lastSectionTitle: string;
 }
 
-# Validation yok
-variable "name" {
-  type = string
-}
+// 2. Loading ve error state'lerini mutlaka yönetin
+const DashboardPage = () => {
+  const [data, setData] = useState<DashboardSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-# Yorum yok (karmaşık kod için)
-resource "github_team" "t" {
-  count = var.create ? 1 : 0
-  name  = element(concat(var.names, [""]), count.index)
+  if (loading) return <DashboardSkeleton />;
+  if (error) return <ErrorState message={error} />;
+  if (!data?.inProgressCourses.length) return <EmptyCoursesState />;
+  ...
+};
+
+// 3. API çağrılarını lib/api.ts üzerinden yapın
+import { api } from "@/lib/api";
+const summary = await api.get("/dashboard/summary");
+```
+
+### MDX Kurs İçeriği
+
+**✅ Doğru MDX Frontmatter:**
+```yaml
+---
+id: "docker-003-volumes"     # ASLA değiştirme — DB ile bağlantı bu ID ile
+title: "Docker Volume Yönetimi"
+order: 3
+---
+```
+
+> ⚠️ **Kritik Kural:** `id` alanı bir kez belirlendikten sonra **asla değiştirilmez**. Dosya adı, başlık değişebilir — `id` değişmez.
+
+**meta.json Formatı:**
+```json
+{
+  "slug": "docker-fundamentals",
+  "title": "Docker Temelleri",
+  "description": "Container teknolojisini sıfırdan öğrenin.",
+  "category": "containerization",
+  "difficulty": "beginner",
+  "duration_minutes": 90,
+  "is_published": true
 }
+```
+
+---
+
+## 🧪 Test
+
+### Backend Testleri
+```bash
+# Tüm testleri çalıştır
+docker compose exec backend pytest tests/ --cov --cov-report=term
+
+# Belirli bir modülü test et
+docker compose exec backend pytest tests/test_quiz.py -v
+
+# Lint kontrolü
+docker compose exec backend ruff check app/
+docker compose exec backend ruff format --check app/
+```
+
+### Frontend Testleri
+```bash
+# Tüm testleri çalıştır
+docker compose exec frontend npm test
+
+# Lint kontrolü
+docker compose exec frontend npm run lint
+
+# Type kontrolü
+docker compose exec frontend npm run type-check
+```
+
+### PR Öncesi Kontrol Listesi
+```bash
+# 1. Upstream'den güncel al
+git checkout develop
+git pull upstream develop
+git checkout your-branch
+git rebase develop
+
+# 2. Servisleri yeniden build et
+docker compose up --build
+
+# 3. Testleri çalıştır
+docker compose exec backend pytest tests/
+docker compose exec frontend npm test
+
+# 4. Lint
+docker compose exec backend ruff check app/
+docker compose exec frontend npm run lint
+
+# 5. Push
+git push origin your-branch
 ```
 
 ### Manuel Test Senaryoları
 
 **Yeni Özellik İçin:**
-1. ✅ Feature açık/kapalı durumlarda çalışıyor mu?
-2. ✅ Mevcut özellikleri bozmuyor mu?
-3. ✅ Hata durumları handle ediliyor mu?
-4. ✅ Dokümantasyon doğru mu?
+1. ✅ Özellik açık/kapalı durumlarda beklendiği gibi çalışıyor mu?
+2. ✅ Mevcut özellikler bozulmadı mı?
+3. ✅ Hata durumları (404, 401, 500) doğru handle ediliyor mu?
+4. ✅ Mobil görünüm kontrol edildi mi? (< 768px)
 
-**Hata Düzeltmesi İçin:**
-1. ✅ Hata tekrarlanabiliyor muydu?
-2. ✅ Artık hata oluşmuyor mu?
-3. ✅ Benzer durumlar da düzeltildi mi?
-4. ✅ Test senaryosu eklendi mi?
+**Quiz Sistemi Değişikliklerinde:**
+1. ✅ `correct_index` submit öncesi response'da **yok** mu?
+2. ✅ Süre dolduğunda otomatik submit tetikleniyor mu?
+3. ✅ Geç gelen submission backend tarafından reddediliyor mu?
+
+**Auth Değişikliklerinde:**
+1. ✅ Google / LinkedIn / GitHub callback akışı çalışıyor mu?
+2. ✅ Refresh token rotation doğru çalışıyor mu?
+3. ✅ Logout sonrası token blacklist'e ekleniyor mu?
 
 ---
 
@@ -467,167 +560,80 @@ resource "github_team" "t" {
 ### Yeni Başlayanlar İçin
 
 **🌱 Küçük Başlayın:**
-- İlk PR'ınız typo düzeltmesi olabilir
-- README'ye örnek ekleyebilirsiniz
-- Kod yorumu ekleyebilirsiniz
+- İlk PR'ınız bir kurs içeriğindeki typo düzeltmesi olabilir
+- API örneklerine yorum ekleyebilirsiniz
+- README'ye kullanım örneği ekleyebilirsiniz
 - Bunlar da değerli katkılardır!
 
 **📖 Öğrenin:**
 - Başkalarının PR'larını inceleyin
 - Discussions'ları takip edin
-- Sorular sorun, utanmayın!
+- Sorular sorun — kimse yargılamaz!
 
 **🎯 Odaklanın:**
-- Bir seferde bir şey yapın
+- Bir seferde tek bir şey değiştirin
 - Küçük, anlaşılır PR'lar gönderin
 - Büyük değişiklikler için önce issue açın
 
 ### İleri Seviye İçin
 
 **🏗️ Mimari Kararlar:**
-- Breaking change önerecekseniz önce tartışın
-- RFC (Request for Comments) açın
-- Topluluk görüşünü alın
+- Breaking change önerecekseniz önce issue'da tartışın
+- Veritabanı şema değişikliklerini her zaman Alembic migration ile yapın
+- Security-sensitive değişiklikleri (auth, quiz güvenliği) maintainer'larla koordine edin
 
-**♻️ Sürdürülebilirlik:**
-- Geriye dönük uyumluluk düşünün
-- Deprecation plan yapın
-- Migration guide yazın
-
-**📊 Performans:**
-- Terraform plan sürelerini test edin
-- Resource sayısını optimize edin
-- State file boyutunu kontrol edin
+**♻️ Geriye Uyumluluk:**
+- API'de breaking change'den kaçının
+- Zorunluysa versiyonlama planlayın ve belgelendirin
 
 ---
 
 ## ❓ Sık Sorulan Sorular
 
-### 🆕 Yeni Başlayanlar
+**S: Docker olmadan geliştirme yapabilir miyim?**
 
-**S: Hiç açık kaynak katkısı yapmadım, nereden başlamalıyım?**
+A: Mümkün, ancak tavsiye edilmez. Backend ve Frontend ayrı ayrı da çalıştırılabilir, ancak Docker Compose ile tüm ortam tek komutla hazır olur ve tutarlı bir geliştirme deneyimi sağlar.
 
-A: Harika bir başlangıç noktası! Şunları öneririz:
-1. `good-first-issue` etiketli issue'ları inceleyin
-2. Dokümantasyonda typo düzeltin
-3. README'ye kullanım örneği ekleyin
-4. Toplulukla Discussions'da sohbet edin
+**S: Kurs içeriği eklemek için ne bilmem gerekiyor?**
 
-**S: Terraform bilmiyorum, öğrenmem gerek mi?**
-
-A: Kodlamadan da katkıda bulunabilirsiniz:
-- Dokümantasyon iyileştirmeleri
-- Hata tespiti ve raporlama
-- Kullanım senaryoları önerme
-- Topluluk desteği sağlama
-
-Terraform öğrenmek isterseniz, küçük değişikliklerle başlayın!
+A: Sadece Markdown/MDX bilmeniz yeterli! `content/courses/` altındaki mevcut kurslara bakarak formatı anlayabilirsiniz. Teknik konu uzmanlığı kod bilgisinden daha önemli.
 
 **S: PR'm reddedilirse ne olur?**
 
-A: Endişelenmeyin! Bu normal:
-- Maintainer'lar açıklama yapar
-- Nedenini anlayın, öğrenin
-- Düzeltip tekrar deneyin
-- Veya başka bir konu seçin
-
-Reddedilme olumsuz bir şey değil, öğrenme sürecinin parçası!
-
-### 🔧 Teknik Konular
+A: Endişelenmeyin — bu normal bir sürecin parçası. Maintainer'lar neden reddedildiğini açıklar. Geri bildirimi anlayın, düzeltin ve tekrar deneyin. Reddedilme öğrenme sürecinin bir parçasıdır!
 
 **S: Git conflict çözemiyorum?**
 
-A: Adım adım:
 ```bash
-# 1. Main'i güncelleyin
-git checkout main
-git pull upstream main
-
-# 2. Branch'inize dönün
+git checkout develop
+git pull upstream develop
 git checkout your-branch
-
-# 3. Rebase yapın
-git rebase main
-
-# 4. Conflict çıkarsa:
-git status  # Hangi dosyalarda?
-
-# 5. Dosyayı düzenleyin, conflict işaretlerini silin
-# <<<<<<< HEAD
-# =======
-# >>>>>>> branch
-
-# 6. Çözümü ekleyin
-git add conflicted-file.tf
+git rebase develop
+# Conflict çıkarsa: dosyayı düzenle, conflict işaretlerini sil
+git add conflicted-file
 git rebase --continue
-
-# 7. Push (force gerekebilir)
 git push origin your-branch --force-with-lease
 ```
 
-Hala sorun varsa, issue'da yardım isteyin!
+Hala sorun varsa issue'da veya Discussions'da yardım isteyin!
 
-### 🤝 İşbirliği
+**S: PR merge edildi, ne yapmalıyım?**
 
-**S: Aynı issue üzerinde başkası da çalışıyor?**
-
-A: İletişime geçin:
-```
-Merhaba @kullanici! Ben de bu issue üzerinde çalışıyorum.
-İşbirliği yapabilir miyiz? Ben [X kısmı] üzerinde 
-çalışıyordum, siz [Y kısmı]nı alabilir misiniz?
-```
-
-**S: Maintainer ne kadar sürede yanıt verir?**
-
-A: Genelde 2-5 iş günü. Acil değilse sabırlı olun.
-Acilse: Discussions'da veya Discord'da etiketleyin.
-
-**S: PR'ım merge edildi, ne yapmalıyım?**
-
-A: Tebrikler! 🎉
 ```bash
-# 1. Lokal'i güncelleyin
-git checkout main
-git pull upstream main
-
-# 2. Branch'i silin (opsiyonel)
+git checkout develop
+git pull upstream develop
 git branch -d feature/your-branch
 git push origin --delete feature/your-branch
-
-# 3. Yeni katkıya başlayın!
+# Yeni katkıya başlayın! 🚀
 ```
 
 ---
 
 ## 🆘 Yardım ve Destek
 
-### Nasıl Yardım Alırsınız?
-
-**💬 GitHub Discussions** (En iyi yol!)
-- [Genel sorular](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/discussions/categories/q-a)
-- [Fikirler](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/discussions/categories/ideas)
-- [Yardım istekleri](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/discussions/categories/help)
-
-**🐛 GitHub Issues**
-- Hata bildirimi
-- Özellik istekleri
-- Teknik sorunlar
-
-**📧 Doğrudan İletişim**
-- Acil güvenlik sorunları
-- Özel durumlar
-- Maintainer'lara direkt mesaj
-
-### Ne Zaman Yardım İsteyin?
-
-Şu durumlarda çekinmeyin:
-- ⚠️ Hata mesajını anlamıyorsanız
-- ⚠️ Git sorunları yaşıyorsanız
-- ⚠️ Yaklaşımınızdan emin değilseniz
-- ⚠️ Test nasıl yapılır bilmiyorsanız
-- ⚠️ PR sürecinde takıldıysanız
-- ⚠️ Herhangi bir şeyi anlamadıysanız
+- **💬 GitHub Discussions** — Genel sorular, fikirler, yardım istekleri (en iyi yol!)
+- **🐛 GitHub Issues** — Hata bildirimi, özellik istekleri
+- **📧 Doğrudan İletişim** — Yalnızca acil güvenlik sorunları için
 
 > **💡 Unutmayın:** Aptalca soru yoktur! Sormak öğrenmenin ilk adımıdır.
 
@@ -635,52 +641,30 @@ git push origin --delete feature/your-branch
 
 ## 🎉 Katkınız Kabul Edildi!
 
-### Sonrası Ne Olur?
-
 **✅ Merge Edildikten Sonra:**
-1. **Kutlayın!** 🎊 İlk (veya bir sonraki) açık kaynak katkınız!
-2. **Profil:** GitHub profilinizde görünür
-3. **Contributors:** Proje contributors listesinde yeriniz var
-4. **Deneyim:** CV'nize ekleyebileceğiniz somut bir proje
+- 🎊 GitHub profilinizde görünür
+- 🏅 Proje contributors listesinde yeriniz var
+- 📄 CV'nize ekleyebileceğiniz somut, full-stack bir proje deneyimi
 
-**🔄 Devam Edin:**
-- Daha fazla issue'ya göz atın
-- Başkalarının PR'larını inceleyin
-- Yeni özellikler önerin
-- Mentorluk yapın (yeni gelenlere yardım edin)
+**Her katkı, ne kadar küçük olursa olsun değerlidir:**
+✨ Kod · 📖 Dokümantasyon · 📚 Kurs içeriği · 🐛 Hata bildirimi · 💡 Fikir · 💬 Tartışma
 
-### Teşekkürler! 🙏
+**Hepsi LearnOps'u ve Türkçe DevOps topluluğunu güçlendirir!**
 
-Her katkı, ne kadar küçük olursa olsun değerlidir:
-- ✨ Kod yazmak
-- 📖 Dokümantasyon
-- 🐛 Hata bildirimi
-- 💡 Fikir önerisi
-- 💬 Tartışmalara katılım
-- 🎨 Tasarım önerileri
-
-**Hepsi topluluğumuzu güçlendirir!**
 </details>
 
 ---
 
-
 <details>
 <summary><strong>🇬🇧 English Guide</strong></summary>
 
-# 🤝 Contributing Guide
-
-> **Welcome!** This guide is prepared for everyone who wants to contribute to the Bilgisayar Kavramları community. We're happy to see you here! 🎉
-
----
-
 ## 💫 Why Should You Contribute?
 
-Contributing to open source community:
-- 🚀 **Develops your skills** - You learn by working on real projects
-- 🤝 **Build connections** - Meet people with similar interests
-- 📚 **Gain experience** - Concrete projects you can add to your CV
-- 💪 **Contribute to community** - Build something everyone will benefit from
+Contributing to open source:
+- 🚀 **Develops your skills** — Learn by working on real projects
+- 🤝 **Build connections** — Meet people with similar interests in the DevOps community
+- 📚 **Gain experience** — A concrete full-stack project you can add to your CV
+- 💪 **Contribute to the community** — Make Turkish DevOps education better for everyone
 
 **Ready to make your first contribution? Let's get started!** 🎯
 
@@ -689,98 +673,91 @@ Contributing to open source community:
 ## 🎨 How Can You Contribute?
 
 ### 🐛 I Found a Bug!
-Did you find a bug in the project? Great! Here's what you need to do:
+1. **Check existing issues first** — The same problem might already be reported
+2. **Open a new issue** — Describe the problem with steps to reproduce
+3. **Try to fix it** — If you're comfortable with code, send a PR!
 
-1. **Open an issue immediately** - Others may have encountered the same problem
-2. **Explain the problem in detail** - What did you expect, what happened?
-3. **Try to fix it** - If you're familiar with coding, send a PR!
-
-**Example:** "Getting error while creating repository"
+**Example:** "Getting 500 error after quiz submit"
 ```
 Steps:
-1. I run terraform init
-2. I say terraform plan
-3. I get "token error"
+1. Enroll in a course
+2. Start the quiz
+3. Select answers and click "Submit"
+4. Get 500 Internal Server Error
 
-Expected: Plan should be successful
-Actual: Gives token error
+Expected: Score screen should appear
+Actual: 500 error
+
+Environment: Docker Compose, Python 3.11, Node 20
 ```
 
 ### ✨ I Have an Idea!
-Do you want a new feature? Super!
+1. **Check Discussions first** — Maybe others want the same thing
+2. **Open a Feature Request** — Explain your idea in detail
+3. **Discuss with community** — Get feedback
+4. **Start coding** — Send a PR after approval
 
-1. **Check Discussions first** - Maybe others want the same thing
-2. **Open a Feature Request** - Explain your idea in detail
-3. **Discuss with community** - Get feedback, develop the idea
-4. **Start coding** - Send a PR after approval
+### 📖 Course Content Contribution
+You don't have to write code! Course content is highly valuable:
+- **Add a new DevOps course** — In MDX format, under `content/courses/`
+- **Update existing lessons** — New tool versions, better examples
+- **Fix typos and language errors** — Small but important
+- **Add/improve quiz questions** — More meaningful questions and explanations
 
-**Example:** "Automatic wiki page creation feature"
-```
-Motivation:
-Creating manual wiki for each new repo takes time.
-
-My suggestion:
-Automatic wiki page template creation with Terraform
-
-Benefits:
-- Time saving
-- Standard documentation
-- Less manual work
-```
-
-### 📖 Documentation Improvement
-You don't have to write code! Documentation is also very valuable:
-
-- **Improve README** - Clearer, more understandable
-- **Add examples** - Show how to use it
-- **Fix typos** - Small but important
-- **Turkish translation** - Native language support is great!
+### 📝 Documentation Improvement
+- Improve README — Clearer, more understandable
+- Add API examples — Show how endpoints work
+- Clarify installation steps — Everything that makes first setup easier
 
 ### 🎯 Ideal for First Contribution
-If you're just starting, start with these tasks:
-
-- 🏷️ Issues with `good-first-issue` label
+- 🏷️ Issues labeled `good-first-issue`
 - 📝 Documentation improvements
 - 🐛 Simple bug fixes
-- 💬 Reviewing others' PRs
+- 📚 Typo fixes in course content
 
 ---
 
-## 🚀 Quick Start (In 5 Minutes!)
+## 🚀 Quick Start
 
 ### 1️⃣ Prepare the Repository
 ```bash
-# Fork the repository (click "Fork" button on GitHub)
+# Fork the repository (click "Fork" on GitHub)
 
 # Clone to your computer
-git clone https://github.com/YOUR-USERNAME/project-terraform-github.git
-cd project-terraform-github
+git clone https://github.com/YOUR-USERNAME/project-learnops.git
+cd project-learnops
 
 # Add main repo as upstream
-git remote add upstream https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra.git
+git remote add upstream https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops.git
+```
+
+### 2️⃣ Start the Development Environment
+```bash
+# Set up environment variables
+cp .env.example .env
+# Edit .env and fill in your OAuth credentials and JWT_SECRET
+
+# Start all services (Backend + Frontend + PostgreSQL)
+docker compose up --build
+
+# Seed content on first setup
+docker compose exec backend python scripts/seed_content.py --env development
 ```
 
 ### 3️⃣ Create a Branch
 ```bash
-# Create a new branch
+git checkout develop
+git pull upstream develop
 git checkout -b feature/my-awesome-feature
-
-# Make your changes
-# ... code edits ...
+```
 
 ### 4️⃣ Send Changes
 ```bash
-# Commit
 git add .
 git commit -m "feat: add awesome new feature"
-
-# Push to GitHub
 git push origin feature/my-awesome-feature
-
-# Open Pull Request on GitHub 🎉
+# Open Pull Request to develop branch on GitHub 🎉
 ```
-
-**Congratulations! You made your first contribution!** 🎊
 
 ---
 
@@ -789,42 +766,33 @@ git push origin feature/my-awesome-feature
 ### Step 1: Choose or Create an Issue
 
 **Check Existing Issues:**
-- [Issues page](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/issues)
-- `good-first-issue` label → For beginners
-- `help-wanted` label → Topics needing help
-
-**Comment on Issue:**
-```
-Hello! I want to work on this issue. 
-I will send PR in approximately [X days/weeks].
-```
-
-**Open New Issue:**
+- [Issues page](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/issues)
+- `good-first-issue` → For beginners
+- `help-wanted` → Topics needing help
+- `content` → Course content contributions
 
 **Bug Report Template:**
 ```markdown
 ## 🐛 Bug Description
 Short and clear description
 
-## 📋 Steps
-1. Run this command
-2. Edit that file
+## 📋 Steps to Reproduce
+1. Go to this page
+2. Click this button
 3. See the error
 
 ## ✅ Expected Behavior
-What did you expect to happen?
-
 ## ❌ Actual Behavior
-What happened?
 
 ## 💻 Environment
-- OS: [e.g. macOS 13, Ubuntu 22.04]
-- Provider: [e.g. hashicorp/github v5.0.0]
+- OS: [e.g. macOS 14, Ubuntu 22.04]
+- Docker: [e.g. 24.0.5]
+- Browser: [e.g. Chrome 120] (for frontend issues)
 
 ## 📎 Attachments
-- Error message
+- Error message / stack trace
 - Screenshot
-- Terraform plan output
+- `docker compose logs` output
 ```
 
 **Feature Request Template:**
@@ -833,482 +801,230 @@ What happened?
 What do you want?
 
 ## 🎯 Motivation
-Why is this feature necessary?
-What problem does it solve?
+Why is this feature necessary? What problem does it solve?
 
 ## 💡 Proposed Solution
 How can it be implemented?
 
 ## 🔄 Alternatives
-Have you thought of other solutions?
+Have you considered other approaches?
 
 ## 📚 Additional Context
-Anything else you want to add?
+Is this MVP scope or v2.0? Anything else to add?
 ```
 
 ### Step 2: Create Branch and Work
 
 **Branch Naming:**
 ```bash
-# When adding feature
-git checkout -b feature/wiki-automation
-
-# When fixing bug
-git checkout -b bugfix/team-permission-fix
-
-# Documentation
-git checkout -b docs/update-contributing-guide
-
-# Refactoring
-git checkout -b refactor/simplify-variables
+git checkout -b feature/quiz-timer-pause
+git checkout -b bugfix/oauth-callback-redirect
+git checkout -b docs/update-api-examples
+git checkout -b content/add-docker-fundamentals-course
+git checkout -b refactor/progress-service-cleanup
 ```
 
-**Make Small Commits:**
-```bash
-# Separate commit for each logical change
-git add main.tf
-git commit -m "feat: add wiki resource"
-
-git add variables.tf
-git commit -m "feat: add wiki configuration variables"
-
-git add README.md
-git commit -m "docs: document wiki feature"
-```
+> ⚠️ **Important:** All PRs target the `develop` branch. Do not open PRs directly to `main` or `release`.
 
 ### Step 3: Commit Messages
 
-**Format:**
-```
-<type>(<scope>): <subject>
+**Format:** `<type>(<scope>): <subject>`
 
-<body>
+**Types:** `feat` · `fix` · `docs` · `content` · `style` · `refactor` · `test` · `chore`
 
-<footer>
-```
-
-**Types:**
-- `feat:` → New feature
-- `fix:` → Bug fix
-- `docs:` → Documentation
-- `style:` → Format (code behavior doesn't change)
-- `refactor:` → Code improvement
-- `test:` → Add tests
-- `chore:` → Build, configuration
+**Scope examples:** `auth`, `quiz`, `dashboard`, `enrollment`, `progress`, `content`, `ui`
 
 **✅ Good Examples:**
 ```bash
-feat: add automatic wiki page creation
-
-docs: update README with wiki usage examples
-
-fix: resolve team permission conflict on private repos
-Fixes #123
-
-refactor: extract repository config to module
-
-test: add validation for repository names
-
-chore: update GitHub provider to v6.0
+feat(quiz): add configurable pass threshold per quiz
+fix(auth): resolve OAuth callback redirect on first login — Fixes #42
+content(docker): add volumes and networking sections
+test(enrollment): add concurrent enrollment edge case tests
+chore(deps): update FastAPI to 0.110.0
 ```
 
 **❌ Bad Examples:**
 ```bash
-update
-# Too general, not clear what was updated
-
-fixed bug
-# Which bug? How was it fixed?
-
-added stuff
-# What was added? Why?
-
-WIP
-# WIP shouldn't remain in commit history
+update       # Too generic
+fixed bug    # Which bug?
+WIP          # Should not remain in commit history
 ```
 
-### Step 4: Send Pull Request
-
-**Create PR:**
-1. Go to your repository on GitHub
-2. Yellow banner **Compare & pull request**
-3. Or: **Pull requests** → **New pull request** → **compare across forks**
+### Step 4: Pull Request
 
 **PR Title:**
 ```
-[TYPE] Descriptive title
-
-Examples:
-[FEATURE] Add automatic wiki page creation
-[BUGFIX] Fix team permission on private repos
-[DOCS] Update installation guide with examples
+[FEATURE] Add pause functionality to quiz timer
+[BUGFIX] Fix OAuth redirect loop on first login
+[CONTENT] Add Docker Fundamentals course
+[DOCS] Update API endpoint examples
 ```
 
 **PR Description Template:**
 ```markdown
 ## 🎯 What Does This PR Do?
-[Short summary - 1-2 sentences]
+[Short summary — 1-2 sentences]
 
 ## 💡 Why?
-[Why is this change necessary? What problem does it solve?]
+[Why is this change necessary? Which issue does it close?]
 
 ## 🔧 Changes
-- [ ] Change 1
-- [ ] Change 2
-- [ ] Change 3
+- [ ] Backend: ...
+- [ ] Frontend: ...
+- [ ] Database / Migration: ...
+- [ ] Content: ...
+- [ ] Tests: ...
 
 ## 🧪 How Was It Tested?
-- [ ] Tested locally
-- [ ] Manual test scenarios performed
-
-## 📸 Screenshots
-[If any screenshots, terraform plan output]
-
-## 📚 Documentation
-- [ ] README updated
-- [ ] Code comments added
-- [ ] CHANGELOG updated
-- [ ] Usage examples added
+- [ ] Tested locally with `docker compose up --build`
+- [ ] Backend tests passed (`pytest tests/`)
+- [ ] Frontend tests passed (`npm test`)
+- [ ] Manual test scenarios performed (describe them)
 
 ## 🔗 Related Issues
-Task Ticket Number #123
+Closes #123
 Relates to #456
 
 ## ✅ Checklist
-- [ ] Tests passed
-- [ ] Documentation completed
-- [ ] No breaking changes (or noted if yes)
-- [ ] Meaningful commit messages
+- [ ] Code formatted (`ruff format` / `npm run lint`)
+- [ ] All tests pass
+- [ ] No breaking changes (or documented with migration guide)
+- [ ] Commit messages follow conventional commit format
 
-## 💬 Notes
-[Special notes for reviewers, questions, etc.]
+## 💬 Notes for Reviewers
+[Points you'd like reviewers to focus on, questions]
 ```
 
 ### Step 5: Code Review Process
 
-**What Happens:**
-1. ✅ **Automated Checks** - CI/CD pipeline runs
-2. 👀 **Maintainer Review** - Code is reviewed
-3. 💬 **Feedback** - Suggestions and questions come
-4. 🔄 **Update** - You make necessary changes
-5. ✨ **Approval** - Code gets approved
-6. 🎉 **Merge** - Added to main branch
+1. ✅ **Automated Checks** — CI/CD pipeline runs (tests + lint)
+2. 👀 **Maintainer Review** — Code is reviewed
+3. 💬 **Feedback** — Suggestions and questions
+4. 🔄 **Update** — Apply necessary changes
+5. ✨ **Approval** — Code gets approved
+6. 🎉 **Merge** — Added to `develop` branch
 
-**How to Respond to Feedback:**
-
-**Example Feedback:**
-```
-Maintainer: "Can we write this function simpler?"
-
-You: "You're right! Would it be better if I change it like this:
-[code example]
-
-Or do you have another suggestion?"
-```
-
-**Applying Changes:**
 ```bash
-# Apply feedback
+# Apply feedback and push — PR updates automatically
 git add .
-git commit -m "refactor: simplify function per review feedback"
-
-# Push to same branch
+git commit -m "refactor(quiz): simplify score calculation per review"
 git push origin feature/your-branch
-
-# PR updates automatically!
 ```
-
-**Good PR Behaviors:**
-- 🤝 Be respectful and constructive
-- 🙏 Thank for feedback
-- 💬 Ask what you don't understand
-- 🎯 Try suggestions and share your experience
-- ⏱️ Don't rush to respond, think about it
 
 ---
 
 ## 📚 Code Standards
 
-### Terraform Style (Example)
+### Backend (FastAPI / Python)
+```python
+# ✅ Use type hints throughout
+async def complete_section(
+    section_id_str: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ProgressResponse:
+    """Mark the given section as completed. Updates progress % and enrollment."""
+    ...
 
-**✅ Good Code:**
-```hcl
-# 1. Clean and readable
-resource "github_repository" "docs" {
-  name        = "documentation"
-  description = "Project documentation and guides"
-  visibility  = "public"
-  
-  # Feature flags
-  has_wiki   = true
-  has_issues = true
-  
-  # Templates
-  template {
-    owner      = "Bilgisayar-Kavramlari-Toplulugu"
-    repository = "template-docs"
-  }
-}
-
-# 2. Descriptive variables
-variable "enable_branch_protection" {
-  description = "Enable branch protection rules for main branch"
-  type        = bool
-  default     = true
-}
-
-# 3. Input validation
-variable "repository_name" {
-  description = "Name of the repository (lowercase, hyphens only)"
-  type        = string
-  
-  validation {
-    condition     = can(regex("^[a-z0-9-]+$", var.repository_name))
-    error_message = "Repository name must be lowercase with hyphens only."
-  }
-}
-
-# 4. Meaningful comments
-# Create team with read access for all organization members
-# This ensures everyone can view the repository
-resource "github_team" "readers" {
-  name        = "readers"
-  description = "Read-only access for all members"
-  privacy     = "closed"
-}
+# ✅ Keep business logic in service layer, not routers
+# ✅ Return clear HTTPExceptions for error cases
+if not enrollment:
+    raise HTTPException(status_code=404, detail="You are not enrolled in this course.")
 ```
 
-**❌ Bad Code:**
-```hcl
-# Bad format, unreadable
-resource "github_repository" "r" {
-name="test"
-description="test repo"
-visibility="public"
-has_wiki=true
-has_issues=true}
-
-# Unclear variable
-variable "x" {
-  type = bool
+### Frontend (Next.js / TypeScript)
+```typescript
+// ✅ Define prop types
+interface CourseProgressCardProps {
+  title: string;
+  slug: string;
+  progressPercent: number;
+  lastSectionIdStr: string;
+  lastSectionTitle: string;
 }
 
-# No validation
-variable "name" {
-  type = string
-}
+// ✅ Always handle loading, error, and empty states
+if (loading) return <DashboardSkeleton />;
+if (error) return <ErrorState message={error} />;
+if (!data?.inProgressCourses.length) return <EmptyCoursesState />;
 
-# No comment (for complex code)
-resource "github_team" "t" {
-  count = var.create ? 1 : 0
-  name  = element(concat(var.names, [""]), count.index)
-}
+// ✅ Use lib/api.ts for all API calls
+import { api } from "@/lib/api";
 ```
 
-### File Organization
-
-## 🧪 Testing and Validation
-
-### Pre-Commit Checklist
-
-# 4. Git status check
-git status
-git diff
+### MDX Course Content
+```yaml
+---
+id: "docker-003-volumes"   # NEVER change — DB is linked via this ID
+title: "Docker Volume Management"
+order: 3
+---
 ```
 
-### Final Check Before PR
-
-```bash
-# Update from main branch
-git checkout main
-git pull upstream main
-git checkout your-branch
-git rebase main
-
-# Final checks
-terraform fmt -check -recursive
-terraform validate
-terraform plan
-
-# Any issues in commits?
-git log --oneline
-
-# Push
-git push origin your-branch
-```
-
-### Manual Test Scenarios
-
-**For New Feature:**
-1. ✅ Does it work when feature is on/off?
-2. ✅ Does it break existing features?
-3. ✅ Are error cases handled?
-4. ✅ Is documentation correct?
-
-**For Bug Fix:**
-1. ✅ Was the bug reproducible?
-2. ✅ Does the error no longer occur?
-3. ✅ Were similar cases also fixed?
-4. ✅ Was test scenario added?
+> ⚠️ **Critical Rule:** The `id` field is set once and **never changed**. File names and titles can change — `id` cannot.
 
 ---
 
-## 💡 Tips and Best Practices
+## 🧪 Testing
 
-### For Beginners
+```bash
+# Backend tests
+docker compose exec backend pytest tests/ --cov --cov-report=term
+docker compose exec backend ruff check app/
 
-**🌱 Start Small:**
-- Your first PR can be a typo fix
-- You can add an example to README
-- You can add code comments
-- These are also valuable contributions!
+# Frontend tests
+docker compose exec frontend npm test
+docker compose exec frontend npm run lint
 
-**📖 Learn:**
-- Review others' PRs
-- Follow Discussions
-- Ask questions, don't be shy!
+# Pre-PR checklist
+git rebase develop
+docker compose up --build
+docker compose exec backend pytest tests/
+docker compose exec frontend npm test
+```
 
-**🎯 Focus:**
-- Do one thing at a time
-- Send small, understandable PRs
-- Open an issue first for big changes
-
-### For Advanced Users
-
-**🏗️ Architectural Decisions:**
-- Discuss first if suggesting breaking change
-- Open RFC (Request for Comments)
-- Get community opinion
-
-**♻️ Sustainability:**
-- Consider backward compatibility
-- Make deprecation plan
-- Write migration guide
-
-**📊 Performance:**
-- Test Terraform plan times
-- Optimize resource count
-- Check state file size
+**Key test scenarios for quiz changes:**
+1. ✅ `correct_index` is **absent** from response before submit
+2. ✅ Auto-submit triggers when timer reaches zero
+3. ✅ Late submission is rejected by backend
 
 ---
 
 ## ❓ Frequently Asked Questions
 
-### 🆕 Beginners
+**Q: Can I develop without Docker?**
+A: It's possible but not recommended. Docker Compose gives you the full environment in one command and ensures consistency.
 
-**Q: I've never contributed to open source, where should I start?**
+**Q: What do I need to know to add course content?**
+A: Just Markdown/MDX! Check existing courses under `content/courses/` for formatting. Subject matter expertise matters more than coding knowledge here.
 
-A: Great starting point! We recommend:
-1. Check issues with `good-first-issue` label
-2. Fix typo in documentation
-3. Add usage example to README
-4. Chat with community in Discussions
+**Q: What if my PR is rejected?**
+A: Don't worry — it's a normal part of the process. Maintainers will explain why. Understand the feedback, fix it, and try again. Rejection is part of learning!
 
-**Q: What happens if my PR is rejected?**
-
-A: Don't worry! This is normal:
-- Maintainers will explain
-- Understand the reason, learn
-- Fix and try again
-- Or choose another topic
-
-Rejection is not negative, it's part of the learning process!
-
-### 🔧 Technical Issues
-
-**Q: I can't resolve Git conflict?**
-
-A: Step by step:
+**Q: How do I resolve a Git conflict?**
 ```bash
-# 1. Update main
-git checkout main
-git pull upstream main
-
-# 2. Return to your branch
-git checkout your-branch
-
-# 3. Rebase
-git rebase main
-
-# 4. If conflict occurs:
-git status  # Which files?
-
-# 5. Edit file, remove conflict markers
-# <<<<<<< HEAD
-# =======
-# >>>>>>> branch
-
-# 6. Add solution
-git add conflicted-file.tf
-git rebase --continue
-
-# 7. Push (may need force)
+git checkout develop && git pull upstream develop
+git checkout your-branch && git rebase develop
+# Edit conflicted files, remove conflict markers
+git add conflicted-file && git rebase --continue
 git push origin your-branch --force-with-lease
 ```
 
-Still having issues? Ask for help in the issue!
-
-### 🤝 Collaboration
-
-**Q: Someone else is also working on the same issue?**
-
-A: Get in touch:
-```
-Hello @user! I'm also working on this issue.
-Can we collaborate? I was working on [X part], 
-could you take [Y part]?
-```
-
-**Q: How long does maintainer respond?**
-
-A: Usually 2-5 business days. Be patient if not urgent.
-If urgent: Tag in Discussions or Discord.
-
-**Q: My PR was merged, what should I do?**
-
-A: Congratulations! 🎉
+**Q: My PR was merged — what now?**
 ```bash
-# 1. Update local
-git checkout main
-git pull upstream main
-
-# 2. Delete branch (optional)
+git checkout develop && git pull upstream develop
 git branch -d feature/your-branch
 git push origin --delete feature/your-branch
-
-# 3. Start new contribution!
+# Start your next contribution! 🚀
 ```
 
 ---
 
 ## 🆘 Help and Support
 
-### How to Get Help?
-
-**💬 GitHub Discussions** (Best way!)
-- [General questions](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/discussions/categories/q-a)
-- [Ideas](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/discussions/categories/ideas)
-- [Help requests](https://github.com/Bilgisayar-Kavramlari-Toplulugu/github-infra/discussions/categories/help)
-
-**🐛 GitHub Issues**
-- Bug reports
-- Feature requests
-- Technical problems
-
-**📧 Direct Contact**
-- Urgent security issues
-- Private matters
-- Direct message to maintainers
-
-### When to Ask for Help?
-
-Don't hesitate in these situations:
-- ⚠️ If you don't understand the error message
-- ⚠️ If you're having Git problems
-- ⚠️ If you're unsure about your approach
-- ⚠️ If you don't know how to test
-- ⚠️ If you're stuck in PR process
-- ⚠️ If you don't understand anything
+- **💬 GitHub Discussions** — General questions, ideas, help requests (best option!)
+- **🐛 GitHub Issues** — Bug reports, feature requests
+- **📧 Direct Contact** — Only for urgent security issues
 
 > **💡 Remember:** There are no stupid questions! Asking is the first step of learning.
 
@@ -1316,40 +1032,23 @@ Don't hesitate in these situations:
 
 ## 🎉 Your Contribution Was Accepted!
 
-### What Happens Next?
+- 🎊 Visible on your GitHub profile
+- 🏅 Your name in the project contributors list
+- 📄 A concrete full-stack project experience for your CV
 
-**✅ After Merge:**
-1. **Celebrate!** 🎊 Your first (or next) open source contribution!
-2. **Profile:** Visible on your GitHub profile
-3. **Contributors:** You have a place in project contributors list
-4. **Experience:** A concrete project you can add to your CV
+**Every contribution, no matter how small, is valuable:**
+✨ Code · 📖 Docs · 📚 Course content · 🐛 Bug reports · 💡 Ideas · 💬 Discussions
 
-**🔄 Continue:**
-- Check out more issues
-- Review others' PRs
-- Suggest new features
-- Mentor (help newcomers)
+**All of them strengthen LearnOps and the Turkish DevOps community!**
 
-### Thank You! 🙏
-
-Every contribution, no matter how small, is valuable:
-- ✨ Writing code
-- 📖 Documentation
-- 🐛 Bug reporting
-- 💡 Idea suggestions
-- 💬 Participating in discussions
-- 🎨 Design suggestions
-
-**All of them strengthen our community!**
+</details>
 
 ---
 
 ## 📜 License
 
-All contributions you make to this project will be published under the license specified in the `LICENSE` file in the repository. By contributing, you agree to this license.
+All contributions you make to this project will be published under the license specified in the [`LICENSE`](../LICENSE) file. By contributing, you agree to this license.
 
 ---
 
-**Last updated:** November 10, 2025
-
-**Happy coding!** 🚀
+**Son Güncelleme / Last Updated:** February 2026 · **Proje Lideri / Project Lead:** [@flovearth](https://github.com/flovearth)

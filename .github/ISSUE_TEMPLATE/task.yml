@@ -1,55 +1,154 @@
-name: Görev
-description: Yeni bir görev oluştur
-title: "[Görev]"
-labels: ["görev", "needs-triage"]
+name: 📋 Görev
+description: LearnOps için yeni bir geliştirme görevi oluştur
+title: "[Görev] "
+labels: ["task", "needs-triage"]
 assignees: []
 
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Görev
+
+        Yeni bir görev oluşturmak için bu formu doldurun.
+        Görev, bir sprint'e dahil edilmeden önce maintainer tarafından incelenir ve önceliklendirilir.
+  - type: dropdown
+    id: area
+    attributes:
+      label: 📦 İlgili Alan
+      description: Görev platformun hangi bölümüyle ilgili?
+      options:
+        - 🔐 Kimlik Doğrulama / Hesap Yönetimi
+        - 👤 Kullanıcı Profili
+        - 📚 Kurs ve İçerik Sistemi
+        - 📊 İlerleme Takibi
+        - 🧪 Quiz Sistemi
+        - 🏠 Dashboard
+        - 🗺️ Navigasyon / Arayüz
+        - 🧱 Altyapı / CI/CD / Deployment
+        - 🧪 Test
+        - 📄 Dokümantasyon
+        - 📚 Kurs İçeriği (MDX)
+        - 📄 Diğer
+    validations:
+      required: true
+  - type: dropdown
+    id: sprint
+    attributes:
+      label: 🗓️ İlgili Sprint
+      description: Bu görev hangi sprint kapsamında?
+      options:
+        - Sprint 1 — Proje altyapısı (Docker Compose, CI/CD, DB migration)
+        - Sprint 2 — OAuth giriş/kayıt akışı
+        - Sprint 3 — Kullanıcı profili, avatar, hesap yönetimi
+        - Sprint 4 — İçerik sistemi (MDX, seed script, kurs listeleme)
+        - Sprint 5 — Kurs detay, section görüntüleme, ilerleme takibi
+        - Sprint 6 — Quiz sistemi (attempt, submit, sonuç inceleme)
+        - Sprint 7 — Dashboard, sidebar navigasyon, UI/UX
+        - Sprint 8 — Güvenlik review, performans, production deployment
+        - Genel / Sprint dışı
+    validations:
+      required: false
   - type: textarea
     id: description
     attributes:
-      label: Açıklama
-      description: Görev hakkında detaylı bir açıklama girin
-      placeholder: "Görevi detaylı bir şekilde açıklayın..."
+      label: 📝 Açıklama
+      description: Görev hakkında detaylı bir açıklama girin. Ne yapılacak, neden gerekli?
+      placeholder: |
+        Örn: "Quiz attempt başlatıldığında backend'den dönen sorular randomize sırada gelmeli.
+        `QuizService.get_questions()` metodu `random.shuffle()` ile güncellenmeli.
+        `correct_index` hiçbir koşulda response'a eklenmemeli."
       render: markdown
     validations:
       required: true
-
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: ✅ Kabul Kriterleri
+      description: Görevin tamamlandığını nasıl anlayacağız? Somut ve ölçülebilir olsun.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+        - [ ] ...
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
   - type: dropdown
     id: priority
     attributes:
-      label: Öncelik
-      description: Öncelik seviyesini seçin
+      label: 🚨 Öncelik
+      description: Bu görevin öncelik seviyesi nedir?
       options:
-        - Yüksek
-        - Orta
-        - Düşük
+        - 🔴 Kritik — Sprint'i veya diğer görevleri bloklıyor
+        - 🟠 Yüksek — Sprint hedefi için gerekli
+        - 🟡 Orta — Önemli ama bloklayıcı değil
+        - 🟢 Düşük — Nice to have, zaman kalırsa
     validations:
       required: true
-
+  - type: dropdown
+    id: type
+    attributes:
+      label: 🔧 Görev Türü
+      description: Bu görev ne tür bir çalışma gerektiriyor?
+      options:
+        - ✨ Yeni özellik geliştirme
+        - 🐛 Hata düzeltmesi
+        - ♻️ Refactoring / teknik borç
+        - 🧪 Test yazımı
+        - 📄 Dokümantasyon
+        - 📚 Kurs içeriği hazırlama
+        - ⚙️ Altyapı / DevOps
+        - 🔍 Araştırma / spike
+    validations:
+      required: true
+  
   - type: input
     id: assignee
     attributes:
-      label: Atanan Kişi
-      description: Görevi atamak istediğiniz GitHub kullanıcı adı
+      label: 👤 Atanan Kişi
+      description: Görevi üstlenecek GitHub kullanıcı adı (boş bırakılabilir)
       placeholder: "kullaniciadi"
     validations:
       required: false
-
+      
   - type: input
     id: due_date
     attributes:
-      label: Bitiş Tarihi
-      description: Görev için bitiş tarihini belirtin (YYYY-AA-GG)
-      placeholder: "2025-12-31"
+      label: 📅 Bitiş Tarihi
+      description: Hedef bitiş tarihi (YYYY-AA-GG formatında)
+      placeholder: "2026-03-15"
     validations:
       required: false
-
-  - type: input
-    id: labels
+  - type: textarea
+    id: dependencies
     attributes:
-      label: Etiketler
-      description: Görevi kategorize etmek için etiketler ekleyin
-      placeholder: "frontend, hata"
+      label: 🔗 Bağımlılıklar
+      description: Bu görevin tamamlanabilmesi için önce bitmesi gereken başka görevler var mı?
+      placeholder: |
+        Örn: "#12 numaralı görev tamamlanmadan bu göreve başlanamaz."
     validations:
       required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: 💬 Ek Bilgiler
+      description: Teknik notlar, referans bağlantılar, dikkat edilmesi gereken noktalar.
+      placeholder: |
+        Örn: "Architecture-Overview.md → Quiz Güvenlik Mimarisi bölümüne bakınız.
+        correct_index submit öncesi client'a gönderilmemeli (NF-05)."
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Kontrol Listesi
+      options:
+        - label: Bu görev için daha önce açılmış bir issue olmadığını kontrol ettim
+          required: true
+        - label: Görev açıklaması ve kabul kriterleri yeterince net
+          required: false
+        - label: Bu projenin Katkıda Bulunma Rehberi'ni (CONTRIBUTING.md) okudum
+          required: false
