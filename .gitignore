@@ -205,3 +205,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# Alembic template files (auto-generated)
+backend/alembic/README
+backend/alembic/script.py.mako
