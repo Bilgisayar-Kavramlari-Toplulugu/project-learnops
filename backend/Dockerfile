@@ -1,23 +1,26 @@
-FROM python:3.11-slim
+FROM python:3.13.11-slim
 
 WORKDIR /app
 
-# Sistem bağımlılıklarını kur
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
+# Sistem bağımlılıkları
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Python kütüphanelerini kur
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Poetry kur
+RUN pip install poetry==2.3.2
 
-# Kodları kopyala
+# Bağımlılık dosyalarını kopyala
+COPY pyproject.toml poetry.lock* ./
+
+# Bağımlılıkları kur (venv olmadan, direkt sisteme)
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main --no-interaction --no-ansi
+
+# Kaynak kodu kopyala
 COPY . .
 
-# Entrypoint script'i kopyala ve executable yap
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+EXPOSE 8080
 
-# Uygulamayı başlat (migration + server)
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
