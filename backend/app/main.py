@@ -7,8 +7,8 @@ from app.database import engine
 app = FastAPI(
     title="LearnOps API",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/v1/docs",
+    redoc_url="/v1/redoc",
 )
 
 app.add_middleware(
@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/health")
+@app.get("/v1/health")
 async def health_check():
     try:
         async with engine.connect() as conn:
