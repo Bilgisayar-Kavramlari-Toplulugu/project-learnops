@@ -1,18 +1,26 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from jose import jwt
+import pytest
+from jose import JWTError, jwt
 
 from app.config import settings
 from app.services.jwt_service import (
     ALGORITHM,
+    _blacklisted_tokens,
     blacklist_token,
     create_access_token,
     create_refresh_token,
     decode_token,
     is_blacklisted,
-    _blacklisted_tokens,
 )
+
+
+@pytest.fixture(autouse=True)
+def clear_blacklist():
+    _blacklisted_tokens.clear()
+    yield
+    _blacklisted_tokens.clear()
 
 
 # ---------- 1. Token doğrulama başarılı ----------
@@ -73,11 +81,8 @@ def test_expired_access_token_raises():
     }
     token = jwt.encode(expired_payload, settings.jwt_secret, algorithm=ALGORITHM)
 
-    try:
+    with pytest.raises(JWTError):
         decode_token(token)
-        assert False, "JWTError beklendi ama fırlatılmadı"
-    except Exception as e:
-        assert "expired" in str(e).lower() or "ExpiredSignatureError" in type(e).__name__
 
 
 def test_invalid_signature_raises():
@@ -89,11 +94,8 @@ def test_invalid_signature_raises():
     }
     token = jwt.encode(payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM)
 
-    try:
+    with pytest.raises(JWTError):
         decode_token(token)
-        assert False, "JWTError beklendi ama fırlatılmadı"
-    except Exception:
-        pass  # JWTError fırlatıldı — doğru davranış
 
 
 # ---------- 3. Blacklist — logout sonrası çalışır ----------
