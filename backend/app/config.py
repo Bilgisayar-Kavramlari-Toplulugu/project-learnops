@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -29,15 +30,15 @@ class Settings(BaseSettings):
     GOOGLE_AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
     GOOGLE_TOKEN_URI: str = "https://oauth2.googleapis.com/token"
     GOOGLE_AUTH_PROVIDER_X509_CERT_URL: str = "https://www.googleapis.com/oauth2/v1/certs"
-    
+
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
-    
+
     # Token encryption
     TOKEN_ENCRYPTION_KEY: str = ""
-    
+
     # Environment
     ENVIRONMENT: str = "development"
     BACKEND_INTERNAL_URL: str = "http://backend:8000"
@@ -49,15 +50,15 @@ class Settings(BaseSettings):
     @property
     def google_client_id(self) -> str:
         return self.GOOGLE_CLIENT_ID.strip()
-    
+
     @property
     def google_client_secret(self) -> str:
         return self.GOOGLE_CLIENT_SECRET.strip()
-    
+
     @property
     def allowed_origins(self) -> List[str]:
         return self.ALLOWED_ORIGINS
-    
+
     @property
     def environment(self) -> str:
         return self.ENVIRONMENT
