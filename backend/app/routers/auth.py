@@ -265,7 +265,7 @@ async def google_callback(
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh(body: RefreshRequest):
+async def refresh(body: RefreshRequest):
     """Refresh token ile yeni access + refresh token üretir."""
     try:
         payload = decode_token(body.refresh_token)
@@ -306,7 +306,7 @@ def refresh(body: RefreshRequest):
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(
+async def logout(
     body: RefreshRequest,
     _current_user: str = Depends(get_current_user),
 ):
