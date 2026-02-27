@@ -292,7 +292,12 @@ def refresh(body: RefreshRequest):
     blacklist_token(jti)
 
     # Yeni token çifti üret
-    sub = payload["sub"]
+    sub: str | None = payload.get("sub")
+    if sub is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token geçersiz",
+        )
     new_jti = str(uuid.uuid4())
     return TokenResponse(
         access_token=jwt_create_access_token(sub),
@@ -310,6 +315,12 @@ def logout(
         payload = decode_token(body.refresh_token)
     except JWTError:
         return  # zaten geçersiz, işlem yok
+
+    if payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token gerekli",
+        )
 
     jti = payload.get("jti", "")
     blacklist_token(jti)
