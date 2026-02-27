@@ -1,15 +1,26 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from jose import JWTError
 import logging
 import httpx
 import secrets
+import uuid
 from datetime import datetime, timezone
 from sqlalchemy import select
 from app.config import settings
 from app.database import get_db
 from app.models.users import User, OAuthAccount
 from app.core.security import encrypt_token, create_access_token, create_refresh_token
+from app.deps import get_current_user
+from app.schemas.auth import RefreshRequest, TokenResponse
+from app.services.jwt_service import (
+    blacklist_token,
+    create_access_token as jwt_create_access_token,
+    create_refresh_token as jwt_create_refresh_token,
+    decode_token,
+    is_blacklisted,
+)
 
 router = APIRouter(prefix='/auth', tags=['authentication'])
 logger = logging.getLogger(__name__)
@@ -28,16 +39,16 @@ async def google_login(request: Request):
         if not client_id:
             logger.error("GOOGLE_CLIENT_ID not configured")
             return {"error": "Google OAuth not configured"}
-        
-        # 🔐 CSRF koruması için state parametresi
+
+        # CSRF koruması için state parametresi
         state = secrets.token_urlsafe(32)
-        
+
         # State'i session'da sakla
         request.session['oauth_state'] = state
-        
-        # 🔧 Redirect URI'yi settings'den al
+
+        # Redirect URI'yi settings'den al
         redirect_uri = _google_redirect_uri(request)
-        
+
         # Google refresh token için offline access_type kullanılmalı (scope değil)
         auth_url = (
             f'https://accounts.google.com/o/oauth2/v2/auth'
@@ -55,7 +66,6 @@ async def google_login(request: Request):
         else:
             response = RedirectResponse(url=auth_url, status_code=307)
 
-        # Session'e ek olarak state'i cookie'de tut (callback'te fallback doğrulama için)
         response.set_cookie(
             key="oauth_state",
             value=state,
@@ -65,7 +75,7 @@ async def google_login(request: Request):
             max_age=600,
         )
         return response
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -79,30 +89,40 @@ async def google_callback(
 ):
     """Handle Google OAuth callback"""
     try:
-        logger.info(f"=== CALLBACK RECEIVED ===")
+        logger.info("=== CALLBACK RECEIVED ===")
         logger.info(f"URL: {request.url}")
         logger.info(f"Query params: {dict(request.query_params)}")
-        
-        # 🔐 1. State kontrolü (CSRF koruması)
+
+        # State kontrolü (CSRF koruması)
         received_state = request.query_params.get('state')
-        expected_state = request.session.get('oauth_state') or request.cookies.get('oauth_state')
-        
+        expected_state = (
+            request.session.get('oauth_state')
+            or request.cookies.get('oauth_state')
+        )
+
         if not expected_state or received_state != expected_state:
-            logger.error(f"State mismatch. Expected: {expected_state}, Received: {received_state}")
-            raise HTTPException(status_code=400, detail="Invalid state parameter")
-        
-        # 2. Code'u al
+            logger.error(
+                f"State mismatch. "
+                f"Expected: {expected_state}, Received: {received_state}"
+            )
+            raise HTTPException(
+                status_code=400, detail="Invalid state parameter"
+            )
+
+        # Code'u al
         code = request.query_params.get('code')
         logger.info(f"Code: {code[:20] if code else 'None'}...")
-        
+
         if not code:
             logger.error("No code in request")
-            raise HTTPException(status_code=400, detail="Code not found")
-        
-        # 3. Exchange code for tokens
+            raise HTTPException(
+                status_code=400, detail="Code not found"
+            )
+
+        # Exchange code for tokens
         logger.info("Exchanging code for tokens...")
         redirect_uri = _google_redirect_uri(request)
-        
+
         async with httpx.AsyncClient() as client:
             token_response = await client.post(
                 'https://oauth2.googleapis.com/token',
@@ -114,47 +134,58 @@ async def google_callback(
                     'grant_type': 'authorization_code'
                 }
             )
-            logger.info(f"Token response status: {token_response.status_code}")
+            logger.info(
+                f"Token response status: {token_response.status_code}"
+            )
             tokens = token_response.json()
             logger.info(f"Token response keys: {tokens.keys()}")
-            
+
             if 'error' in tokens:
                 logger.error(f"Token error: {tokens}")
-                raise HTTPException(status_code=400, detail=tokens.get('error_description', 'Token exchange failed'))
-        
-        # 4. Get user info
+                raise HTTPException(
+                    status_code=400,
+                    detail=tokens.get(
+                        'error_description', 'Token exchange failed'
+                    ),
+                )
+
+        # Get user info
         logger.info("Getting user info...")
         async with httpx.AsyncClient() as client:
             user_response = await client.get(
                 'https://www.googleapis.com/oauth2/v1/userinfo',
-                headers={'Authorization': f'Bearer {tokens["access_token"]}'}
+                headers={
+                    'Authorization': f'Bearer {tokens["access_token"]}'
+                },
             )
             logger.info(f"User info status: {user_response.status_code}")
             user_info = user_response.json()
             logger.info(f"User email: {user_info.get('email')}")
-        
-        # 5. Get or create user
+
+        # Get or create user
         result = await db.execute(
             select(User).where(User.email == user_info['email'])
         )
         user = result.scalar_one_or_none()
-        
+
         if not user:
             user = User(
                 email=user_info['email'],
-                display_name=user_info.get('name', user_info['email'].split('@')[0]),
+                display_name=user_info.get(
+                    'name', user_info['email'].split('@')[0]
+                ),
                 avatar_type='initials',
                 last_login_at=datetime.now(timezone.utc),
             )
             db.add(user)
             await db.flush()
             await db.refresh(user)
-            logger.info(f"✅ New user created: {user.email}")
+            logger.info(f"New user created: {user.email}")
         else:
             user.last_login_at = datetime.now(timezone.utc)
-            logger.info(f"✅ Existing user logged in: {user.email}")
-        
-        # 6. OAuth account'u kaydet/güncelle (refresh token opsiyonel)
+            logger.info(f"Existing user logged in: {user.email}")
+
+        # OAuth account'u kaydet/güncelle
         oauth_result = await db.execute(
             select(OAuthAccount).where(
                 OAuthAccount.provider == 'google',
@@ -164,13 +195,17 @@ async def google_callback(
         oauth_account = oauth_result.scalar_one_or_none()
         refresh_token_encrypted = None
         if 'refresh_token' in tokens:
-            refresh_token_encrypted = encrypt_token(tokens['refresh_token'])
+            refresh_token_encrypted = encrypt_token(
+                tokens['refresh_token']
+            )
 
         if oauth_account:
             oauth_account.provider_email = user_info['email']
             if refresh_token_encrypted is not None:
-                oauth_account.refresh_token_encrypted = refresh_token_encrypted
-            logger.info("✅ OAuth account updated")
+                oauth_account.refresh_token_encrypted = (
+                    refresh_token_encrypted
+                )
+            logger.info("OAuth account updated")
         else:
             oauth_account = OAuthAccount(
                 user_id=user.id,
@@ -180,16 +215,20 @@ async def google_callback(
                 refresh_token_encrypted=refresh_token_encrypted
             )
             db.add(oauth_account)
-            logger.info("✅ New OAuth account created")
+            logger.info("New OAuth account created")
         await db.commit()
-        
-        # 7. JWT token'ları üret
-        access_token = create_access_token({"sub": str(user.id), "email": user.email})
+
+        # JWT token'ları üret
+        access_token = create_access_token(
+            {"sub": str(user.id), "email": user.email}
+        )
         refresh_token = create_refresh_token({"sub": str(user.id)})
-        
-        # 8. Cookie'ye set et (httpOnly)
+
+        # Cookie'ye set et (httpOnly)
         response = RedirectResponse(
-            url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard",
+            url=(
+                f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"
+            ),
             status_code=302,
         )
         response.set_cookie(
@@ -197,32 +236,80 @@ async def google_callback(
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT == "production",
-            samesite="lax",  # OAuth callback cross-site redirect içerdiğinden Strict yerine lax
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
-        
+
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT == "production",
-            samesite="lax",  # OAuth callback cross-site redirect içerdiğinden Strict yerine lax
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
         )
-        
-        # 9. State'i temizle
+
+        # State'i temizle
         request.session.pop('oauth_state', None)
         response.delete_cookie("oauth_state")
-        
-        # 10. Başarılı yanıt sonrası dashboard'a yönlendir
+
         return response
-        
+
     except HTTPException:
         await db.rollback()
         raise
     except Exception as e:
         await db.rollback()
-        logger.error(f"❌ Callback error: {str(e)}")
+        logger.error(f"Callback error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# 🔧 Test endpoint'leri KALDIRILDI (mock-callback ve test-db-only silindi)
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh(body: RefreshRequest):
+    """Refresh token ile yeni access + refresh token üretir."""
+    try:
+        payload = decode_token(body.refresh_token)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token geçersiz veya süresi dolmuş",
+        )
+
+    if payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token gerekli",
+        )
+
+    jti = payload.get("jti", "")
+    if is_blacklisted(jti):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token iptal edilmiş",
+        )
+
+    # Eski refresh token'ı blacklist'e al (token rotation)
+    blacklist_token(jti)
+
+    # Yeni token çifti üret
+    sub = payload["sub"]
+    new_jti = str(uuid.uuid4())
+    return TokenResponse(
+        access_token=jwt_create_access_token(sub),
+        refresh_token=jwt_create_refresh_token(sub, new_jti),
+    )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    body: RefreshRequest,
+    _current_user: str = Depends(get_current_user),
+):
+    """Refresh token'ı blacklist'e ekleyerek logout yapar."""
+    try:
+        payload = decode_token(body.refresh_token)
+    except JWTError:
+        return  # zaten geçersiz, işlem yok
+
+    jti = payload.get("jti", "")
+    blacklist_token(jti)

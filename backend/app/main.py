@@ -6,7 +6,7 @@ from app.config import settings
 import app.models  # noqa: F401 - ensure all SQLAlchemy models are registered
 from app.database import get_db
 from app.routers import auth
-from starlette.middleware.sessions import SessionMiddleware 
+from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI(
     title="LearnOps API",
@@ -33,6 +33,7 @@ app.add_middleware(
 
 
 app.include_router(auth.router, prefix="/v1")
+
 
 @app.get("/v1/health")
 async def health_check(db: AsyncSession = Depends(get_db)):
