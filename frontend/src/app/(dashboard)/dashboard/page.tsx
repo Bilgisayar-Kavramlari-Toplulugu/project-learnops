@@ -64,19 +64,7 @@ export default function DashboardPage() {
               </p>
             </CardContent>
           </Card>
-          <Card className="border-blue-100/80 bg-white/82 shadow-lg shadow-blue-100/35 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-black/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                Moduler Alan 02
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <p>Ikinci blok action veya bildirim odakli icerikler icin ayrildi.</p>
-              <p className="rounded-xl border border-dashed border-blue-200/90 px-3 py-3 text-xs dark:border-slate-700">
-                Placeholder: sinavlar, son aktiviteler veya quick actions.
-              </p>
-            </CardContent>
-          </Card>
+          
         </div>
       </section>
     </DashboardShell>
