@@ -1,9 +1,9 @@
 export default function LoginLeftCard() {
   const features = [
-    "Ucretsiz ve acik kaynak egitim",
-    "Topluluk katilimli icerikler",
-    "Interaktif quiz sistemi",
-    "Docker ve DevOps odakli dersler",
+    "Ücretsiz ve açık kaynak eğitim",
+    "Topluluk katılımlı içerikler",
+    "İnteraktif quiz sistemi",
+    "Docker ve DevOps odaklı dersler",
   ];
 
   return (
@@ -14,10 +14,10 @@ export default function LoginLeftCard() {
       <div className="mt-2 h-1 w-24 rounded-full bg-cyan-500" />
 
       <p className="mt-6 text-2xl font-semibold text-slate-100">
-        DevOps Ogrenme Platformu
+        DevOps Öğrenme Platformu
       </p>
       <p className="mt-2 text-sm text-slate-400">
-        Turkiye&apos;nin acik kaynak DevOps platformu
+        Türkiye&apos;nin açık kaynak DevOps platformu
       </p>
 
       <ul className="mt-10 space-y-3">
