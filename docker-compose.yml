@@ -1,10 +1,6 @@
 services:
   db:
-<<<<<<< HEAD
     image: postgres:17-alpine
-=======
-    image: postgres:15-alpine
->>>>>>> develop
     container_name: learnops_db
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
