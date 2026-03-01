@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
 from app.config import settings
-from app.database import engine
+from app.routers import auth
 
 app = FastAPI(
     title="LearnOps API",
@@ -19,18 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix="/v1")
+
 @app.get("/v1/health")
 async def health_check():
-    try:
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-        db_status = "ok"
-    except Exception as e:
-        db_status = f"error: {str(e)}"
-
-    return {
-        "status": "ok",
-        "version": "1.0.0",
-        "database": db_status,
-        "environment": settings.environment,
-    }
+    return {"status": "ok", "version": "1.0.0"}
