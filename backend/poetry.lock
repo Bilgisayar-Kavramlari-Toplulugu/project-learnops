@@ -1051,6 +1051,7 @@ dev = ["pre-commit", "tox"]
 testing = ["coverage", "pytest", "pytest-benchmark"]
 
 [[package]]
+<<<<<<< HEAD
 name = "psycopg2-binary"
 version = "2.9.11"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
@@ -1128,6 +1129,8 @@ files = [
 ]
 
 [[package]]
+=======
+>>>>>>> develop
 name = "pyasn1"
 version = "0.6.2"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
@@ -2026,4 +2029,8 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
+<<<<<<< HEAD
 content-hash = "f8688ad7dda203572b8535566890bade1c7cc87dc9aab36a4a4e479135545dd3"
+=======
+content-hash = "8c50d07f12d939775f713c827140e88f153a2ddd48859bf85db37db2e17a162c"
+>>>>>>> develop
