@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from app.config import settings
 from app.database import engine
+from app.routers.auth import router as auth_router
 
 app = FastAPI(
     title="LearnOps API",
     version="1.0.0",
-    docs_url="/v1/docs",
-    redoc_url="/v1/redoc",
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 app.add_middleware(
@@ -19,7 +20,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/v1/health")
+app.include_router(auth_router)
+
+@app.get("/health")
 async def health_check():
     try:
         async with engine.connect() as conn:
