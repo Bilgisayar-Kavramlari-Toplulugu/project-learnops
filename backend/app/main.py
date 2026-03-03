@@ -5,6 +5,8 @@ from sqlalchemy import text
 from app.config import settings
 from app.database import engine
 
+from app.middleware.rate_limiting import RateLimiterMiddleware
+
 app = FastAPI(
     title="LearnOps API",
     version="1.0.0",
@@ -19,6 +21,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate Limiting
+app.add_middleware(RateLimiterMiddleware)
 
 @app.get("/v1/health")
 async def health_check():
