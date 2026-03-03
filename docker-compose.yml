@@ -28,6 +28,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    extra_hosts:
+      - "accounts.google.com:142.250.185.46"
+      - "oauth2.googleapis.com:142.250.185.46"
+      - "www.googleapis.com:142.250.185.46"
 
 volumes:
   postgres_data:

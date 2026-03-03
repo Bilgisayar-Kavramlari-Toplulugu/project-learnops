@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+
 import logging
 import httpx
 import uuid 
@@ -19,7 +20,7 @@ async def google_login():
             logger.error("GOOGLE_CLIENT_ID not configured")
             return {"error": "Google OAuth not configured"}
         
-        redirect_uri = 'http://localhost:8000/auth/google/callback'
+        redirect_uri = 'http://localhost:8000/v1/auth/google/callback'  
         auth_url = (
             f'https://accounts.google.com/o/oauth2/v2/auth'
             f'?client_id={settings.GOOGLE_CLIENT_ID}'
@@ -35,10 +36,29 @@ async def google_login():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get('/google/callback')
-async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
+async def google_callback(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
     """Handle Google OAuth callback"""
     try:
+        # Tüm parametreleri logla
+        logger.info(f"=== CALLBACK RECEIVED ===")
+        logger.info(f"URL: {request.url}")
+        logger.info(f"Query params: {dict(request.query_params)}")
+        
+        code = request.query_params.get('code')
+        logger.info(f"Code: {code[:20] if code else 'None'}...")
+        
+        if not code:
+            logger.error("No code in request")
+            raise HTTPException(status_code=400, detail="Code not found")
+        
         # 1. Exchange code for tokens
+        logger.info("Exchanging code for tokens...")
+        logger.info(f"Client ID: {settings.GOOGLE_CLIENT_ID[:10]}...")
+        logger.info(f"Redirect URI: http://localhost:8000/v1/auth/google/callback")
+        
         async with httpx.AsyncClient() as client:
             token_response = await client.post(
                 'https://oauth2.googleapis.com/token',
@@ -46,53 +66,31 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
                     'code': code,
                     'client_id': settings.GOOGLE_CLIENT_ID,
                     'client_secret': settings.GOOGLE_CLIENT_SECRET,
-                    'redirect_uri': 'http://localhost:8000/auth/google/callback',
+                    'redirect_uri': 'http://localhost:8000/v1/auth/google/callback',
                     'grant_type': 'authorization_code'
                 }
             )
+            logger.info(f"Token response status: {token_response.status_code}")
             tokens = token_response.json()
+            logger.info(f"Token response keys: {tokens.keys()}")
+            
+            if 'error' in tokens:
+                logger.error(f"Token error: {tokens}")
+                raise HTTPException(status_code=400, detail=tokens.get('error_description', 'Token exchange failed'))
         
         # 2. Get user info
+        logger.info("Getting user info...")
         async with httpx.AsyncClient() as client:
             user_response = await client.get(
                 'https://www.googleapis.com/oauth2/v1/userinfo',
                 headers={'Authorization': f'Bearer {tokens["access_token"]}'}
             )
+            logger.info(f"User info status: {user_response.status_code}")
             user_info = user_response.json()
+            logger.info(f"User email: {user_info.get('email')}")
         
-        # 3. Get or create user
-        result = await db.execute(
-            select(User).where(User.email == user_info['email'])
-        )
-        user = result.scalar_one_or_none()
-        
-        if not user:
-            user = User(
-                email=user_info['email'],
-                full_name=user_info.get('name'),
-                avatar_url=user_info.get('picture'),
-                is_active=True,
-                is_superuser=False
-            )
-            db.add(user)
-            await db.commit()
-            await db.refresh(user)
-        
-        # 4. Return user info (NO JWT tokens )
-        return {
-            "message": "Login successful",
-            "user": {
-                "id": str(user.id),
-                "email": user.email,
-                "name": user.full_name,
-                "avatar": user.avatar_url
-            }
-        }
-        
-    except Exception as e:
-        logger.error(f"Callback error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
+        # 3. Get or create user (kodun devamı)
+        # ...
 #  Mock endpoint for testing 
 @router.get('/google/mock-callback')
 async def mock_google_callback(db: AsyncSession = Depends(get_db)):
