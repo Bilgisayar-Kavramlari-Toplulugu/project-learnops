@@ -115,7 +115,7 @@ class Enrollment(Base):
     course_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("courses.id", ondelete="CASCADE")
     )
-    enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text('now()'))
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     progress_percent: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0.00)
 
@@ -163,7 +163,3 @@ class UserProgress(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="progress")
     section: Mapped["Section"] = relationship("Section", back_populates="user_progress")
-    
-
-# Forward declaration for type hints (imported at end of module)
-User = None  # Will be imported from users module

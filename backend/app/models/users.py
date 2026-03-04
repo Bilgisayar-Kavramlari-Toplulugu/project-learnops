@@ -58,6 +58,11 @@ class OAuthAccount(BaseModel):
     """
     __tablename__ = "oauth_accounts"
 
+    __table_args__ = (
+    UniqueConstraint('provider', 'provider_user_id', name='uq_oauth_provider_user'),
+    CheckConstraint("provider IN ('google', 'linkedin', 'github')", name='chk_provider'),
+    )
+
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
     )
@@ -66,8 +71,7 @@ class OAuthAccount(BaseModel):
     provider_user_id: Mapped[str] = mapped_column(String(255), nullable=False)
     provider_email: Mapped[str] = mapped_column(String(255), nullable=False)
     refresh_token_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-
+    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text('now()'))
     user: Mapped["User"] = relationship("User", back_populates="oauth_accounts")
 
 
