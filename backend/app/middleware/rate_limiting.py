@@ -40,6 +40,10 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         return (100, 60)
 
     async def dispatch(self, request: Request, call_next):
+        # Skip OPTIONS preflight requests
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         client_ip = self.get_client_ip(request)
         path = request.url.path
 
@@ -62,6 +66,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             logger.warning(f"Rate limit exceeded: {client_ip} on {path}")
             return JSONResponse(
                 status_code=429,
+                headers={"Retry-After": str(retry_after)},
                 content={
                     "error": "Too Many Requests",
                     "message": "Rate limit exceeded. Please try again later.",
@@ -69,7 +74,8 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
                 }
             )
         else:
-            # Increment count
+            # TODO: In-memory store is not shared across instances.
+            # Replace with Redis-based solution in v2.0 for multi-instance correctness.
             self.request_counts[client_ip][route_key] = (last_reset, count + 1)
 
         response = await call_next(request)
