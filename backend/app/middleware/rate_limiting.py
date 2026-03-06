@@ -8,10 +8,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+_instance: "RateLimiterMiddleware | None" = None
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
+        global _instance
+        _instance = self
         # IP -> route_pattern -> (timestamp, count)
         self.request_counts: Dict[str, Dict[str, Tuple[datetime, int]]] = defaultdict(
             lambda: defaultdict(lambda: (datetime.now(), 0))

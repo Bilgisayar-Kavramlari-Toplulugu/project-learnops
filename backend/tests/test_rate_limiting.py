@@ -4,17 +4,28 @@ BE-09: Tests for rate limiting implementation
 
 Tests real middleware behavior without mocks.
 """
-import asyncio
 
 import pytest
 from datetime import datetime,timedelta
 from httpx import AsyncClient, ASGITransport
 from app.main import app
 
-
 @pytest.fixture
 def client_ip():
     return "203.0.113.1"
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset rate limiter before each test."""
+
+    from app.middleware.rate_limiting import _instance
+
+    if _instance is not None:
+        _instance.request_counts.clear()
+    yield
+
+
 
 @pytest.mark.asyncio
 async def test_auth_rate_limit_exceeded():
@@ -174,7 +185,7 @@ async def test_independent_endpoint_patterns():
         )
         assert r.status_code == 429, "Auth should be rate limited"
 
-        # Ama API hala çalışmalı (aynı IP!)
+        # API hala çalışmalı (aynı IP!)
         r = await ac.get(
             "/api/users",
             headers={"X-Forwarded-For": "203.0.113.6"}
@@ -205,44 +216,22 @@ async def test_options_preflight_exempt():
         assert r.status_code != 429, "First POST should work (OPTIONS not counted)"
 
 
-# @pytest.mark.asyncio
-# async def test_window_reset_allows_new_requests(client_ip):
-#     """Window süresi geçtikçe sayac sıfırlanmalı, yeni istekler geçmeli."""
-#     from app.middleware.rate_limiting import RateLimiterMiddleware
-#     from collections import defaultdict
-#
-#     # Sayacı geçmiş bir zamana al, window dolmuş gibi davransın
-#     past_time = datetime.now() - timedelta(seconds=61)
-#     for middleware in app.middleware_stack.__iter__():
-#         if isinstance(middleware, RateLimiterMiddleware):
-#             middleware.request_counts[client_ip]["/auth"] = (past_time, 10)
-#             break
-#
-#     async with AsyncClient(
-#         transport=ASGITransport(app=app), base_url="http://test"
-#     ) as ac:
-#         r = await ac.get(
-#             "/auth/google/login",
-#             headers={"X-Forwarded-For": client_ip}
-#         )
-#         assert r.status_code != 429
-
 @pytest.mark.asyncio
-async def test_window_reset_allows_new_requests(client_ip):
-    """Window reset - gerçek zamanla test et."""
-    from app.middleware.rate_limiting import RateLimiterMiddleware
+async def test_window_reset_allows_new_requests():
+    """Window süresi geçtikçe sayaç sıfırlanmalı, yeni istekler geçmeli."""
+    from app.middleware.rate_limiting import _instance
 
-    # 11 istek yap (rate limit aş)
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        for _ in range(11):
-            await ac.get("/auth/google/login", headers={"X-Forwarded-For": client_ip})
+    test_ip = "203.0.113.99"
 
-        # 65 saniye bekle (window reset)
-        await asyncio.sleep(65)
+    # 61 saniye öncesine set et — window dolmuş gibi davransın
+    past_time = datetime.now() - timedelta(seconds=61)
+    _instance.request_counts[test_ip]["/auth"] = (past_time, 10)
 
-        # Yeni istek geçmeli
-        r = await ac.get("/auth/google/login", headers={"X-Forwarded-For": client_ip})
-        assert r.status_code != 429  # Window reset ✅
+    async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        r = await ac.post("/auth/login", headers={"X-Forwarded-For": test_ip})
+        assert r.status_code != 429  # Window reset — geçmeli
 
 
 @pytest.mark.asyncio
