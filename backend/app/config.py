@@ -14,8 +14,12 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "learnops_dev"
     DATABASE_URL: str = "postgresql+asyncpg://postgres:localdev123@db:5432/learnops_dev"
 
-    # JWT
+    # JWT Settings (BE-07 ile ortak)
     JWT_SECRET: str = "change-me-in-production-min-32-chars"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
 
     # OAuth (matching .env UPPERCASE)
     GOOGLE_CLIENT_ID: str = ""
@@ -36,16 +40,17 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = "development"
     BACKEND_INTERNAL_URL: str = "http://backend:8000"
+    BACKEND_PUBLIC_URL: str = "http://localhost:8000"
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
     # For backward compatibility with existing code that uses lowercase
     @property
     def google_client_id(self) -> str:
-        return self.GOOGLE_CLIENT_ID
+        return self.GOOGLE_CLIENT_ID.strip()
     
     @property
     def google_client_secret(self) -> str:
-        return self.GOOGLE_CLIENT_SECRET
+        return self.GOOGLE_CLIENT_SECRET.strip()
     
     @property
     def allowed_origins(self) -> List[str]:
