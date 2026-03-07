@@ -1,12 +1,23 @@
 """User, OAuth account, and deleted account models (MVP v1.2 compliant)"""
-from sqlalchemy import String, ForeignKey, Text, DateTime, BigInteger, Identity
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func, text
-from .base import BaseModel, Base
 import uuid
 from datetime import datetime
 from typing import Optional
+
+from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Identity,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func, text
+
+from .base import Base, BaseModel
 
 
 class User(BaseModel):
@@ -23,11 +34,17 @@ class User(BaseModel):
     """
     __tablename__ = "users"
 
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255), unique=True, index=True, nullable=False
+    )
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    avatar_type: Mapped[str] = mapped_column(String(20), nullable=False, default='initials')
-    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    avatar_type: Mapped[str] = mapped_column(
+        String(20), nullable=False, default='initials'
+    )
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Relationships
     oauth_accounts: Mapped[list] = relationship(
@@ -48,10 +65,12 @@ class OAuthAccount(BaseModel):
     """OAuth provider account linkage (MVP v1.2: NO access_token storage)
     
     Security model from MVP spec:
-    - provider_user_id: OAuth provider's unique user ID (sub, id, etc.) — PLAIN TEXT (public in provider)
+    - provider_user_id: OAuth provider's unique user ID (sub, id, etc.)
+      — PLAIN TEXT (public in provider)
     - provider_email: Email from OAuth provider — PLAIN TEXT (public in provider)
     - refresh_token_encrypted: AES-256 encrypted IF provider supplies it
-      Google: supplies (offline_access scope) | LinkedIn: supplies | GitHub: DOES NOT supply
+      Google: supplies (offline_access scope) | LinkedIn: supplies |
+      GitHub: DOES NOT supply
     - NO access_token: Each session fetches fresh access token from provider
     
     Constraint: UNIQUE(provider, provider_user_id) — one account per provider per user
@@ -59,8 +78,15 @@ class OAuthAccount(BaseModel):
     __tablename__ = "oauth_accounts"
 
     __table_args__ = (
-    UniqueConstraint('provider', 'provider_user_id', name='uq_oauth_provider_user'),
-    CheckConstraint("provider IN ('google', 'linkedin', 'github')", name='chk_provider'),
+        UniqueConstraint(
+            'provider',
+            'provider_user_id',
+            name='uq_oauth_provider_user',
+        ),
+        CheckConstraint(
+            "provider IN ('google', 'linkedin', 'github')",
+            name='chk_provider',
+        ),
     )
 
     user_id: Mapped[uuid.UUID] = mapped_column(
@@ -70,8 +96,14 @@ class OAuthAccount(BaseModel):
     # provider: 'google' | 'linkedin' | 'github' (validated by CHECK constraint)
     provider_user_id: Mapped[str] = mapped_column(String(255), nullable=False)
     provider_email: Mapped[str] = mapped_column(String(255), nullable=False)
-    refresh_token_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text('now()'))
+    refresh_token_encrypted: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True
+    )
+    linked_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text('now()'),
+    )
     user: Mapped["User"] = relationship("User", back_populates="oauth_accounts")
 
 
@@ -80,6 +112,16 @@ class DeletedAccount(Base):
     __tablename__ = "deleted_accounts"
 
     id: Mapped[int] = mapped_column(BigInteger, Identity(), primary_key=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
-    deleted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    deletion_reason: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, server_default=text("'user_request'"))
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), nullable=False
+    )
+    deleted_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    deletion_reason: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        server_default=text("'user_request'"),
+    )
