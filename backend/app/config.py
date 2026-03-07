@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     BACKEND_INTERNAL_URL: str = "http://backend:8000"
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
+    FRONTEND_PUBLIC_URL: str = "http://localhost:3000"
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
 
     # For backward compatibility with existing code that uses lowercase

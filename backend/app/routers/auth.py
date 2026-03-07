@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, Response
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
@@ -75,7 +75,6 @@ async def google_login(request: Request):
 @router.get('/google/callback')
 async def google_callback(
     request: Request,
-    response: Response,
     db: AsyncSession = Depends(get_db)
 ):
     """Handle Google OAuth callback"""
@@ -148,51 +147,50 @@ async def google_callback(
                 last_login_at=datetime.now(timezone.utc),
             )
             db.add(user)
-            await db.commit()
-            await db.refresh(user)
+            await db.flush()
             logger.info(f"✅ New user created: {user.email}")
         else:
             user.last_login_at = datetime.now(timezone.utc)
-            await db.commit()
             logger.info(f"✅ Existing user logged in: {user.email}")
         
-        # 6. OAuth account'u kaydet (refresh token varsa)
-        if 'refresh_token' in tokens:
-            # Önce var mı kontrol et
-            oauth_result = await db.execute(
-                select(OAuthAccount).where(
-                    OAuthAccount.provider == 'google',
-                    OAuthAccount.provider_user_id == user_info['id']
-                )
+        # 6. OAuth account'u kaydet/güncelle (refresh token opsiyonel)
+        oauth_result = await db.execute(
+            select(OAuthAccount).where(
+                OAuthAccount.provider == 'google',
+                OAuthAccount.provider_user_id == user_info['id']
             )
-            oauth_account = oauth_result.scalar_one_or_none()
-            
-            # Refresh token'ı şifrele (access_token saklanmıyor!)
+        )
+        oauth_account = oauth_result.scalar_one_or_none()
+        refresh_token_encrypted = None
+        if 'refresh_token' in tokens:
             refresh_token_encrypted = encrypt_token(tokens['refresh_token'])
-            
-            if oauth_account:
-                # Mevcut kaydı güncelle
+
+        if oauth_account:
+            oauth_account.provider_email = user_info['email']
+            if refresh_token_encrypted is not None:
                 oauth_account.refresh_token_encrypted = refresh_token_encrypted
-                logger.info("✅ OAuth account updated")
-            else:
-                # Yeni kayıt oluştur
-                oauth_account = OAuthAccount(
-                    user_id=user.id,
-                    provider='google',
-                    provider_user_id=user_info['id'],
-                    provider_email=user_info['email'],
-                    refresh_token_encrypted=refresh_token_encrypted
-                )
-                db.add(oauth_account)
-                logger.info("✅ New OAuth account created")
-            
-            await db.commit()
+            logger.info("✅ OAuth account updated")
+        else:
+            oauth_account = OAuthAccount(
+                user_id=user.id,
+                provider='google',
+                provider_user_id=user_info['id'],
+                provider_email=user_info['email'],
+                refresh_token_encrypted=refresh_token_encrypted
+            )
+            db.add(oauth_account)
+            logger.info("✅ New OAuth account created")
+        await db.commit()
         
         # 7. JWT token'ları üret
         access_token = create_access_token({"sub": str(user.id), "email": user.email})
         refresh_token = create_refresh_token({"sub": str(user.id)})
         
         # 8. Cookie'ye set et (httpOnly)
+        response = RedirectResponse(
+            url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard",
+            status_code=302,
+        )
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -215,20 +213,14 @@ async def google_callback(
         request.session.pop('oauth_state', None)
         response.delete_cookie("oauth_state")
         
-        # 10. Başarılı yanıt (Kullanıcı bilgileri)
-        return {
-            "message": "Login successful",
-            "user": {
-                "id": str(user.id),
-                "email": user.email,
-                "name": user.display_name,
-                "avatar_type": user.avatar_type
-            }
-        }
+        # 10. Başarılı yanıt sonrası dashboard'a yönlendir
+        return response
         
     except HTTPException:
+        await db.rollback()
         raise
     except Exception as e:
+        await db.rollback()
         logger.error(f"❌ Callback error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 

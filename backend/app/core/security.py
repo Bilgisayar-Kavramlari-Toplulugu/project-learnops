@@ -61,10 +61,13 @@ def create_refresh_token(data: dict) -> str:
     to_encode.update({"exp": expire, "type": "refresh"})
     return jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
-def verify_token(token: str) -> dict:
-    """Verify JWT token"""
+def verify_token(token: str, expected_type: str = "access") -> dict:
+    """Verify JWT token and enforce token type."""
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        token_type = payload.get("type")
+        if token_type != expected_type:
+            raise HTTPException(status_code=401, detail="Invalid token type")
         return payload
     except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")

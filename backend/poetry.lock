@@ -712,6 +712,18 @@ files = [
 ]
 
 [[package]]
+name = "itsdangerous"
+version = "2.2.0"
+description = "Safely pass data to untrusted environments and back."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef"},
+    {file = "itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173"},
+]
+
+[[package]]
 name = "librt"
 version = "0.8.1"
 description = "Mypyc runtime library"
@@ -1953,4 +1965,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "8c50d07f12d939775f713c827140e88f153a2ddd48859bf85db37db2e17a162c"
+content-hash = "15cd8782e574e53e649ec8d12a61b5e593563629a8c902c1d683641e7a9bcd20"

@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.13.11-slim
 
 WORKDIR /app
 
@@ -16,8 +16,7 @@ COPY pyproject.toml poetry.lock* ./
 
 # Bağımlılıkları kur (venv olmadan, direkt sisteme)
 RUN poetry config virtualenvs.create false \
-    && poetry install --only main --no-interaction --no-ansi \
-    && pip install --no-cache-dir itsdangerous==2.2.0
+    && poetry install --only main --no-interaction --no-ansi
 
 # Kaynak kodu kopyala
 COPY . .
