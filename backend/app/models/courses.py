@@ -1,11 +1,27 @@
 """Course, section, enrollment, and user progress models (MVP v1.2 compliant)"""
-from sqlalchemy import String, Integer, ForeignKey, Boolean, Numeric, DateTime, UniqueConstraint, Text, text
-from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
-from .base import BaseModel, Base
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .base import Base, BaseModel
+
+if TYPE_CHECKING:
+    from .quizzes import Quiz
+    from .users import User
 
 
 class Course(BaseModel):
@@ -16,7 +32,8 @@ class Course(BaseModel):
     - title: Course display name
     - description: Course overview text
     - category: Course category for filtering (e.g., 'programlama', 'web')
-    - difficulty: Difficulty level for filtering ('beginner' | 'intermediate' | 'advanced')
+    - difficulty: Difficulty level for filtering
+      ('beginner' | 'intermediate' | 'advanced')
     - duration_minutes: Estimated course duration in minutes (seeded from meta.json)
     - is_published: Whether course is visible to users (false = draft)
     
@@ -24,10 +41,14 @@ class Course(BaseModel):
     """
     __tablename__ = "courses"
 
-    slug: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    slug: Mapped[str] = mapped_column(
+        String(100), unique=True, index=True, nullable=False
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    category: Mapped[Optional[str]] = mapped_column(String(100), index=True, nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(
+        String(100), index=True, nullable=True
+    )
     difficulty: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -84,7 +105,8 @@ class Section(BaseModel):
 
 
 class Enrollment(Base):
-    """User course enrollment with progress tracking (NO created_at/updated_at per MVP v1.2)
+    """User course enrollment with progress tracking
+    (NO created_at/updated_at per MVP v1.2)
     
     MVP SPEC: This table does NOT have created_at/updated_at fields.
     Timeline is tracked via enrolled_at timestamp only.
@@ -107,7 +129,10 @@ class Enrollment(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), nullable=False
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text('gen_random_uuid()'),
+        nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
@@ -115,9 +140,17 @@ class Enrollment(Base):
     course_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("courses.id", ondelete="CASCADE")
     )
-    enrolled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text('now()'))
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    progress_percent: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0.00)
+    enrolled_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text('now()'),
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    progress_percent: Mapped[float] = mapped_column(
+        Numeric(5, 2), nullable=False, default=0.00
+    )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="enrollments")
@@ -125,7 +158,8 @@ class Enrollment(Base):
 
 
 class UserProgress(Base):
-    """Per-section completion tracking for a user (NO created_at/updated_at per MVP v1.2)
+    """Per-section completion tracking for a user
+    (NO created_at/updated_at per MVP v1.2)
     
     MVP SPEC: This table does NOT have created_at/updated_at fields.
     Only tracking when section was completed via completed_at timestamp.
@@ -149,7 +183,10 @@ class UserProgress(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), nullable=False
+        UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text('gen_random_uuid()'),
+        nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
@@ -157,8 +194,12 @@ class UserProgress(Base):
     section_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("sections.id", ondelete="CASCADE")
     )
-    completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="progress")
