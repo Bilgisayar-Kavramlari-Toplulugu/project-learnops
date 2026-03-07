@@ -148,6 +148,7 @@ async def google_callback(
             )
             db.add(user)
             await db.flush()
+            await db.refresh(user)
             logger.info(f"✅ New user created: {user.email}")
         else:
             user.last_login_at = datetime.now(timezone.utc)
@@ -196,7 +197,7 @@ async def google_callback(
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT == "production",
-            samesite="lax",
+            samesite="lax",  # OAuth callback cross-site redirect içerdiğinden Strict yerine lax
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
         )
         
@@ -205,7 +206,7 @@ async def google_callback(
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT == "production",
-            samesite="lax",
+            samesite="lax",  # OAuth callback cross-site redirect içerdiğinden Strict yerine lax
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
         )
         
