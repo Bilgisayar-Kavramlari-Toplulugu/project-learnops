@@ -1,70 +1,46 @@
 "use client";
 
-import { DashboardShell } from "@/shared/components/layout/dashboard-shell";
-import { routes } from "@/shared/lib/config/routes";
-import { HomeWelcomeCard } from "@/modules/dashboard/components/home-welcome-card";
-import { dashboardSidebarItems } from "@/modules/dashboard/config/dashboard-ui.config";
-import {
-  dashboardStarterNotifications,
-  dashboardStarterUser,
-  dashboardStarterWorkspaces,
-} from "@/modules/dashboard/config/dashboard-starter.config";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { CalendarDays, LayoutDashboard } from "lucide-react";
+
+import { dashboardStarterUser } from "@/lib/dashboard-starter.config";
+import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { routes } from "@/lib/routes";
 
 export default function DashboardPage() {
+  const todayLabel = new Intl.DateTimeFormat("tr-TR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date());
+
   return (
     <DashboardShell
       user={dashboardStarterUser}
       sidebarItems={dashboardSidebarItems}
       activePath={routes.dashboard}
-      workspaces={dashboardStarterWorkspaces}
-      activeWorkspaceId=""
-      notifications={dashboardStarterNotifications}
     >
       <section className="mx-auto w-full max-w-6xl space-y-4">
-        <HomeWelcomeCard userName={dashboardStarterUser.name} />
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="border-blue-100/80 bg-white/82 shadow-lg shadow-blue-100/35 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-black/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                Moduler Alan 01
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <p>Bu blok backendden gelen ilk veri grubu icin ayrildi.</p>
-              <p className="rounded-xl border border-dashed border-blue-200/90 px-3 py-3 text-xs dark:border-slate-700">
-                Placeholder: kurs ilerleme, ozet metrikler veya feed.
-              </p>
-            </CardContent>
-          </Card>
+        <header className="rounded-2xl border border-blue-100/80 bg-white/85 px-4 py-3 shadow-sm shadow-blue-100/40 dark:border-slate-700 dark:bg-slate-900/75 dark:shadow-black/20">
+          <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <LayoutDashboard className="size-4 text-blue-600 dark:text-sky-400" />
+            Dashboard Genel Bakis
+          </p>
+          <p className="mt-2 inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <CalendarDays className="size-3.5" />
+            {todayLabel}
+          </p>
+        </header>
 
-          <Card className="border-blue-100/80 bg-white/82 shadow-lg shadow-blue-100/35 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-black/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                Moduler Alan 02
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <p>Ikinci blok action veya bildirim odakli icerikler icin ayrildi.</p>
-              <p className="rounded-xl border border-dashed border-blue-200/90 px-3 py-3 text-xs dark:border-slate-700">
-                Placeholder: sinavlar, son aktiviteler veya quick actions.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-blue-100/80 bg-white/82 shadow-lg shadow-blue-100/35 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-black/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                Moduler Alan 02
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <p>Ikinci blok action veya bildirim odakli icerikler icin ayrildi.</p>
-              <p className="rounded-xl border border-dashed border-blue-200/90 px-3 py-3 text-xs dark:border-slate-700">
-                Placeholder: sinavlar, son aktiviteler veya quick actions.
-              </p>
-            </CardContent>
-          </Card>
-          
+        <div className="min-h-[62vh] rounded-3xl border border-dashed border-blue-200/90 bg-white/65 px-6 py-8 dark:border-slate-700 dark:bg-slate-900/55">
+          <div className="max-w-2xl space-y-3">
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Task Alanı
+            </h1>
+            <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              Bu alan dashboard icerigi icin hazir.
+            </p>
+          </div>
         </div>
       </section>
     </DashboardShell>

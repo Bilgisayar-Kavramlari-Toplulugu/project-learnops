@@ -7,9 +7,9 @@ import {
   ThemeLead,
   ThemeMuted,
   ThemeText,
-} from "@/modules/ui-kit/components/theme";
-import { routes } from "@/shared/lib/config/routes";
-import { UiKitPageShell } from "@/modules/ui-kit/components/ui-kit-page-shell";
+} from "@/components/theme";
+import { routes } from "@/lib/routes";
+import { UiKitPageShell } from "@/components/ui-kit/ui-kit-page-shell";
 
 export default function UiKitTypographyPage() {
   return (
