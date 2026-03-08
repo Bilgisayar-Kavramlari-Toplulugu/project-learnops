@@ -60,7 +60,7 @@ async def google_login(request: Request):
             f'&access_type=offline'
             f'&prompt=consent'
         )
-        logger.info(f"Generated URL: {auth_url}")
+        logger.info("Generated Google OAuth URL")
         if request.query_params.get("format") == "json":
             response = JSONResponse(content={"login_url": auth_url})
         else:
@@ -90,8 +90,6 @@ async def google_callback(
     """Handle Google OAuth callback"""
     try:
         logger.info("=== CALLBACK RECEIVED ===")
-        logger.info(f"URL: {request.url}")
-        logger.info(f"Query params: {dict(request.query_params)}")
 
         # State kontrolü (CSRF koruması)
         received_state = request.query_params.get('state')
@@ -101,17 +99,14 @@ async def google_callback(
         )
 
         if not expected_state or received_state != expected_state:
-            logger.error(
-                f"State mismatch. "
-                f"Expected: {expected_state}, Received: {received_state}"
-            )
+            logger.error("State mismatch in OAuth callback")
             raise HTTPException(
                 status_code=400, detail="Invalid state parameter"
             )
 
         # Code'u al
         code = request.query_params.get('code')
-        logger.info(f"Code: {code[:20] if code else 'None'}...")
+        logger.info(f"Code received: {'yes' if code else 'no'}")
 
         if not code:
             logger.error("No code in request")
@@ -141,7 +136,7 @@ async def google_callback(
             logger.info(f"Token response keys: {tokens.keys()}")
 
             if 'error' in tokens:
-                logger.error(f"Token error: {tokens}")
+                logger.error(f"Token error: {tokens.get('error')}")
                 raise HTTPException(
                     status_code=400,
                     detail=tokens.get(
@@ -158,8 +153,19 @@ async def google_callback(
                     'Authorization': f'Bearer {tokens["access_token"]}'
                 },
             )
-            logger.info(f"User info status: {user_response.status_code}")
+            if user_response.status_code != 200:
+                logger.error(f"Google userinfo failed with status {user_response.status_code}")
+                raise HTTPException(
+                    status_code=502,
+                    detail="Failed to retrieve user info from Google",
+                )
             user_info = user_response.json()
+            if 'email' not in user_info:
+                logger.error("Google userinfo response missing email")
+                raise HTTPException(
+                    status_code=502,
+                    detail="Google did not return user email",
+                )
             logger.info(f"User email: {user_info.get('email')}")
 
         # Get or create user
