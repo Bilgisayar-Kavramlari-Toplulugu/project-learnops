@@ -1,6 +1,6 @@
 import axios from "axios";
-
-const API_BASE = "/api";
+import { useCallback } from "react";
+import { API_BASE } from "./constants";
 
 export type OAuthProvider = "google" | "github" | "linkedin";
 
@@ -24,15 +24,17 @@ export async function logout() {
 }
 
 export function useAuth() {
-  async function logoutAndRedirect() {
+  const loginWithOAuth = useCallback((provider: OAuthProvider) => {
+    startOAuth(provider);
+  }, []);
+
+  const logoutAndRedirect = useCallback(async () => {
     await logout();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
-  }
+    window.location.href = "/login";
+  }, []);
 
   return {
-    loginWithOAuth: startOAuth,
+    loginWithOAuth,
     refreshSession: refresh,
     logout: logoutAndRedirect,
   };

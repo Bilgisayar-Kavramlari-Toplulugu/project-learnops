@@ -5,8 +5,7 @@ import axios, {
   type AxiosResponse,
 } from "axios";
 import { refresh, logout } from "./auth";
-
-const API_BASE = "/api";
+import { API_BASE } from "./constants";
 
 type RetriableConfig = AxiosRequestConfig & { _retry?: boolean };
 
@@ -26,15 +25,8 @@ function notifyAuthFailure() {
 }
 
 function isRefreshRequest(config?: AxiosRequestConfig) {
-  const url = config?.url ?? "";
-  return (
-    url.includes("/auth/refresh") ||
-    url === "/auth/refresh" ||
-    url === "/refresh" ||
-    url === "refresh"
-  );
+  return config?.url?.endsWith("/auth/refresh") ?? false;
 }
-
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
