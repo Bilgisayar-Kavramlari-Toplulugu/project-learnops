@@ -293,9 +293,6 @@ async def refresh(body: RefreshRequest):
             detail="Token iptal edilmiş",
         )
 
-    # Eski refresh token'ı blacklist'e al (token rotation)
-    blacklist_token(jti)
-
     # Yeni token çifti üret
     sub: str | None = payload.get("sub")
     if sub is None:
@@ -303,6 +300,11 @@ async def refresh(body: RefreshRequest):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token geçersiz",
         )
+
+    # Eski refresh token'ı blacklist'e al (token rotation)
+    # sub doğrulandıktan SONRA yapılmalı, yoksa geçersiz token rotation'ı tetikler
+    blacklist_token(jti)
+
     new_jti = str(uuid.uuid4())
     return TokenResponse(
         access_token=create_access_token(sub),
