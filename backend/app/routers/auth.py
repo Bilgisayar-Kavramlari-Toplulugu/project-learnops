@@ -38,7 +38,7 @@ async def google_login(request: Request):
         client_id = settings.GOOGLE_CLIENT_ID.strip()
         if not client_id:
             logger.error("GOOGLE_CLIENT_ID not configured")
-            return {"error": "Google OAuth not configured"}
+            raise HTTPException(status_code=503, detail="Google OAuth not configured")
 
         # CSRF koruması için state parametresi
         state = secrets.token_urlsafe(32)

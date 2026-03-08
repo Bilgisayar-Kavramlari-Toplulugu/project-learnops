@@ -24,7 +24,7 @@ app.add_middleware(
 )
 app.add_middleware(
     SessionMiddleware,
-    secret_key=settings.JWT_SECRET,  # JWT_SECRET'i kullan
+    secret_key=settings.SESSION_SECRET,
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
     same_site="lax",  # OAuth callback cross-site redirect requires lax

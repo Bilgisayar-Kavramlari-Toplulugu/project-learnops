@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # Session middleware secret (separate from JWT)
+    SESSION_SECRET: str = "change-me-session-secret-min-32-chars"
 
     # OAuth (matching .env UPPERCASE)
     GOOGLE_CLIENT_ID: str = ""
@@ -64,3 +66,14 @@ class Settings(BaseSettings):
         return self.ENVIRONMENT
 
 settings = Settings()
+
+# Startup validation: reject insecure defaults in non-development environments
+_INSECURE_DEFAULTS = {
+    "change-me-in-production-min-32-chars",
+    "change-me-session-secret-min-32-chars",
+}
+if settings.ENVIRONMENT != "development":
+    if settings.JWT_SECRET in _INSECURE_DEFAULTS:
+        raise RuntimeError("JWT_SECRET must be changed from the default value in non-development environments")
+    if settings.SESSION_SECRET in _INSECURE_DEFAULTS:
+        raise RuntimeError("SESSION_SECRET must be changed from the default value in non-development environments")
