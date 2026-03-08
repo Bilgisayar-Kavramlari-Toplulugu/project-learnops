@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -21,6 +22,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # Session middleware secret (separate from JWT)
+    SESSION_SECRET: str = "change-me-session-secret-min-32-chars"
 
     # OAuth (matching .env UPPERCASE)
     GOOGLE_CLIENT_ID: str = ""
@@ -29,15 +32,15 @@ class Settings(BaseSettings):
     GOOGLE_AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
     GOOGLE_TOKEN_URI: str = "https://oauth2.googleapis.com/token"
     GOOGLE_AUTH_PROVIDER_X509_CERT_URL: str = "https://www.googleapis.com/oauth2/v1/certs"
-    
+
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
-    
+
     # Token encryption
     TOKEN_ENCRYPTION_KEY: str = ""
-    
+
     # Environment
     ENVIRONMENT: str = "development"
     BACKEND_INTERNAL_URL: str = "http://backend:8000"
@@ -49,17 +52,28 @@ class Settings(BaseSettings):
     @property
     def google_client_id(self) -> str:
         return self.GOOGLE_CLIENT_ID.strip()
-    
+
     @property
     def google_client_secret(self) -> str:
         return self.GOOGLE_CLIENT_SECRET.strip()
-    
+
     @property
     def allowed_origins(self) -> List[str]:
         return self.ALLOWED_ORIGINS
-    
+
     @property
     def environment(self) -> str:
         return self.ENVIRONMENT
 
 settings = Settings()
+
+# Startup validation: reject insecure defaults in non-development environments
+_INSECURE_DEFAULTS = {
+    "change-me-in-production-min-32-chars",
+    "change-me-session-secret-min-32-chars",
+}
+if settings.ENVIRONMENT != "development":
+    if settings.JWT_SECRET in _INSECURE_DEFAULTS:
+        raise RuntimeError("JWT_SECRET must be changed from the default value in non-development environments")
+    if settings.SESSION_SECRET in _INSECURE_DEFAULTS:
+        raise RuntimeError("SESSION_SECRET must be changed from the default value in non-development environments")
