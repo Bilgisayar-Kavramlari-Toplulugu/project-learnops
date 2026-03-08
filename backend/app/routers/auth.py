@@ -11,13 +11,13 @@ from sqlalchemy import select
 from app.config import settings
 from app.database import get_db
 from app.models.users import User, OAuthAccount
-from app.core.security import encrypt_token, create_access_token, create_refresh_token
+from app.core.security import encrypt_token
 from app.deps import get_current_user
 from app.schemas.auth import RefreshRequest, TokenResponse
 from app.services.jwt_service import (
     blacklist_token,
-    create_access_token as jwt_create_access_token,
-    create_refresh_token as jwt_create_refresh_token,
+    create_access_token,
+    create_refresh_token,
     decode_token,
     is_blacklisted,
 )
@@ -80,7 +80,7 @@ async def google_login(request: Request):
         raise
     except Exception as e:
         logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.get('/google/callback')
 async def google_callback(
@@ -219,10 +219,9 @@ async def google_callback(
         await db.commit()
 
         # JWT token'ları üret
-        access_token = create_access_token(
-            {"sub": str(user.id), "email": user.email}
-        )
-        refresh_token = create_refresh_token({"sub": str(user.id)})
+        new_jti = str(uuid.uuid4())
+        access_token = create_access_token(sub=str(user.id))
+        refresh_token = create_refresh_token(sub=str(user.id), jti=new_jti)
 
         # Cookie'ye set et (httpOnly)
         response = RedirectResponse(
@@ -261,7 +260,7 @@ async def google_callback(
     except Exception as e:
         await db.rollback()
         logger.error(f"Callback error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -300,8 +299,8 @@ async def refresh(body: RefreshRequest):
         )
     new_jti = str(uuid.uuid4())
     return TokenResponse(
-        access_token=jwt_create_access_token(sub),
-        refresh_token=jwt_create_refresh_token(sub, new_jti),
+        access_token=create_access_token(sub),
+        refresh_token=create_refresh_token(sub, new_jti),
     )
 
 

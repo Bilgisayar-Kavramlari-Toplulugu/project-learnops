@@ -26,19 +26,19 @@ def is_blacklisted(jti: str) -> bool:
 # ---------- Token üretimi ----------
 def create_access_token(sub: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
-        minutes=settings.access_token_expire_minutes
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
     payload = {
         "sub": sub,
         "type": "access",
         "exp": expire,
     }
-    return jwt.encode(payload, settings.jwt_secret, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 
 
 def create_refresh_token(sub: str, jti: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
-        days=settings.refresh_token_expire_days
+        days=settings.REFRESH_TOKEN_EXPIRE_DAYS
     )
     payload = {
         "sub": sub,
@@ -46,10 +46,10 @@ def create_refresh_token(sub: str, jti: str) -> str:
         "exp": expire,
         "jti": jti,
     }
-    return jwt.encode(payload, settings.jwt_secret, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 
 
 # ---------- Token doğrulama ----------
 def decode_token(token: str) -> dict:
     """Token'ı decode eder. Geçersiz veya süresi dolmuşsa JWTError fırlatır."""
-    return jwt.decode(token, settings.jwt_secret, algorithms=[ALGORITHM])
+    return jwt.decode(token, settings.JWT_SECRET, algorithms=[ALGORITHM])

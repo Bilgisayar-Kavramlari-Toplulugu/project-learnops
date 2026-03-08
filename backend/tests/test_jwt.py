@@ -79,7 +79,7 @@ def test_expired_access_token_raises():
         "type": "access",
         "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
     }
-    token = jwt.encode(expired_payload, settings.jwt_secret, algorithm=ALGORITHM)
+    token = jwt.encode(expired_payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 
     with pytest.raises(JWTError):
         decode_token(token)
