@@ -5,10 +5,13 @@ BE-09: Tests for rate limiting implementation
 Tests real middleware behavior without mocks.
 """
 
+from datetime import datetime, timedelta
+
 import pytest
-from datetime import datetime,timedelta
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
+
 from app.main import app
+
 
 @pytest.fixture
 def client_ip():
@@ -110,7 +113,9 @@ async def test_retry_after_seconds_positive():
 
         assert r.status_code == 429
         retry_after = r.json()["retry_after_seconds"]
-        assert 0 < retry_after <= 60, f"retry_after should be between 0 and 60, got {retry_after}"
+        assert 0 < retry_after <= 60, (
+            f"retry_after should be between 0 and 60, got {retry_after}"
+        )
 
 
 @pytest.mark.asyncio
@@ -190,7 +195,9 @@ async def test_independent_endpoint_patterns():
             "/api/users",
             headers={"X-Forwarded-For": "203.0.113.6"}
         )
-        assert r.status_code != 429, "API should not be rate limited (independent counter)"
+        assert r.status_code != 429, (
+            "API should not be rate limited (independent counter)"
+        )
 
 
 @pytest.mark.asyncio

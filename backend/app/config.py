@@ -1,6 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -74,6 +74,12 @@ _INSECURE_DEFAULTS = {
 }
 if settings.ENVIRONMENT != "development":
     if settings.JWT_SECRET in _INSECURE_DEFAULTS:
-        raise RuntimeError("JWT_SECRET must be changed from the default value in non-development environments")
+        raise RuntimeError(
+            "JWT_SECRET must be changed from the default "
+            "value in non-development environments"
+        )
     if settings.SESSION_SECRET in _INSECURE_DEFAULTS:
-        raise RuntimeError("SESSION_SECRET must be changed from the default value in non-development environments")
+        raise RuntimeError(
+            "SESSION_SECRET must be changed from the default "
+            "value in non-development environments"
+        )

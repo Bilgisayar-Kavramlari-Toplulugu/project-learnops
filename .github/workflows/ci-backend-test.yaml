@@ -1,0 +1,74 @@
+name: "CI - backend Test"
+
+env:
+    PYTHON_VERSION: "3.13"
+    POETRY_VERSION: "2.3.2"
+
+on:
+    push:
+        branches:
+            - develop
+            - release
+            - main
+        paths:
+            - "backend/**"
+            - ".github/workflows/ci-backend-test.yaml"
+    pull_request:
+        branches:
+            - develop
+            - release
+            - main
+        paths:
+            - "backend/**"
+            - ".github/workflows/ci-backend-test.yaml"
+    workflow_dispatch:
+    workflow_call:
+
+defaults:
+    run:
+        working-directory: ./backend
+
+jobs:
+    test:
+        name: Pytest
+        runs-on: ubuntu-latest
+
+        services:
+            postgres:
+                image: postgres:17
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: testpass
+                    POSTGRES_DB: learnops_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U postgres"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
+
+        env:
+            TEST_DATABASE_URL: "postgresql+asyncpg://postgres:testpass@localhost:5432/learnops_test"
+            DATABASE_URL: "postgresql+asyncpg://postgres:testpass@localhost:5432/learnops_test"
+
+        steps:
+            - name: checkout
+              uses: actions/checkout@v6
+
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+
+            - name: Install dependencies
+              run: poetry install --no-interaction --no-ansi
+
+            - name: Run Alembic migrations
+              run: poetry run alembic upgrade head
+
+            - name: Run tests with coverage
+              working-directory: ./backend
+              run: poetry run pytest --tb=short -q --cov=app --cov-report=term-missing

@@ -10,17 +10,20 @@ Coverage:
 """
 
 import pytest
-
-from httpx import AsyncClient
 from fastapi import status
-from app.services.jwt_service import create_access_token
+from httpx import AsyncClient
 
+from app.services.jwt_service import create_access_token
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _conflict_payload(email: str, provider: str = "github", provider_user_id: str = "gh-999") -> dict:
+def _conflict_payload(
+    email: str,
+    provider: str = "github",
+    provider_user_id: str = "gh-999",
+) -> dict:
     return {
         "email": email,
         "provider": provider,
@@ -66,11 +69,15 @@ async def test_conflict_check_existing_user(client: AsyncClient, test_user):
 
 @pytest.mark.asyncio
 async def test_merge_valid_token(client: AsyncClient, test_user):
-    """Valid merge token → new OAuthAccount created, response includes updated providers."""
+    """Valid merge token → new OAuthAccount created."""
     # 1. Conflict check (auth gerekmez)
     conflict_res = await client.post(
         "/v1/auth/conflict-check",
-        json=_conflict_payload(test_user.email, provider="github", provider_user_id="gh-new-789"),
+        json=_conflict_payload(
+            test_user.email,
+            provider="github",
+            provider_user_id="gh-new-789",
+        ),
     )
     merge_token = conflict_res.json()["merge_token"]
 
@@ -107,7 +114,11 @@ async def test_merge_token_consumed(client: AsyncClient, test_user):
     """Merge token is single-use — second attempt returns 400."""
     conflict_res = await client.post(
         "/v1/auth/conflict-check",
-        json=_conflict_payload(test_user.email, provider="linkedin", provider_user_id="li-555"),
+        json=_conflict_payload(
+            test_user.email,
+            provider="linkedin",
+            provider_user_id="li-555",
+        ),
     )
     merge_token = conflict_res.json()["merge_token"]
 

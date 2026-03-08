@@ -92,7 +92,9 @@ def test_invalid_signature_raises():
         "type": "access",
         "exp": datetime.now(timezone.utc) + timedelta(minutes=15),
     }
-    token = jwt.encode(payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM)
+    token = jwt.encode(
+        payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM
+    )
 
     with pytest.raises(JWTError):
         decode_token(token)

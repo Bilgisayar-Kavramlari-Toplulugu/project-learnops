@@ -1,6 +1,8 @@
-from cryptography.fernet import Fernet
-from app.config import settings
 import base64
+
+from cryptography.fernet import Fernet
+
+from app.config import settings
 
 
 def _get_fernet() -> Fernet:
