@@ -239,3 +239,8 @@ Desktop.ini
 # ─── Logs ────────────────────────────────────────────────
 logs/
 *.log
+
+
+google.env*
+*.backup
+.bak

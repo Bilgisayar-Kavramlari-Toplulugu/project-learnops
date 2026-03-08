@@ -61,7 +61,7 @@ class User(BaseModel):
     )
 
 
-class OAuthAccount(BaseModel):
+class OAuthAccount(Base):
     """OAuth provider account linkage (MVP v1.2: NO access_token storage)
     
     Security model from MVP spec:
@@ -89,6 +89,9 @@ class OAuthAccount(BaseModel):
         ),
     )
 
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, server_default=text('gen_random_uuid()'), nullable=False
+    )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
     )
