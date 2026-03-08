@@ -1,12 +1,25 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from enum import Enum
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class TokenPayload(BaseModel):
+    sub: str  # user id
+    type: str  # "access" veya "refresh"
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class OAuthProvider(str, Enum):
     google = "google"
     github = "github"
     linkedin = "linkedin"
-
 
 class MergeAccountRequest(BaseModel):
     """Hesap birleştirme onayı için kullanıcıdan gelen request"""
