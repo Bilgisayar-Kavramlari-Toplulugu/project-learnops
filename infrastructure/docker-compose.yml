@@ -8,6 +8,7 @@ services:
       - "${POSTGRES_HOST_FORWARD_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
@@ -17,6 +18,7 @@ services:
   backend:
     build: ../backend
     container_name: learnops_backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     env_file:
       - .env
     volumes:
@@ -24,6 +26,7 @@ services:
       - backend_deps:/usr/local/lib/python3.13/site-packages
     ports:
       - "8000:8080"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/health || exit 1"]
       interval: 5s
@@ -36,6 +39,7 @@ services:
   frontend:
     build: ../frontend
     container_name: learnops_frontend
+    command: ["npm", "run", "dev"]
     env_file:
       - .env
     volumes:
@@ -44,6 +48,12 @@ services:
       - frontend_next:/app/.next
     ports:
       - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     depends_on:
       backend:
         condition: service_healthy
