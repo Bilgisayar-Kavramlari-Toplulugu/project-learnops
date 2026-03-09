@@ -237,7 +237,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT == "production",
-            samesite="lax",
+            samesite="strict",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
@@ -246,7 +246,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT == "production",
-            samesite="lax",
+            samesite="strict",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 

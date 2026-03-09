@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import uuid
 
 from jose import JWTError, jwt
 
@@ -67,6 +68,7 @@ def create_merge_token(
         "provider_email": provider_email,
         "type": "merge",
         "exp": expire,
+        "jti": str(uuid.uuid4()),
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 

@@ -7,12 +7,11 @@ from sqlalchemy.orm import selectinload
 
 from app.models.users import OAuthAccount, User
 from app.schemas.auth import AccountConflictResponse, OAuthProvider
-from app.services.jwt_service import create_merge_token, decode_merge_token
+from app.services.jwt_service import create_merge_token, decode_merge_token, blacklist_token, is_blacklisted
 
 # ---------------------------------------------------------------------------
 # Repository functions (Single Responsibility: sadece DB sorguları)
 # ---------------------------------------------------------------------------
-
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """Email ile kullanıcıyı oauth_accounts ilişkisiyle birlikte getirir."""
@@ -87,8 +86,11 @@ async def merge_oauth_accounts(
     except JWTError:
         raise ValueError("Geçersiz veya süresi dolmuş merge token")
 
-    user_id = payload.get("user_id")
+    jti = payload.get("jti", "")
+    if is_blacklisted(jti):
+        raise ValueError("Bu merge token daha önce kullanılmış")
 
+    user_id = payload.get("user_id")
     # Token'daki user ile login olan user aynı mı?
     if user_id != current_user_id:
         raise ValueError("Bu merge işlemi sizin hesabınıza ait değil")
@@ -118,5 +120,10 @@ async def merge_oauth_accounts(
     )
     db.add(new_oauth)
 
-    providers = [acc.provider for acc in user.oauth_accounts] + [new_provider]
+    if jti:
+        blacklist_token(jti)
+
+    await db.flush()
+    await db.refresh(user, attribute_names=["oauth_accounts"])
+    providers = [acc.provider for acc in user.oauth_accounts]
     return user, providers

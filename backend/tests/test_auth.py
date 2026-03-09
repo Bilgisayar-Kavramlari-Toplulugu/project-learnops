@@ -127,3 +127,4 @@ async def test_merge_token_consumed(client: AsyncClient, test_user):
         headers=auth_headers,
     )
     assert second.status_code == status.HTTP_400_BAD_REQUEST
+    assert "daha önce kullanılmış" in second.json()["detail"]
