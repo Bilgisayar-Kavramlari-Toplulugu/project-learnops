@@ -1,5 +1,7 @@
-from pydantic import BaseModel
 from enum import Enum
+
+from pydantic import BaseModel
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -21,14 +23,25 @@ class OAuthProvider(str, Enum):
     github = "github"
     linkedin = "linkedin"
 
+
+class ConflictCheckRequest(BaseModel):
+    """Conflict kontrolü için frontend'den gelen request"""
+
+    email: str
+    provider: OAuthProvider
+    provider_user_id: str
+    provider_email: str
+
+
 class MergeAccountRequest(BaseModel):
     """Hesap birleştirme onayı için kullanıcıdan gelen request"""
+
     merge_token: str  # Geçici token - birleştirme işlemini doğrulamak için
-    provider: OAuthProvider
 
 
 class MergeAccountResponse(BaseModel):
     """Birleştirme sonucu"""
+
     message: str
     email: str
     providers: list[str]  # Artık bağlı olan tüm provider'lar
@@ -36,6 +49,7 @@ class MergeAccountResponse(BaseModel):
 
 class AccountConflictResponse(BaseModel):
     """Email çakışması durumunda frontend'e dönen response"""
+
     conflict: bool = True
     message: str
     email: str

@@ -1,45 +1,18 @@
-import secrets
-from dataclasses import dataclass
-from sqlalchemy.ext.asyncio import AsyncSession
+import uuid as uuid_mod
+
+from jose import JWTError
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.users import User, OAuthAccount
-from app.schemas.auth import OAuthProvider, AccountConflictResponse
-
-
-# ---------------------------------------------------------------------------
-# TODO: BE-07 (jwt_service) merge olduğunda MergeTokenStore kaldırılacak.
-# create_merge_token() / decode_merge_token() ile stateless JWT'ye geçilecek.
-# ---------------------------------------------------------------------------
-
-@dataclass
-class PendingMerge:
-    user_id: str
-    new_provider: str
-    provider_account_id: str
-    access_token: str
-
-
-class MergeTokenStore:
-    """Geçici merge token'larını bellekte tutan in-memory store."""
-
-    def __init__(self) -> None:
-        self._store: dict[str, PendingMerge] = {}
-
-    def save(self, token: str, data: PendingMerge) -> None:
-        self._store[token] = data
-
-    def pop(self, token: str) -> PendingMerge | None:
-        return self._store.pop(token, None)
-
-
-merge_token_store = MergeTokenStore()
-
+from app.models.users import OAuthAccount, User
+from app.schemas.auth import AccountConflictResponse, OAuthProvider
+from app.services.jwt_service import create_merge_token, decode_merge_token
 
 # ---------------------------------------------------------------------------
 # Repository functions (Single Responsibility: sadece DB sorguları)
 # ---------------------------------------------------------------------------
+
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """Email ile kullanıcıyı oauth_accounts ilişkisiyle birlikte getirir."""
@@ -54,13 +27,13 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
 async def get_oauth_account(
     db: AsyncSession,
     provider: str,
-    provider_account_id: str,
+    provider_user_id: str,
 ) -> OAuthAccount | None:
-    """Provider ve provider_account_id ile OAuth hesabı getirir."""
+    """Provider ve provider_user_id ile OAuth hesabı getirir."""
     result = await db.execute(
         select(OAuthAccount).where(
             OAuthAccount.provider == provider,
-            OAuthAccount.provider_account_id == provider_account_id,
+            OAuthAccount.provider_user_id == provider_user_id,
         )
     )
     return result.scalar_one_or_none()
@@ -70,33 +43,32 @@ async def get_oauth_account(
 # Service functions (Single Responsibility: sadece iş mantığı)
 # ---------------------------------------------------------------------------
 
+
 def build_conflict_response(
     existing_user: User,
     new_provider: OAuthProvider,
-    provider_account_id: str,
-    access_token: str,
+    provider_user_id: str,
+    provider_email: str,
 ) -> AccountConflictResponse:
     """
     Email çakışması tespit edildiğinde conflict response oluşturur.
-    Geçici merge_token üretip store'a kaydeder.
+    Stateless JWT merge_token üretir.
     """
-    merge_token = secrets.token_urlsafe(32)
-
-    merge_token_store.save(
-        merge_token,
-        PendingMerge(
-            user_id=str(existing_user.id),
-            new_provider=new_provider.value,
-            provider_account_id=provider_account_id,
-            access_token=access_token,
-        ),
+    merge_token = create_merge_token(
+        user_id=str(existing_user.id),
+        new_provider=new_provider.value,
+        provider_user_id=provider_user_id,
+        provider_email=provider_email,
     )
 
     existing_providers = [acc.provider for acc in existing_user.oauth_accounts]
-    providers_str = ", ".join(existing_providers) if existing_providers else "başka bir hesap"
+    providers_str = (
+        ", ".join(existing_providers) if existing_providers else "başka bir hesap"
+    )
 
     return AccountConflictResponse(
-        message=f"Bu email adresi zaten {providers_str} ile kayıtlı. Hesapları birleştirmek ister misiniz?",
+        message=f"Bu email adresi zaten {providers_str} ile kayıtlı. "
+        f"Hesapları birleştirmek ister misiniz?",
         email=existing_user.email,
         existing_providers=existing_providers,
         new_provider=new_provider,
@@ -107,33 +79,44 @@ def build_conflict_response(
 async def merge_oauth_accounts(
     db: AsyncSession,
     merge_token: str,
+    current_user_id: str,
 ) -> tuple[User, list[str]]:
-    """
-    Kullanıcı onayı sonrası hesapları birleştirir.
-    Yeni OAuthAccount kaydı oluşturur, token'ı store'dan siler.
-    """
-    pending = merge_token_store.pop(merge_token)
-    if not pending:
+
+    try:
+        payload = decode_merge_token(merge_token)
+    except JWTError:
         raise ValueError("Geçersiz veya süresi dolmuş merge token")
+
+    user_id = payload.get("user_id")
+
+    # Token'daki user ile login olan user aynı mı?
+    if user_id != current_user_id:
+        raise ValueError("Bu merge işlemi sizin hesabınıza ait değil")
+
+    new_provider = payload.get("new_provider")
+    provider_user_id = payload.get("provider_user_id")
+    provider_email = payload.get("provider_email")
 
     result = await db.execute(
         select(User)
-        .where(User.id == pending.user_id)
+        .where(User.id == uuid_mod.UUID(user_id))
         .options(selectinload(User.oauth_accounts))
     )
     user = result.scalar_one_or_none()
     if not user:
         raise ValueError("Kullanıcı bulunamadı")
 
+    existing = await get_oauth_account(db, new_provider, provider_user_id)
+    if existing:
+        raise ValueError("Bu OAuth hesabı zaten bağlı")
+
     new_oauth = OAuthAccount(
         user_id=user.id,
-        provider=pending.new_provider,
-        provider_account_id=pending.provider_account_id,
-        access_token=pending.access_token,
+        provider=new_provider,
+        provider_user_id=provider_user_id,
+        provider_email=provider_email,
     )
     db.add(new_oauth)
-    await db.commit()
-    await db.refresh(user)
 
-    providers = [acc.provider for acc in user.oauth_accounts]
+    providers = [acc.provider for acc in user.oauth_accounts] + [new_provider]
     return user, providers
