@@ -8,6 +8,8 @@ from app.database import get_db
 from app.routers import auth
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.middleware.rate_limiting import RateLimiterMiddleware
+
 app = FastAPI(
     title="LearnOps API",
     version="1.0.0",
@@ -34,6 +36,9 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/v1")
 
+
+# Rate Limiting
+app.add_middleware(RateLimiterMiddleware)
 
 @app.get("/v1/health")
 async def health_check(db: AsyncSession = Depends(get_db)):
