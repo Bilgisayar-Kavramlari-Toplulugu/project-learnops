@@ -2,16 +2,14 @@ services:
   db:
     image: postgres:17-alpine
     container_name: learnops_db
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,15 +17,25 @@ services:
   backend:
     build: ../backend
     container_name: learnops_backend
+    env_file:
+      - .env
     volumes:
       - ../backend:/app
     ports:
       - "8000:8080"
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    build: ../frontend
+    container_name: learnops_frontend
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
