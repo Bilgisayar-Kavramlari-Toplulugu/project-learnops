@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from enum import Enum
+
+from pydantic import BaseModel, EmailStr
 
 
 class TokenResponse(BaseModel):
@@ -14,3 +16,37 @@ class TokenPayload(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+
+
+class OAuthProvider(str, Enum):
+    google = "google"
+    github = "github"
+    linkedin = "linkedin"
+
+
+class ConflictCheckRequest(BaseModel):
+    email: EmailStr
+    provider: OAuthProvider
+    provider_user_id: str
+    provider_email: str
+
+
+class MergeAccountRequest(BaseModel):
+    merge_token: str  # Geçici token - birleştirme işlemini doğrulamak için
+
+
+class MergeAccountResponse(BaseModel):
+    message: str
+    email: str
+    providers: list[str]  # Artık bağlı olan tüm provider'lar
+
+
+class AccountConflictResponse(BaseModel):
+    """Email çakışması durumunda frontend'e dönen response"""
+
+    conflict: bool = True
+    message: str
+    email: str
+    existing_providers: list[str]  # Mevcut hesapta hangi provider'lar var
+    new_provider: OAuthProvider
+    merge_token: str  # Frontend bu token'ı onay sırasında geri gönderecek
