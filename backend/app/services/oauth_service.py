@@ -99,6 +99,9 @@ async def merge_oauth_accounts(
     provider_user_id = payload.get("provider_user_id")
     provider_email = payload.get("provider_email")
 
+    if not isinstance(new_provider, str) or not isinstance(provider_user_id, str):
+        raise ValueError("Geçersiz merge token: eksik provider bilgisi")
+
     result = await db.execute(
         select(User)
         .where(User.id == uuid_mod.UUID(user_id))

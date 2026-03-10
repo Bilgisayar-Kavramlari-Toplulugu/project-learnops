@@ -1,6 +1,7 @@
 import logging
 import secrets
 import uuid
+from typing import Union
 from datetime import datetime, timezone
 
 import httpx
@@ -78,6 +79,7 @@ async def google_login(request: Request):
             f"&prompt=consent"
         )
         logger.info("Generated Google OAuth URL")
+        response: Union[JSONResponse, RedirectResponse]
         if request.query_params.get("format") == "json":
             response = JSONResponse(content={"login_url": auth_url})
         else:
