@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
-import app.models  # noqa: F401 - ensure all SQLAlchemy models are registered
+import app.models as _app_models  # noqa: F401 - ensure all SQLAlchemy models are registered
 from app.database import get_db
 from app.routers import auth
 from starlette.middleware.sessions import SessionMiddleware
