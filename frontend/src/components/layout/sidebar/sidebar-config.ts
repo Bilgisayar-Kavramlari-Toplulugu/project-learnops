@@ -9,8 +9,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { routes } from "@/lib/routes";
-
 export interface SidebarComponentLink {
   label: string;
   description: string;
@@ -28,37 +26,37 @@ export const sidebarComponentLinks: SidebarComponentLink[] = [
   {
     label: "Exam Component",
     description: "Sinav karti tasarimi",
-    href: routes.uiKitExam,
+    href: "#",
     icon: ListChecks,
   },
   {
     label: "Docs Component",
     description: "Dokuman kart yapisi",
-    href: routes.uiKitDocs,
+    href: "#",
     icon: NotebookText,
   },
   {
     label: "Form Component",
     description: "Field ve aksiyon yapisi",
-    href: routes.uiKitForm,
+    href: "#",
     icon: FormInput,
   },
   {
     label: "Typography",
     description: "Baslik ve metin stilleri",
-    href: routes.uiKitTypography,
+    href: "#",
     icon: AppWindow,
   },
   {
     label: "Modal Component",
     description: "Merkez dialog yapisi",
-    href: routes.uiKitModal,
+    href: "#",
     icon: Rows2,
   },
   {
     label: "Input Component",
     description: "Input ve textarea stilleri",
-    href: routes.uiKitInput,
+    href: "#",
     icon: CaseSensitive,
   },
 ];
@@ -79,7 +77,7 @@ export const sidebarSystemNotes: SidebarSystemNote[] = [
 ];
 
 export const helpAction = {
-  href: routes.uiKitDocs,
+  href: "#",
   label: "Rehberi Ac",
   icon: LifeBuoy,
 } as const;

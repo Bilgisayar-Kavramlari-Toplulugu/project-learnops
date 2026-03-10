@@ -1,9 +1,7 @@
 "use client";
-
 import { LogOut, Settings, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,49 +16,27 @@ import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import type { DashboardUser } from "@/types";
 import { dropdownItemClass, dropdownPanelClass } from "./topbar-menu-styles";
-
+import { apiClient } from "@/lib/api-client";
 interface UserMenuProps {
   user: DashboardUser;
 }
-
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  function clearLearnOpsStorage() {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const keyPrefix = "learnops-";
-    const localKeys = Object.keys(localStorage);
-    const sessionKeys = Object.keys(sessionStorage);
-
-    for (const key of localKeys) {
-      if (key.startsWith(keyPrefix)) {
-        localStorage.removeItem(key);
-      }
-    }
-
-    for (const key of sessionKeys) {
-      if (key.startsWith(keyPrefix)) {
-        sessionStorage.removeItem(key);
-      }
-    }
-  }
-
   async function handleLogout() {
-    if (isLoggingOut) {
-      return;
-    }
-
+    if (isLoggingOut) return;
     setIsLoggingOut(true);
-    clearLearnOpsStorage();
-    router.replace(routes.landing);
-    router.refresh();
-    setIsLoggingOut(false);
+    try {
+      await apiClient.post("/auth/logout"); 
+    } catch {
+      
+    } finally {
+      router.replace(routes.login);
+      router.refresh();
+      setIsLoggingOut(false);
+    }
   }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

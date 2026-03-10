@@ -1,14 +1,10 @@
 export const routes = {
   root: "/",
-  dashboard: "/dashboard",
+  login: "/login",
   landing: "/landing",
-  uiKit: "/ui-kit",
-  uiKitExam: "/ui-kit/exam",
-  uiKitDocs: "/ui-kit/docs",
-  uiKitForm: "/ui-kit/form",
-  uiKitTypography: "/ui-kit/typography",
-  uiKitModal: "/ui-kit/modal",
-  uiKitInput: "/ui-kit/input",
+  dashboard: "/dashboard",
   courses: "/courses",
   exams: "/exams",
+  settings: "/settings",
+  profile: "/profile",
 } as const;

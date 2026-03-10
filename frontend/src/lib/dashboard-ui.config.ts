@@ -3,8 +3,10 @@ import {
   ClipboardCheck,
   Container,
   House,
+  Settings,
   ShieldCheck,
   TerminalSquare,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,6 +55,16 @@ export const dashboardSidebarItems: SidebarItem[] = [
     label: "Sinavlar",
     href: routes.exams,
     icon: ClipboardCheck,
+  },
+  {
+    label: "Profil",
+    href: routes.profile,
+    icon: UserRound,
+  },
+  {
+    label: "Ayarlar",
+    href: routes.settings,
+    icon: Settings,
   },
 ];
 
