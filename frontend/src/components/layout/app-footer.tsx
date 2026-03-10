@@ -25,7 +25,6 @@ const footerColumns: FooterColumn[] = [
     links: [
       { label: "Ana Sayfa", href: routes.dashboard },
       { label: "Kurslar", href: routes.courses },
-      { label: "Sinavlar", href: routes.exams },
     ],
   },
   {

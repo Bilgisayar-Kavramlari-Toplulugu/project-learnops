@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { routes } from "@/lib/routes";
 
 const foundationMetrics = [
-  { label: "Core Routes", value: "3", hint: "dashboard, courses, exams" },
+  { label: "Core Routes", value: "3", hint: "dashboard, courses, profile" },
   { label: "UI Modules", value: "20+", hint: "reusable components" },
   { label: "Data Mode", value: "Live/Fallback", hint: "API resilient" },
 ] as const;
@@ -53,7 +53,7 @@ export default function LandingPage() {
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300">
               Auth katmani devreden ciksa bile dashboard akisimiz saglam kaldı. Bu temel ustunden
-              kurs, sinav ve operasyon ekranlarini sprint bazli buyutebiliriz.
+              kurs ve operasyon ekranlarini sprint bazli buyutebiliriz.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
               <Button asChild className="h-10 rounded-xl px-5 text-sm font-medium">
@@ -103,7 +103,7 @@ export default function LandingPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
               <p className="rounded-xl border border-blue-100/80 bg-blue-50/65 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/70">
-                Route yapisi: `dashboard`, `landing`, `courses`, `exams`.
+                Route yapisi: `dashboard`, `landing`, `courses`, `profile`.
               </p>
               <p className="rounded-xl border border-blue-100/80 bg-blue-50/65 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/70">
                 API rewrite: `/api/*` korunuyor, backend ile eslesmeye hazir.

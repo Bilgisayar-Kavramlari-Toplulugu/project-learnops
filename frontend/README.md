@@ -25,7 +25,6 @@ Open: `http://localhost:3000`
 - `/landing`
 - `/dashboard`
 - `/courses`
-- `/exams`
 - `/profile` (placeholder page)
 - `/settings` (placeholder page)
 
@@ -66,7 +65,6 @@ frontend/
 │   │   ├── (dashboard)/ buraya auth ile erişiliyor
 │   │   │   ├── dashboard/page.tsx
 │   │   │   ├── courses/page.tsx
-│   │   │   ├── exams/page.tsx
 │   │   │   ├── profile/page.tsx
 │   │   │   └── settings/page.tsx
 │   │   ├── login/page.tsx

@@ -4,7 +4,6 @@ export const routes = {
   landing: "/landing",
   dashboard: "/dashboard",
   courses: "/courses",
-  exams: "/exams",
   settings: "/settings",
   profile: "/profile",
 } as const;

@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  ClipboardCheck,
   Container,
   House,
   Settings,
@@ -50,11 +49,6 @@ export const dashboardSidebarItems: SidebarItem[] = [
     label: "Kurslar",
     href: routes.courses,
     icon: BookOpen,
-  },
-  {
-    label: "Sinavlar",
-    href: routes.exams,
-    icon: ClipboardCheck,
   },
   {
     label: "Profil",
