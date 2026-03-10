@@ -1,0 +1,41 @@
+name: "CI — Docker Build"
+
+on:
+    pull_request:
+        branches:
+            - develop
+            - release
+            - main
+        paths:
+            - "backend/**"
+            - "frontend/**"
+            - ".github/workflows/ci-build.yaml"
+    workflow_dispatch:
+
+jobs:
+    build:
+        name: Docker Build
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+        steps:
+            - name: Checkout code # name opsiyonel omadan da çalışır
+              uses: actions/checkout@v6
+
+            - uses: dorny/paths-filter@v3.0.2
+              id: filter
+              with:
+                  filters: |
+                      backend:
+                        - 'backend/**'
+                      frontend:
+                        - 'frontend/**'
+
+            - name: Build Backend Docker image
+              if: steps.filter.outputs.backend == 'true'
+              run: docker build -t learnops-backend:ci ./backend
+
+            - name: Build Frontend Docker image
+              if: steps.filter.outputs.frontend == 'true'
+              run: docker build -t learnops-frontend:ci ./frontend
