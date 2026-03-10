@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 _instance: "RateLimiterMiddleware | None" = None
 
+
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
@@ -74,8 +75,8 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
                 content={
                     "error": "Too Many Requests",
                     "message": "Rate limit exceeded. Please try again later.",
-                    "retry_after_seconds": retry_after
-                }
+                    "retry_after_seconds": retry_after,
+                },
             )
         else:
             # TODO: In-memory store is not shared across instances.

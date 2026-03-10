@@ -19,6 +19,7 @@ from app.services.jwt_service import create_access_token
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _conflict_payload(
     email: str,
     provider: str = "github",
@@ -35,6 +36,7 @@ def _conflict_payload(
 # ---------------------------------------------------------------------------
 # POST /auth/conflict-check
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_conflict_check_no_existing_user(client: AsyncClient):
@@ -66,6 +68,7 @@ async def test_conflict_check_existing_user(client: AsyncClient, test_user):
 # ---------------------------------------------------------------------------
 # POST /auth/merge
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_merge_valid_token(client: AsyncClient, test_user):

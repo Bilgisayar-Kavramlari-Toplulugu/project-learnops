@@ -25,6 +25,7 @@ def clear_blacklist():
 
 # ---------- 1. Token doğrulama başarılı ----------
 
+
 def test_access_token_valid():
     """Access token üretilir ve decode edilir — sub doğru döner."""
     token = create_access_token(sub="user-123")
@@ -72,6 +73,7 @@ def test_refresh_token_has_correct_expiry():
 
 # ---------- 2. Süresi dolmuş token → JWTError ----------
 
+
 def test_expired_access_token_raises():
     """Süresi dolmuş access token decode edilince JWTError fırlatır."""
     expired_payload = {
@@ -101,6 +103,7 @@ def test_invalid_signature_raises():
 
 
 # ---------- 3. Blacklist — logout sonrası çalışır ----------
+
 
 def test_blacklist_token():
     """Token blacklist'e eklenir ve kontrol edilir."""

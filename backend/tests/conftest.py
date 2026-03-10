@@ -46,6 +46,7 @@ assert any(host in TEST_DATABASE_URL for host in ("localhost", "test", "db:")), 
 # which does NOT persist. Outer rollback cleans all test data.
 # ---------------------------------------------------------------------------
 
+
 @pytest_asyncio.fixture
 async def connection():
     engine = create_async_engine(TEST_DATABASE_URL)

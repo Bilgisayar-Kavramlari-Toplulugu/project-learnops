@@ -18,6 +18,7 @@ from app.services.jwt_service import (
 # Repository functions (Single Responsibility: sadece DB sorguları)
 # ---------------------------------------------------------------------------
 
+
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """Email ile kullanıcıyı oauth_accounts ilişkisiyle birlikte getirir."""
     result = await db.execute(

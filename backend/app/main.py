@@ -30,7 +30,7 @@ app.add_middleware(
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
     same_site="lax",  # OAuth callback cross-site redirect requires lax
-    https_only=settings.ENVIRONMENT == "production"
+    https_only=settings.ENVIRONMENT == "production",
 )
 
 
@@ -39,6 +39,7 @@ app.include_router(auth.router, prefix="/v1")
 
 # Rate Limiting
 app.add_middleware(RateLimiterMiddleware)
+
 
 @app.get("/v1/health")
 async def health_check(db: AsyncSession = Depends(get_db)):
