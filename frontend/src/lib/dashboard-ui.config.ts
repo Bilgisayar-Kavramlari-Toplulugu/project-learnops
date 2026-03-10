@@ -2,7 +2,6 @@ import {
   BookOpen,
   Container,
   House,
-  Settings,
   ShieldCheck,
   TerminalSquare,
   UserRound,
@@ -54,12 +53,7 @@ export const dashboardSidebarItems: SidebarItem[] = [
     label: "Profil",
     href: routes.profile,
     icon: UserRound,
-  },
-  {
-    label: "Ayarlar",
-    href: routes.settings,
-    icon: Settings,
-  },
+  }
 ];
 
 export function getCourseUiMeta(courseId: string): CourseUiMeta {

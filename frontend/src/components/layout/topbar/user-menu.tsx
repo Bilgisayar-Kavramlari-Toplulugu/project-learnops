@@ -65,11 +65,6 @@ export function UserMenu({ user }: UserMenuProps) {
           <p className="text-xs font-normal text-slate-500 dark:text-slate-400">{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className={cn(dropdownItemClass, "opacity-75")}>
-          <Settings className="size-4" />
-          Ayarlar
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(event) => {
             event.preventDefault();
