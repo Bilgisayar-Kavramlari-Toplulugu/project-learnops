@@ -1,5 +1,3 @@
-"use client";
-
 import { ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import OAuthButtonContainer from "@/components/oauth-button-container";
