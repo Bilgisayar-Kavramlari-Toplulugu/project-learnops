@@ -10,9 +10,11 @@ on:
     workflow_dispatch:
 
 env:
-    REGISTRY: ghcr.io
-    BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
-    FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+    GCP_REGION: ${{ vars.GCP_REGION }}
+    GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+    REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
+    BACKEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/backend
+    FRONTEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/frontend
 
 jobs:
     changes:
@@ -59,15 +61,22 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            packages: write
+            id-token: write
         steps:
             - uses: actions/checkout@v6
 
+            - uses: google-github-actions/auth@v2
+              id: auth
+              with:
+                  project_id: ${{ vars.GCP_PROJECT_ID }}
+                  workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+                  service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
             - uses: docker/login-action@v4
               with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
+                  registry: ${{ env.REGISTRY }}
+                  username: oauth2accesstoken
+                  password: ${{ steps.auth.outputs.auth_token }}
 
             - uses: docker/build-push-action@v7
               with:
@@ -93,15 +102,22 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            packages: write
+            id-token: write
         steps:
             - uses: actions/checkout@v6
 
+            - uses: google-github-actions/auth@v2
+              id: auth
+              with:
+                  project_id: ${{ vars.GCP_PROJECT_ID }}
+                  workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+                  service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
             - uses: docker/login-action@v4
               with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
+                  registry: ${{ env.REGISTRY }}
+                  username: oauth2accesstoken
+                  password: ${{ steps.auth.outputs.auth_token }}
 
             - uses: docker/build-push-action@v7
               with:
