@@ -23,7 +23,6 @@ export default function LoginPage() {
 
         <CardContent className="space-y-4">
           <OAuthButtonContainer />
-          <p className="text-center text-xs text-slate-500 dark:text-slate-400"></p>
         </CardContent>
       </Card>
     </main>
