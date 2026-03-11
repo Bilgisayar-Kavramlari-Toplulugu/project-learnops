@@ -2,13 +2,15 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config import settings
-import app.models as _app_models  # noqa: F401 - ensure all SQLAlchemy models are registered
-from app.database import get_db
-from app.routers import auth
 from starlette.middleware.sessions import SessionMiddleware
 
+from app import (
+    models as _models,  # noqa: F401 - ensure all SQLAlchemy models are registered
+)
+from app.config import settings
+from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
+from app.routers import auth
 
 app = FastAPI(
     title="LearnOps API",
@@ -30,7 +32,7 @@ app.add_middleware(
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
     same_site="lax",  # OAuth callback cross-site redirect requires lax
-    https_only=settings.ENVIRONMENT == "production"
+    https_only=settings.ENVIRONMENT == "production",
 )
 
 
@@ -40,10 +42,13 @@ app.include_router(auth.router, prefix="/v1")
 # Rate Limiting
 app.add_middleware(RateLimiterMiddleware)
 
+
 @app.get("/v1/health")
 async def health_check(db: AsyncSession = Depends(get_db)):
     try:
         await db.execute(text("SELECT 1"))
     except Exception as exc:
-        raise HTTPException(status_code=503, detail="Database connection failed") from exc
+        raise HTTPException(
+            status_code=503, detail="Database connection failed"
+        ) from exc
     return {"status": "ok", "version": "1.0.0"}

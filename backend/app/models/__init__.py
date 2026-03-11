@@ -1,6 +1,6 @@
-from .users import User, OAuthAccount, DeletedAccount
-from .courses import Course, Section, Enrollment, UserProgress
-from .quizzes import Quiz, Question, QuizAttempt, QuizAttemptAnswer
+from .courses import Course, Enrollment, Section, UserProgress
+from .quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
+from .users import DeletedAccount, OAuthAccount, User
 
 __all__ = [
     "User",

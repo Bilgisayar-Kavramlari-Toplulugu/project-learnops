@@ -47,7 +47,7 @@ def run_migrations_offline() -> None:
 
     """
     url = os.getenv("DATABASE_URL", config.get_main_option("sqlalchemy.url"))
-    
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -68,10 +68,10 @@ def run_migrations_online() -> None:
     """
     # Get database URL from environment or config
     db_url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url")
-    
+
     config_section = config.get_section(config.config_ini_section)
     config_section["sqlalchemy.url"] = db_url
-    
+
     connectable = create_async_engine(
         db_url,
         poolclass=pool.NullPool,
@@ -82,12 +82,14 @@ def run_migrations_online() -> None:
 
 async def run_async_migrations(connectable):
     async with connectable.begin() as connection:
-        await connection.run_sync(lambda conn: context.configure(
-            connection=conn,
-            target_metadata=target_metadata,
-        ))
+        await connection.run_sync(
+            lambda conn: context.configure(
+                connection=conn,
+                target_metadata=target_metadata,
+            )
+        )
         await connection.run_sync(lambda conn: context.run_migrations())
-    
+
     await connectable.dispose()
 
 

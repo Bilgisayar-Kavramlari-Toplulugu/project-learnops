@@ -93,7 +93,9 @@ def test_refresh_rejects_invalid_signature():
         "exp": datetime.now(timezone.utc) + timedelta(days=7),
         "jti": str(uuid.uuid4()),
     }
-    token = jwt.encode(payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM)
+    token = jwt.encode(
+        payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM
+    )
     resp = client.post("/v1/auth/refresh", json={"refresh_token": token})
     assert resp.status_code == 401
 

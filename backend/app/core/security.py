@@ -1,6 +1,8 @@
-from cryptography.fernet import Fernet
-from app.config import settings
 import base64
+
+from cryptography.fernet import Fernet
+
+from app.config import settings
 
 
 def _get_fernet() -> Fernet:
@@ -31,11 +33,13 @@ def _get_fernet() -> Fernet:
             "Invalid TOKEN_ENCRYPTION_KEY. Use Fernet key or 64-char hex key."
         ) from exc
 
+
 def encrypt_token(token: str) -> str:
     """Encrypt sensitive tokens using Fernet (for refresh tokens)"""
     fernet = _get_fernet()
     encrypted = fernet.encrypt(token.encode())
     return encrypted.decode()
+
 
 def decrypt_token(encrypted_token: str) -> str:
     """Decrypt sensitive tokens"""

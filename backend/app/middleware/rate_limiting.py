@@ -1,14 +1,16 @@
+import logging
+from collections import defaultdict
+from datetime import datetime
+from typing import Dict, Tuple
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from datetime import datetime, timedelta
-from collections import defaultdict
-from typing import Dict, Tuple
-import logging
 
 logger = logging.getLogger(__name__)
 
 _instance: "RateLimiterMiddleware | None" = None
+
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
@@ -73,8 +75,8 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
                 content={
                     "error": "Too Many Requests",
                     "message": "Rate limit exceeded. Please try again later.",
-                    "retry_after_seconds": retry_after
-                }
+                    "retry_after_seconds": retry_after,
+                },
             )
         else:
             # TODO: In-memory store is not shared across instances.

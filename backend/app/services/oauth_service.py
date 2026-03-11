@@ -7,11 +7,17 @@ from sqlalchemy.orm import selectinload
 
 from app.models.users import OAuthAccount, User
 from app.schemas.auth import AccountConflictResponse, OAuthProvider
-from app.services.jwt_service import create_merge_token, decode_merge_token, blacklist_token, is_blacklisted
+from app.services.jwt_service import (
+    blacklist_token,
+    create_merge_token,
+    decode_merge_token,
+    is_blacklisted,
+)
 
 # ---------------------------------------------------------------------------
 # Repository functions (Single Responsibility: sadece DB sorguları)
 # ---------------------------------------------------------------------------
+
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """Email ile kullanıcıyı oauth_accounts ilişkisiyle birlikte getirir."""

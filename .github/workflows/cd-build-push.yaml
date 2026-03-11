@@ -1,0 +1,128 @@
+name: "CD — Build & Push Images"
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "backend/**"
+            - "frontend/**"
+            - ".github/workflows/cd-build-push.yaml"
+    workflow_dispatch:
+
+env:
+    GCP_REGION: ${{ vars.GCP_REGION }}
+    GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+    REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
+    BACKEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/backend
+    FRONTEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/frontend
+
+jobs:
+    changes:
+        name: Detect Changes
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: read
+        outputs:
+            backend: ${{ steps.filter.outputs.backend }}
+            frontend: ${{ steps.filter.outputs.frontend }}
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: dorny/paths-filter@v3.0.2
+              id: filter
+              with:
+                  filters: |
+                      backend:
+                        - 'backend/**'
+                      frontend:
+                        - 'frontend/**'
+
+    ci-lint:
+        name: CI — Lint
+        needs: changes
+        if: needs.changes.outputs.backend == 'true'
+        uses: ./.github/workflows/ci-backend-lint.yaml
+
+    ci-test:
+        name: CI — Test
+        needs: changes
+        if: needs.changes.outputs.backend == 'true'
+        uses: ./.github/workflows/ci-backend-test.yaml
+
+    build-backend:
+        name: Build & Push Backend
+        needs: [changes, ci-lint, ci-test]
+        if: |
+            always() &&
+            needs.changes.outputs.backend == 'true' &&
+            (needs.ci-lint.result == 'success' || needs.ci-lint.result == 'skipped') &&
+            (needs.ci-test.result == 'success' || needs.ci-test.result == 'skipped')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: google-github-actions/auth@v2
+              id: auth
+              with:
+                  project_id: ${{ vars.GCP_PROJECT_ID }}
+                  workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+                  service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+            - uses: docker/login-action@v4
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: oauth2accesstoken
+                  password: ${{ steps.auth.outputs.auth_token }}
+
+            - uses: docker/build-push-action@v7
+              with:
+                  context: ./backend
+                  push: true
+                  tags: |
+                      ${{ env.BACKEND_IMAGE }}:latest
+                      ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+    ci-frontend-lint:
+        name: CI — Frontend Lint
+        needs: changes
+        if: needs.changes.outputs.frontend == 'true'
+        uses: ./.github/workflows/ci-frontend-lint.yaml
+
+    build-frontend:
+        name: Build & Push Frontend
+        needs: [changes, ci-frontend-lint]
+        if: |
+            always() &&
+            needs.changes.outputs.frontend == 'true' &&
+            (needs.ci-frontend-lint.result == 'success' || needs.ci-frontend-lint.result == 'skipped')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: google-github-actions/auth@v2
+              id: auth
+              with:
+                  project_id: ${{ vars.GCP_PROJECT_ID }}
+                  workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+                  service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+            - uses: docker/login-action@v4
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: oauth2accesstoken
+                  password: ${{ steps.auth.outputs.auth_token }}
+
+            - uses: docker/build-push-action@v7
+              with:
+                  context: ./frontend
+                  push: true
+                  tags: |
+                      ${{ env.FRONTEND_IMAGE }}:latest
+                      ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
