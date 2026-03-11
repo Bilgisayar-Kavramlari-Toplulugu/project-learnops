@@ -1,6 +1,9 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { routes } from "@/lib/routes";
 
-export default function HomePage() {
-  redirect(routes.dashboard);
+export default async function Home() {
+  const cookieStore = await cookies();
+  const hasSession = cookieStore.has("access_token");
+
+  redirect(hasSession ? "/dashboard" : "/login");
 }
