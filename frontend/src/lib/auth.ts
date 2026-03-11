@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useCallback } from "react";
 import { API_BASE } from "./constants";
+import { routes } from "./routes";
 
 export type OAuthProvider = "google" | "github" | "linkedin";
 
@@ -30,7 +31,7 @@ export function useAuth() {
 
   const logoutAndRedirect = useCallback(async () => {
     await logout();
-    window.location.href = "/login";
+    window.location.href = routes.login;
   }, []);
 
   return {
