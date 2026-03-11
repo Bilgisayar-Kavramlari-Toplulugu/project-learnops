@@ -9,7 +9,6 @@ on:
         branches:
             - develop
             - release
-            - main
         paths:
             - "backend/**"
             - ".github/workflows/ci-backend-lint.yaml"
