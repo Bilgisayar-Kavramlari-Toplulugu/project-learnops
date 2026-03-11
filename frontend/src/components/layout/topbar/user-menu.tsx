@@ -1,6 +1,5 @@
 "use client";
-import { LogOut, Settings, UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { LogOut, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,29 +11,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
-import { routes } from "@/lib/routes";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import type { DashboardUser } from "@/types";
 import { dropdownItemClass, dropdownPanelClass } from "./topbar-menu-styles";
-import { apiClient } from "@/lib/api-client";
+
 interface UserMenuProps {
   user: DashboardUser;
 }
 export function UserMenu({ user }: UserMenuProps) {
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { logout } = useAuth();
 
   async function handleLogout() {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     try {
-      await apiClient.post("/auth/logout"); 
+      await logout();
     } catch {
-      
-    } finally {
-      router.replace(routes.login);
-      router.refresh();
       setIsLoggingOut(false);
+    } finally {
     }
   }
   return (
