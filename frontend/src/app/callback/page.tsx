@@ -1,13 +1,12 @@
 "use client";
 
-
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const VALID_PROVIDERS = ["google", "linkedin", "github"];
 
-export default function CallbackPage() {
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -35,5 +34,23 @@ export default function CallbackPage() {
         <Skeleton className="h-4 w-3/4" />
       </div>
     </div>
+  );
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-screen p-6">
+          <h1 className="mb-4 text-lg font-medium">Oturumunuz açılıyor...</h1>
+          <div className="w-full max-w-sm space-y-3">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      }
+    >
+      <CallbackContent />
+    </Suspense>
   );
 }
