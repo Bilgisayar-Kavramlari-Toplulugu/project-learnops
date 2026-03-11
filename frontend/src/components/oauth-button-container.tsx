@@ -1,4 +1,4 @@
-import OAuthButton from "./ui/oauth-button";
+import OAuthButton from "./oauth-button";
 
 export default function OAuthButtonContainer() {
   const providers = ["Google", "GitHub", "LinkedIn"];
