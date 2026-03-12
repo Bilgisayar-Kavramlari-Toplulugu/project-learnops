@@ -1,5 +1,6 @@
 from typing import List
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,14 +11,14 @@ class Settings(BaseSettings):
         extra="ignore",  # This ignores extra env vars not defined here
     )
 
-    # Database (matches .env UPPERCASE names)
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "localdev123"
-    POSTGRES_DB: str = "learnops_dev"
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:localdev123@db:5432/learnops_dev"
+    # Database (all from .env, no hardcoded defaults)
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    DATABASE_URL: str
 
-    # JWT Settings (BE-07 ile ortak)
-    JWT_SECRET: str = "change-me-in-production-min-32-chars"
+    # JWT Settings
+    JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -49,6 +50,22 @@ class Settings(BaseSettings):
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
     FRONTEND_PUBLIC_URL: str = "http://localhost:3000"
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        """Parse ALLOWED_ORIGINS from comma-separated string or list."""
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            # JSON array formatını da handle et
+            v = v.strip()
+            if v.startswith("["):
+                import json
+
+                return json.loads(v)
+            return [origin.strip() for origin in v.split(",")]
+        return v
 
     # For backward compatibility with existing code that uses lowercase
     @property
