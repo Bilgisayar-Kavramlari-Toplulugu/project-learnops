@@ -11,14 +11,14 @@ class Settings(BaseSettings):
         extra="ignore",  # This ignores extra env vars not defined here
     )
 
-    # Database (all from .env, no hardcoded defaults)
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    DATABASE_URL: str
+    # Database (populated from .env via pydantic-settings)
+    POSTGRES_USER: str = ""
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
+    DATABASE_URL: str = ""
 
     # JWT Settings
-    JWT_SECRET: str
+    JWT_SECRET: str = ""
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -86,6 +86,21 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Startup validation: reject missing required settings
+_REQUIRED_SETTINGS = [
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "POSTGRES_DB",
+    "DATABASE_URL",
+    "JWT_SECRET",
+]
+_missing = [name for name in _REQUIRED_SETTINGS if not getattr(settings, name)]
+if _missing:
+    raise RuntimeError(
+        f"Missing required environment variables: {', '.join(_missing)}. "
+        "Set them in .env or as environment variables."
+    )
 
 # Startup validation: reject insecure defaults in non-development environments
 _INSECURE_DEFAULTS = {
