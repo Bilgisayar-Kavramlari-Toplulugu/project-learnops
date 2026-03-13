@@ -19,8 +19,8 @@ env:
     GCP_REGION: ${{ vars.GCP_REGION }}
     GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
     REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
-    BACKEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_BACKEND_REPO_NAME }}
-    FRONTEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_FRONTEND_REPO_NAME }}
+    BACKEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_BACKEND_REPO_NAME }}/${{ vars.GAR_BACKEND_REPO_NAME }}
+    FRONTEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_FRONTEND_REPO_NAME }}/${{ vars.GAR_FRONTEND_REPO_NAME }}
 
 jobs:
     changes:
