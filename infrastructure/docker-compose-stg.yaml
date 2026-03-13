@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: learnops_db
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_HOST_FORWARD_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-learnops_user_dev} -d ${POSTGRES_DB:-learnops_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: europe-west3-docker.pkg.dev/learnops-487711/learnops-backend/learnops-backend:latest
+    container_name: learnops_backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+    env_file:
+      - .env
+    ports:
+      - "8000:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: europe-west3-docker.pkg.dev/learnops-487711/learnops-frontend/learnops-frontend:latest
+    container_name: learnops_frontend
+    command: ["npm", "start"]
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000', r => process.exit(r.statusCode < 400 ? 0 : 1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
