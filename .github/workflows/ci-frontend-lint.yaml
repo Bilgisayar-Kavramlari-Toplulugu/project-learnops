@@ -4,13 +4,6 @@ env:
     NODE_VERSION: "22"
 
 on:
-    push:
-        branches:
-            - develop
-            - release
-        paths:
-            - "frontend/**"
-            - ".github/workflows/ci-frontend-lint.yaml"
     pull_request:
         branches:
             - develop
@@ -19,7 +12,6 @@ on:
         paths:
             - "frontend/**"
             - ".github/workflows/ci-frontend-lint.yaml"
-    workflow_call:
     workflow_dispatch:
 
 defaults:
