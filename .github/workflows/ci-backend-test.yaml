@@ -5,13 +5,6 @@ env:
     POETRY_VERSION: "2.3.2"
 
 on:
-    push:
-        branches:
-            - develop
-            - release
-        paths:
-            - "backend/**"
-            - ".github/workflows/ci-backend-test.yaml"
     pull_request:
         branches:
             - develop
@@ -21,7 +14,6 @@ on:
             - "backend/**"
             - ".github/workflows/ci-backend-test.yaml"
     workflow_dispatch:
-    workflow_call:
 
 defaults:
     run:

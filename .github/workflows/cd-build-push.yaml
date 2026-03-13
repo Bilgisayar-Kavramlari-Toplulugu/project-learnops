@@ -2,19 +2,24 @@ name: "CD — Build & Push Images"
 
 on:
     push:
-        branches: [main]
+        branches:
+            - main
+            - release
         paths:
             - "backend/**"
             - "frontend/**"
             - ".github/workflows/cd-build-push.yaml"
     workflow_dispatch:
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false  # Don't cancel CD on main
 env:
     GCP_REGION: ${{ vars.GCP_REGION }}
     GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
     REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
-    BACKEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/backend
-    FRONTEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/frontend
+    BACKEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_BACKEND_REPO_NAME }}/${{ vars.GAR_BACKEND_REPO_NAME }}
+    FRONTEND_IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_FRONTEND_REPO_NAME }}/${{ vars.GAR_FRONTEND_REPO_NAME }}
 
 jobs:
     changes:
@@ -38,91 +43,112 @@ jobs:
                       frontend:
                         - 'frontend/**'
 
-    ci-lint:
-        name: CI — Lint
-        needs: changes
-        if: needs.changes.outputs.backend == 'true'
-        uses: ./.github/workflows/ci-backend-lint.yaml
-
-    ci-test:
-        name: CI — Test
-        needs: changes
-        if: needs.changes.outputs.backend == 'true'
-        uses: ./.github/workflows/ci-backend-test.yaml
-
     build-backend:
         name: Build & Push Backend
-        needs: [changes, ci-lint, ci-test]
-        if: |
-            always() &&
-            needs.changes.outputs.backend == 'true' &&
-            (needs.ci-lint.result == 'success' || needs.ci-lint.result == 'skipped') &&
-            (needs.ci-test.result == 'success' || needs.ci-test.result == 'skipped')
+        needs: [changes]
+        if: needs.changes.outputs.backend == 'true'
         runs-on: ubuntu-latest
         permissions:
             contents: read
             id-token: write
+        outputs:
+            IMAGE_TAG: ${{ steps.version.outputs.IMAGE_TAG }}
         steps:
-            - uses: actions/checkout@v6
+            - name: Checkout code
+              uses: actions/checkout@v6
 
-            - uses: google-github-actions/auth@v2
+            - name: Google Cloud Authentication
+              uses: google-github-actions/auth@v2
               id: auth
               with:
                   project_id: ${{ vars.GCP_PROJECT_ID }}
                   workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-                  service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+                  service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+                  token_format: 'access_token'
 
-            - uses: docker/login-action@v4
+            - name: Read version and create image tag
+              id: version
+              run: |
+                  VERSION=$(grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' backend/.version | tr -d '\r' | xargs)
+                  if [ -z "$VERSION" ]; then
+                      echo "Error: version file is missing or invalid" >&2
+                      exit 1
+                  fi
+                  echo "IMAGE_TAG=${VERSION}" >> $GITHUB_OUTPUT
+
+            - name: Login to Google Artifact Registry
+              uses: docker/login-action@v4
               with:
                   registry: ${{ env.REGISTRY }}
                   username: oauth2accesstoken
-                  password: ${{ steps.auth.outputs.auth_token }}
+                  password: ${{ steps.auth.outputs.access_token }}
 
-            - uses: docker/build-push-action@v7
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build & Push Backend
+              uses: docker/build-push-action@v7
               with:
                   context: ./backend
                   push: true
+                  cache-from: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache
+                  cache-to: type=registry,ref=${{ env.BACKEND_IMAGE }}:buildcache,mode=max
                   tags: |
                       ${{ env.BACKEND_IMAGE }}:latest
-                      ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-
-    ci-frontend-lint:
-        name: CI — Frontend Lint
-        needs: changes
-        if: needs.changes.outputs.frontend == 'true'
-        uses: ./.github/workflows/ci-frontend-lint.yaml
+                      ${{ env.BACKEND_IMAGE }}:${{ steps.version.outputs.IMAGE_TAG }}
+                      ${{ env.BACKEND_IMAGE }}:sha-${{ github.sha }}
 
     build-frontend:
         name: Build & Push Frontend
-        needs: [changes, ci-frontend-lint]
-        if: |
-            always() &&
-            needs.changes.outputs.frontend == 'true' &&
-            (needs.ci-frontend-lint.result == 'success' || needs.ci-frontend-lint.result == 'skipped')
+        needs: [changes]
+        if: needs.changes.outputs.frontend == 'true'
         runs-on: ubuntu-latest
         permissions:
             contents: read
             id-token: write
+        outputs:
+            IMAGE_TAG: ${{ steps.version.outputs.IMAGE_TAG }}
         steps:
-            - uses: actions/checkout@v6
+            - name: Checkout code
+              uses: actions/checkout@v6
 
-            - uses: google-github-actions/auth@v2
+            - name: Google Cloud Authentication
+              uses: google-github-actions/auth@v2
               id: auth
               with:
                   project_id: ${{ vars.GCP_PROJECT_ID }}
                   workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-                  service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+                  service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+                  token_format: 'access_token'
 
-            - uses: docker/login-action@v4
+            - name: Read version and create image tag
+              id: version
+              run: |
+                  VERSION=$(grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' frontend/.version | tr -d '\r' | xargs)
+                  if [ -z "$VERSION" ]; then
+                      echo "Error: version file is missing or invalid" >&2
+                      exit 1
+                  fi
+                  echo "IMAGE_TAG=${VERSION}" >> $GITHUB_OUTPUT
+
+            - name: Login to Google Artifact Registry
+              uses: docker/login-action@v4
               with:
                   registry: ${{ env.REGISTRY }}
                   username: oauth2accesstoken
-                  password: ${{ steps.auth.outputs.auth_token }}
+                  password: ${{ steps.auth.outputs.access_token }}
 
-            - uses: docker/build-push-action@v7
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build & Push Frontend
+              uses: docker/build-push-action@v7
               with:
                   context: ./frontend
                   push: true
                   tags: |
                       ${{ env.FRONTEND_IMAGE }}:latest
-                      ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+                      ${{ env.FRONTEND_IMAGE }}:${{ steps.version.outputs.IMAGE_TAG }}
+                      ${{ env.FRONTEND_IMAGE }}:sha-${{ github.sha }}
+
+
