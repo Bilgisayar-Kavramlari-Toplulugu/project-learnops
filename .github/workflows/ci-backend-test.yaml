@@ -48,8 +48,12 @@ jobs:
                     --health-retries 5
 
         env:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: testpass
+            POSTGRES_DB: learnops_test
             TEST_DATABASE_URL: "postgresql+asyncpg://postgres:testpass@localhost:5432/learnops_test"
             DATABASE_URL: "postgresql+asyncpg://postgres:testpass@localhost:5432/learnops_test"
+            JWT_SECRET: "test-jwt-secret-not-for-production"
 
         steps:
             - name: checkout
