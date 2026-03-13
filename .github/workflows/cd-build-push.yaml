@@ -65,6 +65,7 @@ jobs:
                   project_id: ${{ vars.GCP_PROJECT_ID }}
                   workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
                   service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+                  token_format: 'access_token'
 
             - name: Read version and create image tag
               id: version
@@ -119,6 +120,7 @@ jobs:
                   project_id: ${{ vars.GCP_PROJECT_ID }}
                   workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
                   service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+                  token_format: 'access_token'
 
             - name: Read version and create image tag
               id: version
