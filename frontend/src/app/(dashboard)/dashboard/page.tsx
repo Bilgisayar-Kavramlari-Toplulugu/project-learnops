@@ -2,21 +2,25 @@
 
 import { CalendarDays, LayoutDashboard } from "lucide-react";
 
-import { dashboardStarterUser } from "@/lib/dashboard-starter.config";
 import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { routes } from "@/lib/routes";
+import { useUser } from "@/hooks/use-user";
 
 export default function DashboardPage() {
+  const { user, loading } = useUser();
+
   const todayLabel = new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   }).format(new Date());
 
+  if (loading || !user) return null;
+
   return (
     <DashboardShell
-      user={dashboardStarterUser}
+      user={user}
       sidebarItems={dashboardSidebarItems}
       activePath={routes.dashboard}
     >
