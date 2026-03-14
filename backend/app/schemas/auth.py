@@ -41,6 +41,14 @@ class MergeAccountResponse(BaseModel):
     providers: list[str]  # Artık bağlı olan tüm provider'lar
 
 
+class UserMeResponse(BaseModel):
+    id: str
+    email: str
+    display_name: str
+    avatar_type: str
+    role: str = "user"
+
+
 class AccountConflictResponse(BaseModel):
     """Email çakışması durumunda frontend'e dönen response"""
 
