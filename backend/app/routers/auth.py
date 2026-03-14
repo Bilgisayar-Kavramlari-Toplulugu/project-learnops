@@ -24,6 +24,7 @@ from app.schemas.auth import (
     OAuthProvider,
     RefreshRequest,
     TokenResponse,
+    UserMeResponse,
 )
 from app.services.jwt_service import (
     blacklist_token,
@@ -265,6 +266,54 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         await db.rollback()
         logger.error(f"Callback error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/me", response_model=UserMeResponse)
+async def get_me(request: Request, db: AsyncSession = Depends(get_db)):
+    """Return the current user's profile from the access_token cookie."""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    try:
+        payload = decode_token(token)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token geçersiz veya süresi dolmuş",
+        )
+
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Access token gerekli",
+        )
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token geçersiz",
+        )
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    return UserMeResponse(
+        id=str(user.id),
+        email=user.email,
+        display_name=user.display_name,
+        avatar_type=user.avatar_type,
+    )
 
 
 @router.post("/refresh", response_model=TokenResponse)

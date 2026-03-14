@@ -3,13 +3,17 @@
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { routes } from "@/lib/routes";
 import { StarterCanvas } from "@/components/dashboard/starter-canvas";
-import { dashboardStarterUser } from "@/lib/dashboard-starter.config";
 import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
+import { useUser } from "@/hooks/use-user";
 
 export default function CoursesPage() {
+  const { user, loading } = useUser();
+
+  if (loading || !user) return null;
+
   return (
     <DashboardShell
-      user={dashboardStarterUser}
+      user={user}
       sidebarItems={dashboardSidebarItems}
       activePath={routes.courses}
     >
