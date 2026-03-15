@@ -1,0 +1,47 @@
+name: "CI - Backend Lint"
+
+env:
+    PYTHON_VERSION: "3.13.11"
+    POETRY_VERSION: "2.3.2"
+
+on:
+    pull_request:
+        branches:
+            - develop
+            - release
+            - main
+        paths:
+            - "backend/**"
+            - ".github/workflows/ci-backend-lint.yaml"
+    workflow_dispatch:
+
+defaults:
+    run:
+        working-directory: backend
+
+jobs:
+    lint:
+        name: Ruff + Mypy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout the code
+              uses: actions/checkout@v6
+
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+
+            - name: Install dependencies
+              run: poetry install --no-interaction --no-ansi
+
+            - name: Ruff check
+              run: poetry run ruff check .
+
+            - name: Ruff format check
+              run: poetry run ruff format --check .
+
+            - name: Mypy type check
+              run: poetry run mypy app/
