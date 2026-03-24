@@ -14,9 +14,6 @@ jobs:
           fetch-depth: 0   # scan full history
 
       - name: Run Betterleaks
-        run: |
-            docker run --rm \
-            -v "${{ github.workspace }}:/repo" \
-            -w /repo \
-            ghcr.io/betterleaks/betterleaks:latest \
-            git .
+        uses: docker://ghcr.io/betterleaks/betterleaks:latest
+        with:
+          args: git .
