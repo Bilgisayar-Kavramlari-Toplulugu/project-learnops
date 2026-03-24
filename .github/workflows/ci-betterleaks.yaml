@@ -1,0 +1,22 @@
+name: "CI - Betterleaks"
+
+on:
+  pull_request:
+    branches: [develop, release, main]
+  workflow_dispatch:
+
+jobs:
+  betterleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # scan full history
+
+      - name: Run Betterleaks
+        run: |
+            docker run --rm \
+            -v "${{ github.workspace }}:/repo" \
+            -w /repo \
+            ghcr.io/betterleaks/betterleaks:latest \
+            git .
