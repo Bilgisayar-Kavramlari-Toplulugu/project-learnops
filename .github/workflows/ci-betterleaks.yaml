@@ -16,4 +16,31 @@ jobs:
       - name: Run Betterleaks
         uses: docker://ghcr.io/betterleaks/betterleaks:latest
         with:
-          args: git .
+          args: git . --report-format json --report-path betterleaks.json --redact=100
+        continue-on-error: true
+
+      - name: Betterleaks Summary
+        id: summarize
+        if: always()
+        shell: bash
+        run: |
+          COUNT=0
+          if [ -f betterleaks.json ]; then
+            COUNT="$(jq -r '(.Leaks // .leaks // []) | length' betterleaks.json 2>/dev/null || echo 0)"
+          fi
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Betterleaks Summary"
+            echo "- Findings: $COUNT"
+            if [ -f betterleaks.json ]; then
+              echo "- Report: betterleaks.json"
+            else
+              echo "- Report: not generated"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if leaks found
+        if: steps.summarize.outputs.count != '0'
+        run: |
+          echo "Betterleaks found secrets. Failing the job."
+          exit 1
