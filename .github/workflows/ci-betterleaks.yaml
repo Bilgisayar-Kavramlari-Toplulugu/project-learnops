@@ -16,7 +16,10 @@ jobs:
       - name: Run Betterleaks
         uses: docker://ghcr.io/betterleaks/betterleaks:latest
         with:
-          args: git . --report-format json --report-path betterleaks.json --redact=100
+          args: >
+            sh -lc
+            "git config --global --add safe.directory /github/workspace
+            && betterleaks git . --report-format json --report-path betterleaks.json --redact=100"
         continue-on-error: true
 
       - name: Betterleaks Summary
