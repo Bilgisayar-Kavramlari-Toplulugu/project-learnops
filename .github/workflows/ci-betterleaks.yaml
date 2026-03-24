@@ -1,0 +1,54 @@
+name: "CI - Betterleaks"
+
+on:
+  pull_request:
+    branches: [develop, release, main]
+  workflow_dispatch:
+
+jobs:
+  betterleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # scan full history
+
+      - name: Run Betterleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="1.1.1"
+          OS="linux"
+          ARCH="x64"
+          URL="https://github.com/betterleaks/betterleaks/releases/download/v${VERSION}/betterleaks_${VERSION}_${OS}_${ARCH}.tar.gz"
+          curl -sSL "$URL" -o betterleaks.tgz
+          tar -xzf betterleaks.tgz betterleaks
+          chmod +x betterleaks
+          ./betterleaks git . --report-format json --report-path betterleaks.json --redact=100
+        continue-on-error: true
+
+      - name: Betterleaks Summary
+        id: summarize
+        if: always()
+        shell: bash
+        run: |
+          COUNT=0
+          if [ -f betterleaks.json ]; then
+            COUNT="$(jq -r '(.Leaks // .leaks // []) | length' betterleaks.json 2>/dev/null || echo 0)"
+          fi
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Betterleaks Summary"
+            echo "- Findings: $COUNT"
+            if [ -f betterleaks.json ]; then
+              echo "- Report: betterleaks.json"
+            else
+              echo "- Report: not generated"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if leaks found
+        if: steps.summarize.outputs.count != '0'
+        run: |
+          echo "Betterleaks found secrets. Failing the job."
+          exit 1
