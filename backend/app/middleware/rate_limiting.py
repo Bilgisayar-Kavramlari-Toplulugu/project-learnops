@@ -13,6 +13,7 @@ _instance: "RateLimiterMiddleware | None" = None
 
 AUTH_PATH_PREFIX = "/auth/"
 
+
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
@@ -76,8 +77,9 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
                     "Retry-After": str(retry_after),
                     "X-RateLimit-Limit": str(max_requests),
                     "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": str(int(last_reset.timestamp())
-                                             + window_seconds)
+                    "X-RateLimit-Reset": str(
+                        int(last_reset.timestamp()) + window_seconds
+                    ),
                 },
                 content={
                     "error": "Too Many Requests",
