@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 _instance: "RateLimiterMiddleware | None" = None
 
-AUTH_PATH_PREFIX = "/v1/auth/"
+AUTH_PATH_PREFIX = "/auth/"
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
@@ -41,7 +41,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         /auth/* -> 10 req/min
         other -> 100 req/min
         """
-        if path.startswith(AUTH_PATH_PREFIX):
+        if AUTH_PATH_PREFIX in path:
             return (10, 60)
         return (100, 60)
 
@@ -58,7 +58,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         max_requests, window_seconds = self.get_rate_limit(path)
-        route_key = "/auth" if path.startswith(AUTH_PATH_PREFIX) else "/api"
+        route_key = "/auth" if AUTH_PATH_PREFIX in path else "/api"
 
         now = datetime.now()
         last_reset, count = self.request_counts[client_ip][route_key]
@@ -76,7 +76,8 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
                     "Retry-After": str(retry_after),
                     "X-RateLimit-Limit": str(max_requests),
                     "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": str(int(last_reset.timestamp()) + window_seconds)
+                    "X-RateLimit-Reset": str(int(last_reset.timestamp())
+                                             + window_seconds)
                 },
                 content={
                     "error": "Too Many Requests",
