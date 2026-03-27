@@ -19,11 +19,7 @@ export default function DashboardPage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell
-      user={user}
-      sidebarItems={dashboardSidebarItems}
-      activePath={routes.dashboard}
-    >
+    <DashboardShell user={user} sidebarItems={dashboardSidebarItems} activePath={routes.dashboard}>
       <section className="mx-auto w-full max-w-6xl space-y-4">
         <header className="rounded-2xl border border-blue-100/80 bg-white/85 px-4 py-3 shadow-sm shadow-blue-100/40 dark:border-slate-700 dark:bg-slate-900/75 dark:shadow-black/20">
           <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">

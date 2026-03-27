@@ -12,15 +12,8 @@ export default function ProfilePage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell
-      user={user}
-      sidebarItems={dashboardSidebarItems}
-      activePath={routes.profile}
-    >
-      <StarterCanvas
-        title="Profil"
-        description="Profil detaylari bu ekranda goruntulenecek."
-      />
+    <DashboardShell user={user} sidebarItems={dashboardSidebarItems} activePath={routes.profile}>
+      <StarterCanvas title="Profil" description="Profil detaylari bu ekranda goruntulenecek." />
     </DashboardShell>
   );
 }

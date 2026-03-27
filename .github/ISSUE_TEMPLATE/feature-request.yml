@@ -84,7 +84,7 @@ body:
         - 🟢 Düşük — Güzel olur ama acil değil
     validations:
       required: false
-  
+
   - type: textarea
     id: examples
     attributes:
@@ -96,7 +96,7 @@ body:
         Senaryo 3: ...
     validations:
       required: false
-  
+
   - type: textarea
     id: references
     attributes:
@@ -107,7 +107,7 @@ body:
         - Benzer bir yaklaşım: https://...
     validations:
       required: false
-  
+
   - type: textarea
     id: additional
     attributes:
@@ -116,7 +116,7 @@ body:
       placeholder: Görsel veya ek bağlamı buraya ekleyebilirsiniz.
     validations:
       required: false
-  
+
   - type: checkboxes
     id: checklist
     attributes:

@@ -150,5 +150,3 @@ jobs:
                       ${{ env.FRONTEND_IMAGE }}:latest
                       ${{ env.FRONTEND_IMAGE }}:${{ steps.version.outputs.IMAGE_TAG }}
                       ${{ env.FRONTEND_IMAGE }}:sha-${{ github.sha }}
-
-
