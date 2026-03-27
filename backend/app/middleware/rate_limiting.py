@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 _instance: "RateLimiterMiddleware | None" = None
 
+AUTH_PATH_PREFIX = "/auth/"
+
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
@@ -40,7 +42,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         /auth/* -> 10 req/min
         other -> 100 req/min
         """
-        if path.startswith("/auth/"):
+        if AUTH_PATH_PREFIX in path:
             return (10, 60)
         return (100, 60)
 
@@ -57,7 +59,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         max_requests, window_seconds = self.get_rate_limit(path)
-        route_key = "/auth" if path.startswith("/auth/") else "/api"
+        route_key = "/auth" if AUTH_PATH_PREFIX in path else "/api"
 
         now = datetime.now()
         last_reset, count = self.request_counts[client_ip][route_key]
@@ -71,7 +73,14 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             logger.warning(f"Rate limit exceeded: {client_ip} on {path}")
             return JSONResponse(
                 status_code=429,
-                headers={"Retry-After": str(retry_after)},
+                headers={
+                    "Retry-After": str(retry_after),
+                    "X-RateLimit-Limit": str(max_requests),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(
+                        int(last_reset.timestamp()) + window_seconds
+                    ),
+                },
                 content={
                     "error": "Too Many Requests",
                     "message": "Rate limit exceeded. Please try again later.",
@@ -84,4 +93,15 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             self.request_counts[client_ip][route_key] = (last_reset, count + 1)
 
         response = await call_next(request)
+
+        # Her response'a rate limit bilgisi ekle
+        current_count = self.request_counts[client_ip][route_key][1]
+        remaining = max(0, max_requests - current_count)
+        reset_time = self.request_counts[client_ip][route_key][0]
+        reset_timestamp = int(reset_time.timestamp()) + window_seconds
+
+        response.headers["X-RateLimit-Limit"] = str(max_requests)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Reset"] = str(reset_timestamp)
+
         return response
