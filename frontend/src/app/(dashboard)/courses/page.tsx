@@ -12,11 +12,7 @@ export default function CoursesPage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell
-      user={user}
-      sidebarItems={dashboardSidebarItems}
-      activePath={routes.courses}
-    >
+    <DashboardShell user={user} sidebarItems={dashboardSidebarItems} activePath={routes.courses}>
       <StarterCanvas
         title="Kurslar"
         description="Kurs listesi ve filtreler bu ekranda goruntulenir."

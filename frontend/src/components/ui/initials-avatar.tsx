@@ -13,10 +13,7 @@ const avatarToneClasses = [
 ] as const;
 
 function toInitials(name: string, fallbackInitials?: string): string {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = name.trim().split(/\s+/).filter(Boolean);
 
   if (parts.length >= 2) {
     return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();

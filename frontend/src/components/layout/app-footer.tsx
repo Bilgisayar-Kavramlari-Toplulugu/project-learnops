@@ -60,12 +60,7 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
 
   if (link.external) {
     return (
-      <a
-        href={link.href}
-        target="_blank"
-        rel="noreferrer noopener"
-        className={className}
-      >
+      <a href={link.href} target="_blank" rel="noreferrer noopener" className={className}>
         <span className="inline-flex items-center gap-2">
           {Icon ? <Icon className="size-4" /> : null}
           {link.label}

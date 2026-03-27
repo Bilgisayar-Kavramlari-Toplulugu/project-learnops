@@ -43,10 +43,10 @@ body:
         3. '...' alanına veri gir
         4. Hatayı gözlemle
       value: |
-        1. 
-        2. 
-        3. 
-        4. 
+        1.
+        2.
+        3.
+        4.
     validations:
       required: true
 

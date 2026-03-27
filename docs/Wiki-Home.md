@@ -4,7 +4,7 @@
 
 Bu alan, **Cloud and Devops Learning Platform** projesinin yaşayan dokümantasyon merkezidir. Projenin mimarisi, tasarım kararları ve uzun vadeli bilgileri burada yer alacaktır.
 
-👤 **Proje Lideri:** @flovearth  
+👤 **Proje Lideri:** @flovearth
 👥 **Takım:** [LearnOps Üyeleri](https://github.com/orgs/Bilgisayar-Kavramlari-Toplulugu/teams/LearnOps)
 ---
 
@@ -36,7 +36,7 @@ Bu Wiki, `README.md` dosyasını tamamlayıcı niteliktedir. `README.md` projeni
 This is the living documentation hub for the **Cloud and Devops Learning Platform** project. The project's architecture, design decisions, and long-term information will reside here.
 
 
-👤 **Project Lead:** @flovearth  
+👤 **Project Lead:** @flovearth
 👥 **Team:** [LearnOps Members](https://github.com/orgs/Bilgisayar-Kavramlari-Toplulugu/teams/LearnOps)
 
 ---
