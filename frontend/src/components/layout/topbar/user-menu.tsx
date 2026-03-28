@@ -1,6 +1,7 @@
 "use client";
 import { LogOut, UserRound } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,6 +14,7 @@ import {
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { routes } from "@/lib/routes";
 import type { DashboardProfile } from "@/types";
 import { dropdownItemClass, dropdownPanelClass } from "./topbar-menu-styles";
 
@@ -61,6 +63,12 @@ export function UserMenu({ user }: UserMenuProps) {
           <p className="text-xs font-normal text-slate-500 dark:text-slate-400">{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className={dropdownItemClass}>
+          <Link href={routes.profile}>
+            <UserRound className="size-4" />
+            Profil
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={(event) => {
             event.preventDefault();
