@@ -27,7 +27,7 @@ function toInitials(name: string | undefined | null, fallbackInitials?: string):
   }
 
   if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
+    return parts[0][0].toUpperCase();
   }
 
   return "LO";
@@ -66,29 +66,20 @@ interface InitialsAvatarProps {
   className?: string;
   fallbackClassName?: string;
 }
-interface InitialsAvatarProps {
-  name?: string | null;
-  fallbackInitials?: string;
-  seed?: string;
-  avatarType?: string | null;   // ← ekle
-  size?: "default" | "sm" | "lg";
-  className?: string;
-  fallbackClassName?: string;
-}
 
 export function InitialsAvatar({
   name,
   fallbackInitials,
   seed,
-  avatarType,                   // ← ekle
+  avatarType,
   size = "default",
   className,
   fallbackClassName,
 }: InitialsAvatarProps) {
-  const isSystemAvatar =
-    avatarType && avatarType !== "initials";
+  const isSystemAvatar = avatarType && avatarType !== "initials";
+  const initials = toInitials(name, fallbackInitials);
+  const toneClass = pickTone(name ?? seed);
 
-  // sistem avatarı ise img render et
   if (isSystemAvatar) {
     return (
       <Avatar size={size} className={cn("border border-blue-100 dark:border-slate-700", className)}>
@@ -96,21 +87,28 @@ export function InitialsAvatar({
           src={`/avatars/${avatarType}.svg`}
           alt={name ?? "avatar"}
         />
-        <AvatarFallback className={cn("font-semibold", pickTone(name ?? seed), fallbackClassName)}>
-          {toInitials(name, fallbackInitials)}
+        <AvatarFallback className={cn("font-semibold", toneClass, fallbackClassName)}>
+          {initials}
         </AvatarFallback>
       </Avatar>
     );
   }
 
-  // initials (default)
-  const initials = toInitials(name, fallbackInitials);
-  const toneClass = pickTone(name ?? seed);
+  // Initials branch: render directly without AvatarFallback.
+  // AvatarFallback relies on Radix's imageLoadingStatus — if a system avatar was
+  // previously loaded in this Avatar root, the status stays "loaded" and the
+  // fallback never renders. Bypassing it avoids this stale-state issue entirely.
   return (
     <Avatar size={size} className={cn("border border-blue-100 dark:border-slate-700", className)}>
-      <AvatarFallback className={cn("font-semibold", toneClass, fallbackClassName)}>
+      <span
+        className={cn(
+          "flex size-full items-center justify-center rounded-full font-semibold text-sm group-data-[size=sm]/avatar:text-xs",
+          toneClass,
+          fallbackClassName,
+        )}
+      >
         {initials}
-      </AvatarFallback>
+      </span>
     </Avatar>
   );
 }
