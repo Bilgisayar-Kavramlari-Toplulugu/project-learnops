@@ -93,7 +93,7 @@ export function InitialsAvatar({
     return (
       <Avatar size={size} className={cn("border border-blue-100 dark:border-slate-700", className)}>
         <AvatarImage
-          src={`/avatars/${avatarType}.png`}  // ya da CDN path'in ne ise
+          src={`/avatars/${avatarType}.svg`}
           alt={name ?? "avatar"}
         />
         <AvatarFallback className={cn("font-semibold", pickTone(name ?? seed), fallbackClassName)}>
