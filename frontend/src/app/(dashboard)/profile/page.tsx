@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import type { DashboardProfile } from "@/types";
 import {
   Card,
   CardContent,
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getInitialsColor, getInitials } from "@/components/ui/avatar-component";
+import { getInitials } from "@/components/ui/avatar-component";
 import { pickTone } from "@/components/ui/initials-avatar";
 import { DeleteAccountModal } from "@/components/features/profile/delete-account-modal";
 import { useProfile } from "@/hooks/profile/use-profile";
@@ -117,29 +118,33 @@ function ProfileSkeleton() {
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
+  if (isLoading || !profile) return <ProfileSkeleton />;
+  return <ProfileForm profile={profile} />;
+}
+
+function toSelectedAvatar(avatarType: string | null | undefined): string {
+  if (!avatarType || avatarType === "initials") return "initials";
+  return avatarType.startsWith("system_") ? avatarType.slice("system_".length) : avatarType;
+}
+
+function ProfileForm({ profile }: { profile: DashboardProfile }) {
   const { mutate: updateProfile, isPending } = useUpdateProfile();
 
-  const [display_name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
+  const [form, setForm] = useState({
+    display_name: profile.display_name ?? "",
+    bio: profile.bio ?? "",
+    selectedAvatar: toSelectedAvatar(profile.avatar_type),
+  });
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (profile) {
-      setName(profile.display_name ?? "");
-      setBio(profile.bio ?? "");
-      setSelectedAvatar(profile.avatar_type ?? "");
-    }
-  }, [profile]);
-
-  if (isLoading || !profile) return <ProfileSkeleton />;
+  const { display_name, bio, selectedAvatar } = form;
 
   const initials = getInitials(display_name || profile.display_name);
   const initialsColor = pickTone(display_name || profile.display_name);
 
   function handleSave() {
     updateProfile(
-      { display_name, bio, avatar_type: `system_${selectedAvatar}` },
+      { display_name, bio, avatar_type: selectedAvatar === "initials" ? "initials" : `system_${selectedAvatar}` },
       {
         onSuccess: () => toast.success("Profiliniz başarıyla güncellendi"),
         onError: () => toast.error("Hata oluştu, tekrar deneyin"),
@@ -189,7 +194,7 @@ export default function ProfilePage() {
             {/* Seçici grid */}
             <div className="grid grid-cols-11 gap-2">
               <button
-                onClick={() => setSelectedAvatar("initials")}
+                onClick={() => setForm((f) => ({ ...f, selectedAvatar: "initials" }))}
                 className={cn(
                   "aspect-square rounded-full border-2 flex items-center justify-center text-xs font-medium transition-all",
                   initialsColor,
@@ -204,7 +209,7 @@ export default function ProfilePage() {
               {SYSTEM_AVATARS.map((id) => (
                 <button
                   key={id}
-                  onClick={() => setSelectedAvatar(id)}
+                  onClick={() => setForm((f) => ({ ...f, selectedAvatar: id }))}
                   className={cn(
                     "aspect-square rounded-full border-2 overflow-hidden transition-all",
                     selectedAvatar === id
@@ -237,7 +242,7 @@ export default function ProfilePage() {
               <input
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 value={display_name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
                 placeholder="Adınız"
               />
             </div>
@@ -249,7 +254,7 @@ export default function ProfilePage() {
                 rows={3}
                 maxLength={200}
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
                 placeholder="Kendinizden bahsedin..."
               />
               <p className="text-xs text-muted-foreground text-right">
