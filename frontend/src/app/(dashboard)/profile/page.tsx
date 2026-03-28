@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getInitialsColor, getInitials } from "@/components/ui/avatar-component";
+import { pickTone } from "@/components/ui/initials-avatar";
 import { DeleteAccountModal } from "@/components/features/profile/delete-account-modal";
 import { useProfile } from "@/hooks/profile/use-profile";
 import { useUpdateProfile } from "@/hooks/profile/use-update-profile";
@@ -134,7 +135,7 @@ export default function ProfilePage() {
   if (isLoading || !profile) return <ProfileSkeleton />;
 
   const initials = getInitials(display_name || profile.display_name);
-  const initialsColor = getInitialsColor(display_name || profile.display_name);
+  const initialsColor = pickTone(display_name || profile.display_name);
 
   function handleSave() {
     updateProfile(

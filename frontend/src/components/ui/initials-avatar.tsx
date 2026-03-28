@@ -33,7 +33,7 @@ function toInitials(name: string | undefined | null, fallbackInitials?: string):
   return "LO";
 }
 
-function pickTone(name: string | undefined | null): string {
+export function pickTone(name: string | undefined | null): string {
   if (!name) return avatarToneClasses[0];
 
   const firstChar = name.trim().charAt(0).toUpperCase();
