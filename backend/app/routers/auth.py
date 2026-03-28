@@ -84,7 +84,7 @@ async def google_login(request: Request):
         if request.query_params.get("format") == "json":
             response = JSONResponse(content={"login_url": auth_url})
         else:
-            response = RedirectResponse(url=auth_url, status_code=307)
+            response = RedirectResponse(url=auth_url, status_code=302)
 
         response.set_cookie(
             key="oauth_state",
