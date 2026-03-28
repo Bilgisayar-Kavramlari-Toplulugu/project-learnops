@@ -94,6 +94,7 @@ _REQUIRED_SETTINGS = [
     "POSTGRES_DB",
     "DATABASE_URL",
     "JWT_SECRET",
+    "TOKEN_ENCRYPTION_KEY",
 ]
 _missing = [name for name in _REQUIRED_SETTINGS if not getattr(settings, name)]
 if _missing:

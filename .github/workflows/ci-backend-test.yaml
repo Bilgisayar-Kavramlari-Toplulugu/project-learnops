@@ -46,6 +46,7 @@ jobs:
             TEST_DATABASE_URL: "postgresql+asyncpg://postgres:testpass@localhost:5432/learnops_test"
             DATABASE_URL: "postgresql+asyncpg://postgres:testpass@localhost:5432/learnops_test"
             JWT_SECRET: "test-jwt-secret-not-for-production"
+            TOKEN_ENCRYPTION_KEY: "test-token-encryption-key-not-for-production"
 
         steps:
             - name: checkout
