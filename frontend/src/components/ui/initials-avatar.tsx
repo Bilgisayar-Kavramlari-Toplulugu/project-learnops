@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const avatarToneClasses = [
@@ -12,7 +12,14 @@ const avatarToneClasses = [
   "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/55 dark:text-cyan-100",
 ] as const;
 
-function toInitials(name: string, fallbackInitials?: string): string {
+function toInitials(name: string | undefined | null, fallbackInitials?: string): string {
+  if (!name || typeof name !== "string") {
+    if (fallbackInitials?.trim()) {
+      return fallbackInitials.trim().slice(0, 2).toUpperCase();
+    }
+    return "LO";
+  }
+
   const parts = name.trim().split(/\s+/).filter(Boolean);
 
   if (parts.length >= 2) {
@@ -23,30 +30,47 @@ function toInitials(name: string, fallbackInitials?: string): string {
     return parts[0].slice(0, 2).toUpperCase();
   }
 
-  if (fallbackInitials?.trim()) {
-    return fallbackInitials.trim().slice(0, 2).toUpperCase();
-  }
-
   return "LO";
 }
 
-function pickTone(seed: string): string {
-  if (!seed) {
-    return avatarToneClasses[0];
-  }
+function pickTone(name: string | undefined | null): string {
+  if (!name) return avatarToneClasses[0];
 
-  let hash = 0;
-  for (const char of seed) {
-    hash = (hash * 31 + char.charCodeAt(0)) % 2147483647;
-  }
+  const firstChar = name.trim().charAt(0).toUpperCase();
+  if (!firstChar) return avatarToneClasses[0];
 
-  return avatarToneClasses[Math.abs(hash) % avatarToneClasses.length];
+  const code = firstChar.charCodeAt(0);
+
+  // User requested grouping:
+  // A, B, C, D (65-68) -> Blue
+  if (code >= 65 && code <= 68) return avatarToneClasses[0];
+  // E, F, G, H (69-72) -> Green
+  if (code >= 69 && code <= 72) return avatarToneClasses[1];
+  // I, J, K, L (73-76) -> Purple
+  if (code >= 73 && code <= 76) return avatarToneClasses[4];
+  // M, N, O, P (77-80) -> Amber
+  if (code >= 77 && code <= 80) return avatarToneClasses[2];
+  // R, S, T, U (82-85) -> Red
+  if (code >= 82 && code <= 85) return avatarToneClasses[3];
+  
+  // V, Y, Z, Others -> Cyan
+  return avatarToneClasses[5];
 }
 
 interface InitialsAvatarProps {
-  name: string;
+  name?: string | null;
   fallbackInitials?: string;
   seed?: string;
+  avatarType?: string | null;
+  size?: "default" | "sm" | "lg";
+  className?: string;
+  fallbackClassName?: string;
+}
+interface InitialsAvatarProps {
+  name?: string | null;
+  fallbackInitials?: string;
+  seed?: string;
+  avatarType?: string | null;   // ← ekle
   size?: "default" | "sm" | "lg";
   className?: string;
   fallbackClassName?: string;
@@ -56,19 +80,34 @@ export function InitialsAvatar({
   name,
   fallbackInitials,
   seed,
+  avatarType,                   // ← ekle
   size = "default",
   className,
   fallbackClassName,
 }: InitialsAvatarProps) {
-  const initials = toInitials(name, fallbackInitials);
-  const toneClass = pickTone(seed ?? name);
+  const isSystemAvatar =
+    avatarType && avatarType !== "initials";
 
+  // sistem avatarı ise img render et
+  if (isSystemAvatar) {
+    return (
+      <Avatar size={size} className={cn("border border-blue-100 dark:border-slate-700", className)}>
+        <AvatarImage
+          src={`/avatars/${avatarType}.png`}  // ya da CDN path'in ne ise
+          alt={name ?? "avatar"}
+        />
+        <AvatarFallback className={cn("font-semibold", pickTone(name ?? seed), fallbackClassName)}>
+          {toInitials(name, fallbackInitials)}
+        </AvatarFallback>
+      </Avatar>
+    );
+  }
+
+  // initials (default)
+  const initials = toInitials(name, fallbackInitials);
+  const toneClass = pickTone(name ?? seed);
   return (
-    <Avatar
-      size={size}
-      className={cn("border border-blue-100 dark:border-slate-700", className)}
-      aria-label={`${name || "User"} avatar`}
-    >
+    <Avatar size={size} className={cn("border border-blue-100 dark:border-slate-700", className)}>
       <AvatarFallback className={cn("font-semibold", toneClass, fallbackClassName)}>
         {initials}
       </AvatarFallback>

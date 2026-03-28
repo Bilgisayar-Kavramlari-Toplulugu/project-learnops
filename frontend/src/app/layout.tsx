@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 import AuthProvider from "@/providers/auth-provider";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,19 +21,6 @@ export const metadata: Metadata = {
   description: "LearnOps dashboard experience",
 };
 
-const themeInitializerScript = `
-(() => {
-  try {
-    const storageKey = "learnops-theme";
-    const storedTheme = localStorage.getItem(storageKey);
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const isDark = storedTheme ? storedTheme === "dark" : prefersDark;
-    document.documentElement.classList.toggle("dark", isDark);
-    document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-  } catch (_) {}
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,15 +28,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitializerScript }} />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
       >
-        <QueryProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
