@@ -52,6 +52,7 @@ export const dashboardSidebarItems: SidebarItem[] = [
     label: "Profil",
     href: routes.profile,
     icon: UserRound,
+    pinBottom: true,
   },
 ];
 

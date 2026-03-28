@@ -4,6 +4,7 @@ export interface SidebarItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  pinBottom?: boolean;
 }
 
 export interface DashboardProfile {
