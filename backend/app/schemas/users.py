@@ -9,7 +9,6 @@ class UserProfileResponse(BaseModel):
     display_name: str
     bio: Optional[str]
     avatar_type: str
-    role: str = "user"
 
 
 class UserProfileUpdate(BaseModel):
