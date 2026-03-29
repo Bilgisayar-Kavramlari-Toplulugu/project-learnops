@@ -6,9 +6,9 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.users import OAuthAccount, User
 from app.schemas.users import (
+    LinkedAccountResponse,
     UserProfileResponse,
     UserProfileUpdate,
-    LinkedAccountResponse,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -27,13 +27,16 @@ async def get_me(user: User = Depends(get_current_user)):
 
 
 @router.patch("/me", response_model=UserProfileResponse)
-# Rate limit: general API category (100 req/min) — intentional, profile updates are low-frequency
 async def update_me(
     body: UserProfileUpdate,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update the current user's profile."""
+    """Update the current user's profile.
+
+    Rate limit: general API category (100 req/min) — intentional,
+    profile updates are low-frequency.
+    """
 
     if body.display_name is not None:
         user.display_name = body.display_name
