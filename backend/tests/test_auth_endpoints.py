@@ -49,7 +49,7 @@ def _make_access_token(sub: str = "user-123") -> str:
 
 def test_refresh_returns_new_tokens():
     token, _ = _make_refresh_token()
-    resp = client.post("/v1/auth/refresh", json={"refresh_token": token})
+    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 200
     data = resp.json()
     assert "access_token" in data
@@ -60,17 +60,17 @@ def test_refresh_returns_new_tokens():
 def test_refresh_rotates_token_blacklists_old():
     token, jti = _make_refresh_token()
 
-    resp = client.post("/v1/auth/refresh", json={"refresh_token": token})
+    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 200
 
     # Same token should be blacklisted now (rotation)
-    resp2 = client.post("/v1/auth/refresh", json={"refresh_token": token})
+    resp2 = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp2.status_code == 401
 
 
 def test_refresh_rejects_access_token():
     access = _make_access_token()
-    resp = client.post("/v1/auth/refresh", json={"refresh_token": access})
+    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": access})
     assert resp.status_code == 401
 
 
@@ -82,7 +82,7 @@ def test_refresh_rejects_expired_token():
         "jti": str(uuid.uuid4()),
     }
     token = jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
-    resp = client.post("/v1/auth/refresh", json={"refresh_token": token})
+    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 401
 
 
@@ -96,7 +96,7 @@ def test_refresh_rejects_invalid_signature():
     token = jwt.encode(
         payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM
     )
-    resp = client.post("/v1/auth/refresh", json={"refresh_token": token})
+    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 401
 
 
@@ -107,7 +107,7 @@ def test_refresh_rejects_token_without_sub():
         "jti": str(uuid.uuid4()),
     }
     token = jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
-    resp = client.post("/v1/auth/refresh", json={"refresh_token": token})
+    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 401
 
 
