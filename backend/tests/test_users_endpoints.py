@@ -31,6 +31,28 @@ async def test_get_me_returns_profile(client: AsyncClient, test_user: User):
     assert data["display_name"] == test_user.display_name
 
 
+# ==================== GET /users/me/accounts ====================
+
+
+@pytest.mark.asyncio
+async def test_get_accounts_without_token_returns_401(client: AsyncClient):
+    resp = await client.get("/v1/users/me/accounts")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_accounts_returns_linked_accounts(client: AsyncClient, test_user: User):
+    resp = await client.get("/v1/users/me/accounts", cookies=_auth_cookies(test_user))
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 1
+    account = data[0]
+    assert account["provider"] == "google"
+    assert account["provider_email"] == test_user.email
+    assert "id" in account
+    assert "linked_at" in account
+
+
 # ==================== PATCH /users/me ====================
 
 
