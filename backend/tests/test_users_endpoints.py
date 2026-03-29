@@ -41,7 +41,9 @@ async def test_get_accounts_without_token_returns_401(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_accounts_returns_linked_accounts(client: AsyncClient, test_user: User):
+async def test_get_accounts_returns_linked_accounts(
+    client: AsyncClient, test_user: User
+):
     resp = await client.get("/v1/users/me/accounts", cookies=_auth_cookies(test_user))
     assert resp.status_code == 200
     data = resp.json()
@@ -81,9 +83,7 @@ async def test_patch_me_empty_display_name_returns_422(
 
 
 @pytest.mark.asyncio
-async def test_patch_me_update_reflected_in_get(
-    client: AsyncClient, test_user: User
-):
+async def test_patch_me_update_reflected_in_get(client: AsyncClient, test_user: User):
     cookies = _auth_cookies(test_user)
     await client.patch(
         "/v1/users/me",
