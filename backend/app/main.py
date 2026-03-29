@@ -1,5 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
+
 from alembic.config import Config
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.sessions import SessionMiddleware
 
-ypfrom alembic import command  # type: ignore
+from alembic import command  # type: ignore
 from app import (
     models as _models,  # noqa: F401 - ensure all SQLAlchemy models are registered
 )
@@ -17,7 +18,6 @@ from app.middleware.rate_limiting import RateLimiterMiddleware
 from app.routers import auth
 
 logger = logging.getLogger(__name__)
-
 
 def run_upgrade(connection, cfg):
     cfg.attributes["connection"] = connection
