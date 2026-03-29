@@ -5,7 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.users import OAuthAccount, User
-from app.schemas.users import UserProfileResponse, UserProfileUpdate
+from app.schemas.users import (
+    UserProfileResponse,
+    UserProfileUpdate,
+    LinkedAccountResponse,
+)
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -38,7 +42,9 @@ async def update_me(
     if body.avatar_type is not None:
         user.avatar_type = body.avatar_type
 
-    await db.commit()  # updated_at is handled automatically via onupdate=func.now() in BaseModel
+    await (
+        db.commit()
+    )  # updated_at is handled automatically via onupdate=func.now() in BaseModel
     await db.refresh(user)
 
     return UserProfileResponse(
@@ -50,13 +56,23 @@ async def update_me(
     )
 
 
-@router.get("/me/accounts", response_model=list[str])
+@router.get("/me/accounts", response_model=list[LinkedAccountResponse])
 async def get_my_accounts(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the OAuth provider names linked to the current user."""
     result = await db.execute(
-        select(OAuthAccount.provider).where(OAuthAccount.user_id == user.id)
+        select(OAuthAccount).where(OAuthAccount.user_id == user.id)
     )
-    return result.scalars().all()
+
+    accounts = result.scalars().all()
+
+    return [
+        LinkedAccountResponse(
+            id=str(acc.id),
+            provider=acc.provider,
+            provider_email=acc.provider_email,
+            linked_at=acc.linked_at,
+        )
+        for acc in accounts
+    ]

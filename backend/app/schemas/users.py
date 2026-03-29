@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel, field_validator
+from datetime import datetime
 
 
 class UserProfileResponse(BaseModel):
@@ -32,3 +33,10 @@ class UserProfileUpdate(BaseModel):
         if v not in valid:
             raise ValueError(f"avatar_type must be one of: {sorted(valid)}")
         return v
+
+
+class LinkedAccountResponse(BaseModel):
+    id: str
+    provider: str
+    provider_email: str
+    linked_at: datetime
