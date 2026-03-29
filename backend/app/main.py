@@ -19,6 +19,7 @@ from app.routers import auth
 
 logger = logging.getLogger(__name__)
 
+
 def run_upgrade(connection, cfg):
     cfg.attributes["connection"] = connection
     command.upgrade(cfg, "head")
