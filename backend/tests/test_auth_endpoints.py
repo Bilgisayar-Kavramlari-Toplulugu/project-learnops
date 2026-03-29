@@ -141,7 +141,8 @@ def test_logout_with_invalid_refresh_token_still_succeeds():
 
 
 def test_logout_with_access_token_as_refresh_cookie_still_succeeds():
-    """Logout with access token in refresh cookie returns 204 (token not blacklisted)."""
+    """Logout with access token in refresh cookie
+    returns 204 (token not blacklisted)."""
     access = _make_access_token()
     resp = client.post("/v1/auth/logout", cookies={"refresh_token": access})
     assert resp.status_code == 204
