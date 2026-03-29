@@ -1,7 +1,5 @@
-from contextlib import asynccontextmanager
 import logging
-
-from alembic import command
+from contextlib import asynccontextmanager
 from alembic.config import Config
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +7,10 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import models as _models  # noqa: F401 - ensure all SQLAlchemy models are registered
+ypfrom alembic import command  # type: ignore
+from app import (
+    models as _models,  # noqa: F401 - ensure all SQLAlchemy models are registered
+)
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
