@@ -23,6 +23,7 @@ async def get_me(user: User = Depends(get_current_user)):
 
 
 @router.patch("/me", response_model=UserProfileResponse)
+# Rate limit: general API category (100 req/min) — intentional, profile updates are low-frequency
 async def update_me(
     body: UserProfileUpdate,
     user: User = Depends(get_current_user),
