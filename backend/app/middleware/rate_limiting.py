@@ -65,13 +65,20 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         # Check if window expired
         if (now - last_reset).total_seconds() >= window_seconds:
             self.request_counts[client_ip][route_key] = (now, 1)
+            remaining = max_requests - 1
+            reset_seconds = window_seconds
         elif count >= max_requests:
             # Rate limit exceeded
             retry_after = int(window_seconds - (now - last_reset).total_seconds())
             logger.warning(f"Rate limit exceeded: {client_ip} on {path}")
             return JSONResponse(
                 status_code=429,
-                headers={"Retry-After": str(retry_after)},
+                headers={
+                    "Retry-After": str(retry_after),
+                    "X-RateLimit-Limit": str(max_requests),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(retry_after),
+                },
                 content={
                     "error": "Too Many Requests",
                     "message": "Rate limit exceeded. Please try again later.",
@@ -82,6 +89,13 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             # TODO: In-memory store is not shared across instances.
             # Replace with Redis-based solution in v2.0 for multi-instance correctness.
             self.request_counts[client_ip][route_key] = (last_reset, count + 1)
+            remaining = max_requests - (count + 1)
+            reset_seconds = int(window_seconds - (now - last_reset).total_seconds())
 
         response = await call_next(request)
+
+        response.headers["X-RateLimit-Limit"] = str(max_requests)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Reset"] = str(reset_seconds)
+
         return response
