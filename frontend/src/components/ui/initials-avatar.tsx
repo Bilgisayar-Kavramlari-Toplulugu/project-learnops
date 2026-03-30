@@ -13,24 +13,15 @@ const avatarToneClasses = [
 ] as const;
 
 function toInitials(name: string | undefined | null, fallbackInitials?: string): string {
-  if (!name || typeof name !== "string") {
-    if (fallbackInitials?.trim()) {
-      return fallbackInitials.trim().slice(0, 2).toUpperCase();
-    }
-    return "LO";
+  if (!name || typeof name !== "string" || !name.trim()) {
+    return fallbackInitials?.trim() ? getInitials(fallbackInitials) : "LO";
   }
 
   const parts = name.trim().split(/\s+/).filter(Boolean);
 
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-  }
+  const initials = parts.map((part) => part[0].toUpperCase()).join("");
 
-  if (parts.length === 1) {
-    return parts[0][0].toUpperCase();
-  }
-
-  return "LO";
+  return initials || "LO";
 }
 
 export function pickTone(name: string | undefined | null): string {
