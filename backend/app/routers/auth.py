@@ -22,7 +22,6 @@ from app.schemas.auth import (
     MergeAccountRequest,
     MergeAccountResponse,
     OAuthProvider,
-    RefreshRequest,
     TokenResponse,
     UserMeResponse,
 )
@@ -317,10 +316,17 @@ async def get_me(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(body: RefreshRequest):
-    """Refresh token ile yeni access + refresh token üretir."""
+async def refresh(request: Request):
+    """Cookie'deki refresh token ile yeni access + refresh token üretir."""
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token bulunamadı",
+        )
+
     try:
-        payload = decode_token(body.refresh_token)
+        payload = decode_token(token)
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -353,31 +359,51 @@ async def refresh(body: RefreshRequest):
     blacklist_token(jti)
 
     new_jti = str(uuid.uuid4())
-    return TokenResponse(
-        access_token=create_access_token(sub),
-        refresh_token=create_refresh_token(sub, new_jti),
+    new_access_token = create_access_token(sub)
+    new_refresh_token = create_refresh_token(sub, new_jti)
+
+    response = JSONResponse(
+        content=TokenResponse(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+        ).model_dump()
     )
+    response.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        httponly=True,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="strict",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="strict",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+    )
+    return response
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(
-    body: RefreshRequest,
-    _current_user: str = Depends(get_current_user),
-):
-    """Refresh token'ı blacklist'e ekleyerek logout yapar."""
-    try:
-        payload = decode_token(body.refresh_token)
-    except JWTError:
-        return  # zaten geçersiz, işlem yok
+async def logout(request: Request):
+    """Cookie'deki refresh token'ı blacklist'e ekleyerek logout yapar."""
+    token = request.cookies.get("refresh_token")
+    if token:
+        try:
+            payload = decode_token(token)
+            if payload.get("type") == "refresh":
+                jti = payload.get("jti", "")
+                blacklist_token(jti)
+        except JWTError:
+            pass  # zaten geçersiz, işlem yok
 
-    if payload.get("type") != "refresh":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token gerekli",
-        )
-
-    jti = payload.get("jti", "")
-    blacklist_token(jti)
+    response = JSONResponse(content=None, status_code=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
 
 
 @router.post("/merge", response_model=MergeAccountResponse)
