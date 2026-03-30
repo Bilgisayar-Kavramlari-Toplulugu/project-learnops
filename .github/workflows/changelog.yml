@@ -1,0 +1,51 @@
+name: Changelog & Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"   # v0.2.0, v1.0.0 gibi taglerde tetiklenir
+
+permissions:
+  contents: write  # CHANGELOG commit ve release oluşturmak için
+
+jobs:
+  changelog:
+    name: Changelog oluştur ve Release yayınla
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repoyu çek
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Tüm commit geçmişi gerekli
+
+      - name: CHANGELOG.md oluştur (git-cliff)
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --verbose
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Contributor username çekmek için
+
+      - name: CHANGELOG.md'yi repoya commit et
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          # Değişiklik yoksa commit atma
+          git diff --staged --quiet || git commit -m "chore(release): update CHANGELOG for ${{ github.ref_name }}"
+          git push origin HEAD:main
+
+      - name: GitHub Release oluştur
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.git-cliff.outputs.content }}
+          tag_name: ${{ github.ref_name }}
+          name: "LearnOps ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
