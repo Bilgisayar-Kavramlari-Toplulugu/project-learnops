@@ -17,13 +17,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   if (!profile) return <DashboardErrorState />;
 
   return (
-    <DashboardShell
-      user={profile}
-      sidebarItems={dashboardSidebarItems}
-      activePath={pathname}
-    >
+    <DashboardShell user={profile} sidebarItems={dashboardSidebarItems} activePath={pathname}>
       {children}
-      
     </DashboardShell>
   );
 }
