@@ -13,6 +13,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 const SYSTEM_AVATARS = Array.from({ length: 10 }, (_, i) => String(i + 1));
 
@@ -253,7 +254,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                       : "border-border hover:border-muted-foreground",
                   )}
                 >
-                  <img
+                  <Image
                     src={`/avatars/system_${id}.svg`}
                     alt={`Avatar ${id}`}
                     className="w-full h-full object-cover"
