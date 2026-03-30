@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import type { DashboardProfile } from "@/types";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/components/ui/avatar-component";
 import { InitialsAvatar, pickTone } from "@/components/ui/initials-avatar";
@@ -25,7 +19,6 @@ const SYSTEM_AVATARS = Array.from({ length: 10 }, (_, i) => String(i + 1));
 function ProfileViewSkeleton() {
   return (
     <div className="max-w-2xl space-y-5 py-6 mx-auto">
-
       {/* Profile summary skeleton */}
       <Card>
         <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -77,24 +70,16 @@ function ProfileViewSkeleton() {
           <Skeleton className="h-8 w-28 rounded-md" />
         </CardContent>
       </Card>
-
     </div>
   );
 }
 
-function ProfileView({
-  profile,
-  onEdit,
-}: {
-  profile: DashboardProfile;
-  onEdit: () => void;
-}) {
+function ProfileView({ profile, onEdit }: { profile: DashboardProfile; onEdit: () => void }) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   return (
     <>
       <div className="max-w-2xl space-y-5 py-6 mx-auto">
-
         {/* Profile summary */}
         <Card>
           <CardHeader className="flex flex-row items-start justify-between space-y-0">
@@ -119,9 +104,7 @@ function ProfileView({
                 {profile.bio ? (
                   <p className="text-sm text-muted-foreground">{profile.bio}</p>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    Biyografi eklenmemiş
-                  </p>
+                  <p className="text-sm text-muted-foreground italic">Biyografi eklenmemiş</p>
                 )}
               </div>
             </div>
@@ -154,32 +137,22 @@ function ProfileView({
         {/* Danger zone */}
         <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-destructive text-sm">
-              Tehlikeli Bölge
-            </CardTitle>
+            <CardTitle className="text-destructive text-sm">Tehlikeli Bölge</CardTitle>
             <CardDescription>
-              Hesabınızı silerseniz tüm verileriniz kalıcı olarak kaldırılır.
-              Bu işlem geri alınamaz.
+              Hesabınızı silerseniz tüm verileriniz kalıcı olarak kaldırılır. Bu işlem geri
+              alınamaz.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setDeleteModalOpen(true)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => setDeleteModalOpen(true)}>
               <Trash2 className="w-4 h-4" />
               Hesabımı sil
             </Button>
           </CardContent>
         </Card>
-
       </div>
 
-      <DeleteAccountModal
-        open={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-      />
+      <DeleteAccountModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
     </>
   );
 }
@@ -189,25 +162,16 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
 
   if (isLoading || !profile) return <ProfileViewSkeleton />;
-  if (editing)
-    return <ProfileForm profile={profile} onCancel={() => setEditing(false)} />;
+  if (editing) return <ProfileForm profile={profile} onCancel={() => setEditing(false)} />;
   return <ProfileView profile={profile} onEdit={() => setEditing(true)} />;
 }
 
 function toSelectedAvatar(avatarType: string | null | undefined): string {
   if (!avatarType || avatarType === "initials") return "initials";
-  return avatarType.startsWith("system_")
-    ? avatarType.slice("system_".length)
-    : avatarType;
+  return avatarType.startsWith("system_") ? avatarType.slice("system_".length) : avatarType;
 }
 
-function ProfileForm({
-  profile,
-  onCancel,
-}: {
-  profile: DashboardProfile;
-  onCancel: () => void;
-}) {
+function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCancel: () => void }) {
   const { mutate: updateProfile, isPending } = useUpdateProfile();
 
   const [form, setForm] = useState({
@@ -227,8 +191,7 @@ function ProfileForm({
       {
         display_name,
         bio,
-        avatar_type:
-          selectedAvatar === "initials" ? "initials" : `system_${selectedAvatar}`,
+        avatar_type: selectedAvatar === "initials" ? "initials" : `system_${selectedAvatar}`,
       },
       {
         onSuccess: () => {
@@ -236,25 +199,19 @@ function ProfileForm({
           onCancel();
         },
         onError: () => toast.error("Hata oluştu, tekrar deneyin"),
-      }
+      },
     );
   }
 
   return (
     <>
       <div className="max-w-2xl space-y-5 py-6 mx-auto">
-
-        {/* Avatar seçimi */}
         <Card>
           <CardHeader>
             <CardTitle>Avatar</CardTitle>
-            <CardDescription>
-              Baş harf veya sistem avatarından birini seçin
-            </CardDescription>
+            <CardDescription>Baş harf veya sistem avatarından birini seçin</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-
-            {/* Önizleme */}
             <div className="flex items-center gap-3">
               <InitialsAvatar
                 name={display_name || profile.display_name}
@@ -272,8 +229,6 @@ function ProfileForm({
                 </p>
               </div>
             </div>
-
-            {/* Seçici grid */}
             <div className="grid grid-cols-11 gap-2">
               <button
                 onClick={() => setForm((f) => ({ ...f, selectedAvatar: "initials" }))}
@@ -282,12 +237,11 @@ function ProfileForm({
                   initialsColor,
                   selectedAvatar === "initials"
                     ? "border-primary ring-2 ring-primary/20 scale-105"
-                    : "border-border hover:border-muted-foreground"
+                    : "border-border hover:border-muted-foreground",
                 )}
               >
                 {initials.charAt(0)}
               </button>
-
               {SYSTEM_AVATARS.map((id) => (
                 <button
                   key={id}
@@ -296,7 +250,7 @@ function ProfileForm({
                     "aspect-square rounded-full border-2 overflow-hidden transition-all",
                     selectedAvatar === id
                       ? "border-primary ring-2 ring-primary/20 scale-105"
-                      : "border-border hover:border-muted-foreground"
+                      : "border-border hover:border-muted-foreground",
                   )}
                 >
                   <img
@@ -309,14 +263,10 @@ function ProfileForm({
             </div>
           </CardContent>
         </Card>
-
-        {/* Profil bilgileri */}
         <Card>
           <CardHeader>
             <CardTitle>Profil Bilgileri</CardTitle>
-            <CardDescription>
-              Görünen adınızı ve biyografinizi düzenleyin
-            </CardDescription>
+            <CardDescription>Görünen adınızı ve biyografinizi düzenleyin</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
@@ -324,13 +274,10 @@ function ProfileForm({
               <input
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 value={display_name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, display_name: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
                 placeholder="Adınız"
               />
             </div>
-
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Biyografi</label>
               <textarea
@@ -338,23 +285,13 @@ function ProfileForm({
                 rows={3}
                 maxLength={200}
                 value={bio}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, bio: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
                 placeholder="Kendinizden bahsedin..."
               />
-              <p className="text-xs text-muted-foreground text-right">
-                {bio.length}/200
-              </p>
+              <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
             </div>
-
             <div className="flex items-center justify-end gap-2 pt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onCancel}
-                disabled={isPending}
-              >
+              <Button variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
                 İptal
               </Button>
               <Button onClick={handleSave} disabled={isPending} size="sm">
@@ -363,8 +300,6 @@ function ProfileForm({
             </div>
           </CardContent>
         </Card>
-
-        {/* Hesap bilgileri */}
         <Card>
           <CardHeader>
             <CardTitle>Hesap Bilgileri</CardTitle>
@@ -386,36 +321,23 @@ function ProfileForm({
             </dl>
           </CardContent>
         </Card>
-
-        {/* Tehlikeli bölge */}
         <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-destructive text-sm">
-              Tehlikeli Bölge
-            </CardTitle>
+            <CardTitle className="text-destructive text-sm">Tehlikeli Bölge</CardTitle>
             <CardDescription>
-              Hesabınızı silerseniz tüm verileriniz kalıcı olarak kaldırılır.
-              Bu işlem geri alınamaz.
+              Hesabınızı silerseniz tüm verileriniz kalıcı olarak kaldırılır. Bu işlem geri
+              alınamaz.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setDeleteModalOpen(true)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => setDeleteModalOpen(true)}>
               <Trash2 className="w-4 h-4" />
               Hesabımı sil
             </Button>
           </CardContent>
         </Card>
-
       </div>
-
-      <DeleteAccountModal
-        open={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-      />
+      <DeleteAccountModal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} />
     </>
   );
 }

@@ -32,19 +32,12 @@ export function pickTone(name: string | undefined | null): string {
 
   const code = firstChar.charCodeAt(0);
 
-  // User requested grouping:
-  // A, B, C, D (65-68) -> Blue
   if (code >= 65 && code <= 68) return avatarToneClasses[0];
-  // E, F, G, H (69-72) -> Green
   if (code >= 69 && code <= 72) return avatarToneClasses[1];
-  // I, J, K, L (73-76) -> Purple
   if (code >= 73 && code <= 76) return avatarToneClasses[4];
-  // M, N, O, P (77-80) -> Amber
   if (code >= 77 && code <= 80) return avatarToneClasses[2];
-  // R, S, T, U (82-85) -> Red
   if (code >= 82 && code <= 85) return avatarToneClasses[3];
-  
-  // V, Y, Z, Others -> Cyan
+
   return avatarToneClasses[5];
 }
 
