@@ -44,12 +44,13 @@ export function UserMenu({ user }: UserMenuProps) {
         >
           <InitialsAvatar
             name={user.display_name}
-            seed={user.email}
             avatarType={user.avatar_type}
             className="size-7"
           />
           <span className="hidden min-w-0 flex-col items-start text-left sm:inline-flex">
-            <span className="max-w-[140px] truncate text-sm font-semibold">{user.display_name}</span>
+            <span className="max-w-[140px] truncate text-sm font-semibold">
+              {user.display_name}
+            </span>
             <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
               <UserRound className="size-3" />
               Profil
