@@ -16,9 +16,3 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2);
 }
-
-export function getInitialsColor(name: string): string {
-  if (!name) return INITIAL_COLORS[0];
-  const idx = name.charCodeAt(0) % 6;
-  return INITIAL_COLORS[idx];
-}
