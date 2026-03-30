@@ -70,6 +70,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/v1")
 
+
 # Rate Limiting
 app.add_middleware(RateLimiterMiddleware)
 
