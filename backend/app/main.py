@@ -51,4 +51,4 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         raise HTTPException(
             status_code=503, detail="Database connection failed"
         ) from exc
-    return {"status": "ok", "version": "1.0.0"}
+    return {"status": "ok", "db": "connected"}
