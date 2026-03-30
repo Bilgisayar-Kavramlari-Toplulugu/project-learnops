@@ -240,7 +240,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                     : "border-border hover:border-muted-foreground",
                 )}
               >
-                {initials.charAt(0)}
+                {initials}
               </button>
               {SYSTEM_AVATARS.map((id) => (
                 <button
