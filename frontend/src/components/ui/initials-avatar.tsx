@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { getInitials } from "./avatar-component";
 
 const avatarToneClasses = [
   "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-100",
