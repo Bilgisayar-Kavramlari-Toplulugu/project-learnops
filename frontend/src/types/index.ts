@@ -13,7 +13,6 @@ export interface DashboardProfile {
   display_name: string;
   bio: string | null;
   avatar_type: string | null;
-  role: string;
 }
 
 // ─── Dashboard Feature Types ──────────────────────────────────────────────────
