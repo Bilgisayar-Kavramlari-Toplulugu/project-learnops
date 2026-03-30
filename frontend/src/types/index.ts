@@ -43,3 +43,8 @@ export interface DashboardSuggestion {
   level: string;
   icon: LucideIcon;
 }
+
+export interface User {
+  display_name: string | null;
+  avatar_type: string | null;
+}
