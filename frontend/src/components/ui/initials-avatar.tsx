@@ -44,7 +44,6 @@ export function pickTone(name: string | undefined | null): string {
 interface InitialsAvatarProps {
   name?: string | null;
   fallbackInitials?: string;
-  seed?: string;
   avatarType?: string | null;
   size?: "default" | "sm" | "lg";
   className?: string;
@@ -54,7 +53,6 @@ interface InitialsAvatarProps {
 export function InitialsAvatar({
   name,
   fallbackInitials,
-  seed,
   avatarType,
   size = "default",
   className,
@@ -62,7 +60,7 @@ export function InitialsAvatar({
 }: InitialsAvatarProps) {
   const isSystemAvatar = avatarType && avatarType !== "initials";
   const initials = toInitials(name, fallbackInitials);
-  const toneClass = pickTone(name ?? seed);
+  const toneClass = pickTone(name);
 
   if (isSystemAvatar) {
     return (
