@@ -65,10 +65,7 @@ export function InitialsAvatar({
   if (isSystemAvatar) {
     return (
       <Avatar size={size} className={cn("border border-blue-100 dark:border-slate-700", className)}>
-        <AvatarImage
-          src={`/avatars/${avatarType}.svg`}
-          alt={name ?? "avatar"}
-        />
+        <AvatarImage src={`/avatars/${avatarType}.svg`} alt={name ?? "avatar"} />
         <AvatarFallback className={cn("font-semibold", toneClass, fallbackClassName)}>
           {initials}
         </AvatarFallback>
