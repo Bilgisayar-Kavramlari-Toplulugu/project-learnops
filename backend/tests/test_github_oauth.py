@@ -124,7 +124,10 @@ def _patch_github_clients(token_mock: AsyncMock, user_mock: AsyncMock):
 @pytest.mark.asyncio
 async def test_github_login_returns_json_url(client: AsyncClient):
     """?format=json parametresi ile login_url JSON olarak dönmeli."""
-    response = await client.get("/v1/auth/github/login?format=json")
+    with patch("app.routers.auth.settings") as mock_settings:
+        mock_settings.github_client_id = "fake-client-id"
+        mock_settings.github_client_secret = "fake-client-secret"
+        response = await client.get("/v1/auth/github/login?format=json")
     assert response.status_code == 200
 
     data = response.json()
@@ -140,7 +143,10 @@ async def test_github_login_returns_json_url(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_github_login_sets_state_cookie(client: AsyncClient):
     """Login endpoint'i oauth_state cookie'si set etmeli."""
-    response = await client.get("/v1/auth/github/login?format=json")
+    with patch("app.routers.auth.settings") as mock_settings:
+        mock_settings.github_client_id = "fake-client-id"
+        mock_settings.github_client_secret = "fake-client-secret"
+        response = await client.get("/v1/auth/github/login?format=json")
     assert response.status_code == 200
     assert "oauth_state" in response.cookies
 
