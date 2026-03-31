@@ -1,9 +1,14 @@
+import logging
+from contextlib import asynccontextmanager
+
+from alembic.config import Config
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.sessions import SessionMiddleware
 
+from alembic import command  # type: ignore
 from app import (
     models as _models,  # noqa: F401 - ensure all SQLAlchemy models are registered
 )
@@ -12,11 +17,38 @@ from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
 from app.routers import auth
 
+logger = logging.getLogger(__name__)
+
+
+def run_upgrade(connection, cfg):
+    cfg.attributes["connection"] = connection
+    command.upgrade(cfg, "head")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Sadece lokal geliştirme ortamında çalıştır, production'da atla
+    if settings.ENVIRONMENT == "development":
+        logger.info("Lokal ortam algılandı. Otomatik migrasyon başlatılıyor...")
+        try:
+            alembic_cfg = Config("alembic.ini")
+            engine = create_async_engine(settings.DATABASE_URL)
+            async with engine.begin() as conn:
+                await conn.run_sync(run_upgrade, alembic_cfg)
+            await engine.dispose()
+            logger.info("Migrasyon başarıyla tamamlandı. Tablolar hazır.")
+        except Exception as e:
+            logger.error(f"Migrasyon hatası: {e}")
+            raise e
+    yield
+
+
 app = FastAPI(
     title="LearnOps API",
     version="1.0.0",
     docs_url="/v1/docs",
     redoc_url="/v1/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
