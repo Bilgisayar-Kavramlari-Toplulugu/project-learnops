@@ -50,6 +50,13 @@ def _google_redirect_uri(request: Request) -> str:
     return f"{base_url}/v1/auth/google/callback"
 
 
+def _github_redirect_uri(request: Request) -> str:
+    base_url = (
+        (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
+    )
+    return f"{base_url}/v1/auth/github/callback"
+
+
 @router.get("/google/login")
 async def google_login(request: Request):
     """Generate Google OAuth login URL"""
@@ -265,6 +272,258 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         await db.rollback()
         logger.error(f"Callback error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+async def _get_github_primary_email(
+    client: httpx.AsyncClient,
+    access_token: str,
+) -> str | None:
+    """
+    GitHub kullanıcısının emaili gizliyse /user endpoint'i boş döner.
+    Bu durumda /user/emails endpoint'inden primary+verified emaili alır.
+    """
+    resp = await client.get(
+        "https://api.github.com/user/emails",
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/vnd.github+json",
+        },
+    )
+    if resp.status_code != 200:
+        return None
+    for entry in resp.json():
+        if entry.get("primary") and entry.get("verified"):
+            return entry.get("email")
+    return None
+
+
+@router.get("/github/login")
+async def github_login(request: Request):
+    """GitHub OAuth login URL'i üretir ve yönlendirir."""
+    try:
+        client_id = settings.github_client_id
+        if not client_id:
+            logger.error("GITHUB_CLIENT_ID not configured")
+            raise HTTPException(status_code=503, detail="GitHub OAuth not configured")
+
+        state = secrets.token_urlsafe(32)
+        request.session["oauth_state"] = state
+
+        redirect_uri = _github_redirect_uri(request)
+
+        # GitHub refresh token sağlamaz — access_type=offline
+        # veya prompt=consent kullanılmaz
+        auth_url = (
+            f"https://github.com/login/oauth/authorize"
+            f"?client_id={client_id}"
+            f"&redirect_uri={redirect_uri}"
+            f"&scope=user:email"
+            f"&state={state}"
+        )
+        logger.info("Generated GitHub OAuth URL")
+
+        response: Union[JSONResponse, RedirectResponse]
+        if request.query_params.get("format") == "json":
+            response = JSONResponse(content={"login_url": auth_url})
+        else:
+            response = RedirectResponse(url=auth_url, status_code=307)
+
+        response.set_cookie(
+            key="oauth_state",
+            value=state,
+            httponly=True,
+            secure=settings.ENVIRONMENT == "production",
+            samesite="lax",
+            max_age=600,
+        )
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/github/callback")
+async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
+    """GitHub OAuth callback'ini işler."""
+    try:
+        logger.info("=== GITHUB CALLBACK RECEIVED ===")
+
+        # State doğrula (CSRF koruması)
+        received_state = request.query_params.get("state")
+        expected_state = request.session.get("oauth_state") or request.cookies.get(
+            "oauth_state"
+        )
+        if not expected_state or received_state != expected_state:
+            logger.error("State mismatch in GitHub OAuth callback")
+            raise HTTPException(status_code=400, detail="Invalid state parameter")
+
+        code = request.query_params.get("code")
+        if not code:
+            logger.error("No code in GitHub callback request")
+            raise HTTPException(status_code=400, detail="Code not found")
+
+        redirect_uri = _github_redirect_uri(request)
+
+        # 1) Code → access_token
+        # GitHub token endpoint'i varsayılan form-encoded döner;
+        # Accept: application/json header'ı ile JSON response alınır.
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                "https://github.com/login/oauth/access_token",
+                headers={"Accept": "application/json"},
+                data={
+                    "code": code,
+                    "client_id": settings.github_client_id,
+                    "client_secret": settings.github_client_secret,
+                    "redirect_uri": redirect_uri,
+                },
+            )
+            tokens = token_response.json()
+            logger.info(f"GitHub token response keys: {list(tokens.keys())}")
+
+            if "error" in tokens:
+                logger.error(f"GitHub token error: {tokens.get('error')}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=tokens.get(
+                        "error_description", "GitHub token exchange failed"
+                    ),
+                )
+
+            gh_access_token = tokens.get("access_token")
+            if not gh_access_token:
+                raise HTTPException(
+                    status_code=502,
+                    detail="GitHub did not return access token",
+                )
+
+        # 2) GitHub kullanıcı bilgileri
+        async with httpx.AsyncClient() as client:
+            user_response = await client.get(
+                "https://api.github.com/user",
+                headers={
+                    "Authorization": f"Bearer {gh_access_token}",
+                    "Accept": "application/vnd.github+json",
+                },
+            )
+            if user_response.status_code != 200:
+                logger.error(f"GitHub user info failed: {user_response.status_code}")
+                raise HTTPException(
+                    status_code=502,
+                    detail="Failed to retrieve user info from GitHub",
+                )
+            user_info = user_response.json()
+            logger.info(f"GitHub user id: {user_info.get('id')}")
+
+            # Email: kullanıcı emailini gizliyse /user boş döner → /user/emails çağrılır
+            email: str | None = user_info.get("email") or None
+            if not email:
+                email = await _get_github_primary_email(client, gh_access_token)
+
+            if not email:
+                logger.error("GitHub did not return any email for user")
+                raise HTTPException(
+                    status_code=502,
+                    detail="GitHub did not return user email",
+                )
+
+        # GitHub user ID integer; DB'de string olarak saklanır
+        provider_user_id = str(user_info["id"])
+        display_name = (
+            user_info.get("name") or user_info.get("login") or email.split("@")[0]
+        )
+
+        # Mevcut kullanıcıyı email ile bul
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            user = User(
+                email=email,
+                display_name=display_name,
+                avatar_type="initials",
+                last_login_at=datetime.now(timezone.utc),
+            )
+            db.add(user)
+            await db.flush()
+            await db.refresh(user)
+            logger.info(f"New user created via GitHub: {user.email}")
+        else:
+            user.last_login_at = datetime.now(timezone.utc)
+            logger.info(f"Existing user logged in via GitHub: {user.email}")
+
+        # GitHub OAuth account kaydet/güncelle
+        oauth_result = await db.execute(
+            select(OAuthAccount).where(
+                OAuthAccount.provider == "github",
+                OAuthAccount.provider_user_id == provider_user_id,
+            )
+        )
+        oauth_account = oauth_result.scalar_one_or_none()
+
+        # GitHub refresh token SAĞLAMAZ — bu tasarım gereği, hata değil.
+        # refresh_token_encrypted her zaman NULL olarak kaydedilir.
+        if oauth_account:
+            oauth_account.provider_email = email
+            logger.info(
+                "GitHub OAuth account updated (refresh_token_encrypted stays NULL)"
+            )
+        else:
+            oauth_account = OAuthAccount(
+                user_id=user.id,
+                provider="github",
+                provider_user_id=provider_user_id,
+                provider_email=email,
+                refresh_token_encrypted=None,
+            )
+            db.add(oauth_account)
+            logger.info(
+                "New GitHub OAuth account created (refresh_token_encrypted=NULL)"
+            )
+
+        await db.commit()
+
+        # Kendi JWT çiftimizi üret (GitHub token'ı saklanmaz)
+        new_jti = str(uuid.uuid4())
+        access_token = create_access_token(sub=str(user.id))
+        refresh_token = create_refresh_token(sub=str(user.id), jti=new_jti)
+
+        response = RedirectResponse(
+            url=(f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"),
+            status_code=302,
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=settings.ENVIRONMENT == "production",
+            samesite="strict",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=settings.ENVIRONMENT == "production",
+            samesite="strict",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        )
+
+        request.session.pop("oauth_state", None)
+        response.delete_cookie("oauth_state")
+
+        return response
+
+    except HTTPException:
+        await db.rollback()
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"GitHub callback error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
