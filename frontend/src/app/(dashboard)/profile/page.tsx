@@ -237,7 +237,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                   key={id}
                   onClick={() => setForm((f) => ({ ...f, selectedAvatar: id }))}
                   className={cn(
-                    "aspect-square rounded-full border-2 overflow-hidden transition-all",
+                    "relative aspect-square rounded-full border-2 overflow-hidden transition-all",
                     selectedAvatar === id
                       ? "border-primary ring-2 ring-primary/20 scale-105"
                       : "border-border hover:border-muted-foreground",
@@ -246,7 +246,8 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                   <Image
                     src={`/avatars/system_${id}.svg`}
                     alt={`Avatar ${id}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </button>
               ))}
