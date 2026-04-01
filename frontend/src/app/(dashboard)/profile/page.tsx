@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import { DashboardErrorState } from "@/components/ui/dashboard-error-state";
 
 const SYSTEM_AVATARS = Array.from({ length: 10 }, (_, i) => String(i + 1));
 
@@ -151,7 +152,8 @@ export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
   const [editing, setEditing] = useState(false);
 
-  if (isLoading || !profile) return <ProfileViewSkeleton />;
+  if (isLoading) return <ProfileViewSkeleton />;
+  if (!profile) return <DashboardErrorState />;
   if (editing) return <ProfileForm profile={profile} onCancel={() => setEditing(false)} />;
   return <ProfileView profile={profile} onEdit={() => setEditing(true)} />;
 }
