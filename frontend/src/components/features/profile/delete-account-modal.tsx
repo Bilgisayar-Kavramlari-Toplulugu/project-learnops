@@ -6,17 +6,11 @@ import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
 import { AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 const CONFIRM_TEXT = "HESABIMI SİL";
 
-export function DeleteAccountModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function DeleteAccountModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -33,7 +27,7 @@ export function DeleteAccountModal({
       router.push(routes.login);
     } catch {
       setLoading(false);
-      toast.error("Hata oluştu, tekrar deneyin")
+      toast.error("Hata oluştu, tekrar deneyin");
     }
   }
 
@@ -46,13 +40,9 @@ export function DeleteAccountModal({
           <AlertTriangle className="h-5 w-5 text-destructive" />
         </div>
 
-        <h2 className="mb-1 text-base font-medium text-foreground">
-          Hesabı sil
-        </h2>
+        <h2 className="mb-1 text-base font-medium text-foreground">Hesabı sil</h2>
 
-        <p className="mb-2 text-sm text-muted-foreground">
-          Tüm verileriniz kalıcı olarak silinir.
-        </p>
+        <p className="mb-2 text-sm text-muted-foreground">Tüm verileriniz kalıcı olarak silinir.</p>
 
         <div className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
           Bu işlem geri alınamaz.
