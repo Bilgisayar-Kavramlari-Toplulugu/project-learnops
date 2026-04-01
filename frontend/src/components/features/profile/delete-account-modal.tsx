@@ -8,7 +8,7 @@ import { AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner"
 
-const CONFIRM_TEXT = "HESABIMI-SİL";
+const CONFIRM_TEXT = "HESABIMI SİL";
 
 export function DeleteAccountModal({
   open,
