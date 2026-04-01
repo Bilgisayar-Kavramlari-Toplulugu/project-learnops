@@ -32,12 +32,12 @@ repos:
     hooks:
       - id: eslint
         name: eslint
-        entry: bash -c 'cd frontend && [ -d node_modules ] || npm ci --silent && for f in "$@"; do npx eslint --fix "${f#frontend/}"; done' --
+        entry: bash -c 'cd frontend && { [ -f node_modules/.package-lock.json ] || npm ci --silent; } && for f in "$@"; do npx eslint --fix "${f#frontend/}"; done' --
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
 
       - id: prettier
         name: prettier
-        entry: bash -c 'cd frontend && [ -d node_modules ] || npm ci --silent && files=(); for f in "$@"; do files+=("${f#frontend/}"); done; npx prettier --write "${files[@]}"' --
+        entry: bash -c 'cd frontend && { [ -f node_modules/.package-lock.json ] || npm ci --silent; } && files=(); for f in "$@"; do files+=("${f#frontend/}"); done; npx prettier --write "${files[@]}"' --
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|json|css|md)$
