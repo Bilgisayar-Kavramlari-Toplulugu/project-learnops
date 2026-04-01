@@ -19,7 +19,6 @@ const SYSTEM_AVATARS = Array.from({ length: 10 }, (_, i) => String(i + 1));
 function ProfileViewSkeleton() {
   return (
     <div className="max-w-2xl space-y-5 py-6 mx-auto">
-      {/* Profile summary skeleton */}
       <Card>
         <CardHeader className="flex flex-row items-start justify-between space-y-0">
           <div className="space-y-1.5">
@@ -39,8 +38,6 @@ function ProfileViewSkeleton() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Account info skeleton */}
       <Card>
         <CardHeader>
           <Skeleton className="h-5 w-28" />
@@ -58,8 +55,6 @@ function ProfileViewSkeleton() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Danger zone skeleton */}
       <Card className="border-destructive/30">
         <CardHeader>
           <Skeleton className="h-3.5 w-24" />
@@ -80,7 +75,6 @@ function ProfileView({ profile, onEdit }: { profile: DashboardProfile; onEdit: (
   return (
     <>
       <div className="max-w-2xl space-y-5 py-6 mx-auto">
-        {/* Profile summary */}
         <Card>
           <CardHeader className="flex flex-row items-start justify-between space-y-0">
             <div>
@@ -110,8 +104,6 @@ function ProfileView({ profile, onEdit }: { profile: DashboardProfile; onEdit: (
             </div>
           </CardContent>
         </Card>
-
-        {/* Account info */}
         <Card>
           <CardHeader>
             <CardTitle>Hesap Bilgileri</CardTitle>
@@ -133,8 +125,6 @@ function ProfileView({ profile, onEdit }: { profile: DashboardProfile; onEdit: (
             </dl>
           </CardContent>
         </Card>
-
-        {/* Danger zone */}
         <Card className="border-destructive/30">
           <CardHeader>
             <CardTitle className="text-destructive text-sm">Tehlikeli Bölge</CardTitle>

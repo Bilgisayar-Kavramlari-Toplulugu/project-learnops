@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Skeleton } from "@/components/ui/skeleton"; // Assume you have a Skeleton component
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DashboardShellSkeletonProps {
   sidebarItemsCount?: number;
@@ -23,8 +23,8 @@ export function DashboardShellSkeleton({
 
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col gap-3 px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
           <div className="flex h-12 items-center justify-between gap-2 rounded-xl bg-slate-200 dark:bg-slate-700 px-3">
-            <Skeleton className="h-6 w-32 rounded-md" /> {/* User name / avatar */}
-            <Skeleton className="h-8 w-8 rounded-full" /> {/* Menu button */}
+            <Skeleton className="h-6 w-32 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-full" />
           </div>
 
           <main className="min-h-0 flex-1 space-y-3">

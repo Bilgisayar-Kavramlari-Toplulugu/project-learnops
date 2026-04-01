@@ -18,7 +18,6 @@ export function useUpdateProfile() {
       }),
 
     onSuccess: (res) => {
-      // Cache'i güncel veriyle replace et, yeniden fetch atmaz
       queryClient.setQueryData(["profile"], res.data);
     },
   });
