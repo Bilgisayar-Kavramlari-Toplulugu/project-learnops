@@ -72,6 +72,17 @@ def run_migrations_online() -> None:
     config_section = config.get_section(config.config_ini_section)
     config_section["sqlalchemy.url"] = db_url
 
+    # When called from main.py lifespan (run_sync), there is already a
+    # running event loop.  If the connection was injected by run_sync we
+    # can run migrations synchronously; otherwise fall back to asyncio.run.
+    connectable = config.attributes.get("connection", None)
+    if connectable is not None:
+        # Called from main.py lifespan via conn.run_sync — run synchronously
+        context.configure(connection=connectable, target_metadata=target_metadata)
+        with context.begin_transaction():
+            context.run_migrations()
+        return
+
     connectable = create_async_engine(
         db_url,
         poolclass=pool.NullPool,
