@@ -15,7 +15,7 @@ export function useUpdateProfile() {
     mutationFn: (payload: UpdateProfilePayload) =>
       api.patch<DashboardProfile>("/users/me", payload, {
         headers: { "Content-Type": "application/json" },
-      }), 
+      }),
 
     onSuccess: (res) => {
       // Cache'i güncel veriyle replace et, yeniden fetch atmaz

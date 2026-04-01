@@ -11,7 +11,6 @@ import {
 import { routes } from "@/lib/routes";
 import type { CourseProgressTone, SidebarItem } from "@/types";
 
-
 interface CourseUiMeta {
   icon: LucideIcon;
   progressTone: CourseProgressTone;

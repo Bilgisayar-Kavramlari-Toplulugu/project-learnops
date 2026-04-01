@@ -9,7 +9,6 @@ import { AppFooter } from "./app-footer";
 import { AppSidebar } from "./app-sidebar";
 import { AppTopbar } from "./app-topbar";
 
-
 interface DashboardShellProps {
   user: DashboardProfile;
   sidebarItems: SidebarItem[];
