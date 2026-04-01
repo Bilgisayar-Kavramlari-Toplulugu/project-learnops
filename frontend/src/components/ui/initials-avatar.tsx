@@ -12,24 +12,18 @@ const avatarToneClasses = [
   "bg-cyan-100   text-cyan-800   dark:bg-cyan-900/55   dark:text-cyan-100",
 ] as const;
 
-export function getInitialName(name: string): string {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function toInitials(name: string | undefined | null, fallbackInitials?: string): string {
+export function toInitials(name: string | undefined | null, fallbackInitials?: string): string {
   if (!name || typeof name !== "string" || !name.trim()) {
-    return fallbackInitials?.trim() ? getInitialName(fallbackInitials) : "LO";
+    if (!fallbackInitials?.trim()) return "LO";
+    name = fallbackInitials;
   }
 
   const parts = name.trim().split(/\s+/).filter(Boolean);
 
-  const initials = parts.map((part) => part[0].toUpperCase()).join("");
+  const initials = parts
+    .map((part) => part[0].toUpperCase())
+    .join("")
+    .slice(0, 2);
 
   return initials || "LO";
 }
