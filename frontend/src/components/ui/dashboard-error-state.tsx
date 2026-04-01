@@ -7,7 +7,7 @@ interface DashboardErrorStateProps {
 }
 
 export function DashboardErrorState({
-  message = "Unable to load your profile.",
+  message = "Profil yüklenirken bir hata oluştu.",
   onRetry,
 }: DashboardErrorStateProps) {
   return (
@@ -17,7 +17,7 @@ export function DashboardErrorState({
         <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{message}</p>
         {onRetry && (
           <Button variant="default" size="sm" onClick={onRetry}>
-            Retry
+            Tekrar Dene
           </Button>
         )}
       </div>
