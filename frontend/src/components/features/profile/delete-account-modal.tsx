@@ -27,14 +27,10 @@ export function DeleteAccountModal({
     if (!confirmed) return;
     setLoading(true);
     try {
-      await api.delete("/api/account").then(() => {
-        document.cookie.split(";").forEach((c) => {
-          document.cookie = c
-            .replace(/^ +/, "")
-            .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
-        });
-        router.push(routes.login);
+      await api.delete("/users/me", {
+        data: { confirmation: CONFIRM_TEXT },
       });
+      router.push(routes.login);
     } catch {
       setLoading(false);
       toast.error("Hata oluştu, tekrar deneyin")
