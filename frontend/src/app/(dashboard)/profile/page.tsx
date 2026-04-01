@@ -4,8 +4,7 @@ import { useState } from "react";
 import type { DashboardProfile } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getInitials } from "@/components/ui/avatar-component";
-import { InitialsAvatar, pickTone } from "@/components/ui/initials-avatar";
+import { getInitialName, InitialsAvatar, pickTone } from "@/components/ui/initials-avatar";
 import { DeleteAccountModal } from "@/components/features/profile/delete-account-modal";
 import { useProfile } from "@/hooks/profile/use-profile";
 import { useUpdateProfile } from "@/hooks/profile/use-update-profile";
@@ -184,7 +183,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
 
   const { display_name, bio, selectedAvatar } = form;
 
-  const initials = getInitials(display_name || profile.display_name);
+  const initials = getInitialName(display_name || profile.display_name);
   const initialsColor = pickTone(display_name || profile.display_name);
 
   function handleSave() {

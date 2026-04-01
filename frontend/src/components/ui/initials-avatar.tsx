@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { getInitials } from "./avatar-component";
 
 const avatarToneClasses = [
   "bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-100",
@@ -13,9 +12,19 @@ const avatarToneClasses = [
   "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/55 dark:text-cyan-100",
 ] as const;
 
+export function getInitialName(name: string): string {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 function toInitials(name: string | undefined | null, fallbackInitials?: string): string {
   if (!name || typeof name !== "string" || !name.trim()) {
-    return fallbackInitials?.trim() ? getInitials(fallbackInitials) : "LO";
+    return fallbackInitials?.trim() ? getInitialName(fallbackInitials) : "LO";
   }
 
   const parts = name.trim().split(/\s+/).filter(Boolean);
