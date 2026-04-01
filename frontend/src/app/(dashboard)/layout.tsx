@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { data: profile, isLoading } = useProfile();
 
-  if (isLoading || !profile) return <DashboardShellSkeleton />;
+  if (isLoading) return <DashboardShellSkeleton />;
   if (!profile) return <DashboardErrorState />;
 
   return (
