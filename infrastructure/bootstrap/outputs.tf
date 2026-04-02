@@ -32,9 +32,9 @@ output "artifact_registry_backend_repository" {
   value       = google_artifact_registry_repository.repos["backend"].repository_id
 }
 
-output "artifact_registry_fronted_repository" {
-  description = "Artifact Registry fronted repository ID"
-  value       = google_artifact_registry_repository.repos["fronted"].repository_id
+output "artifact_registry_frontend_repository" {
+  description = "Artifact Registry frontend repository ID"
+  value       = google_artifact_registry_repository.repos["frontend"].repository_id
 }
 
 output "artifact_registry_backend_image_base" {
@@ -42,9 +42,9 @@ output "artifact_registry_backend_image_base" {
   value       = "${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["backend"].repository_id}"
 }
 
-output "artifact_registry_fronted_image_base" {
-  description = "Base image path for fronted images"
-  value       = "${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["fronted"].repository_id}"
+output "artifact_registry_frontend_image_base" {
+  description = "Base image path for frontend images"
+  value       = "${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["frontend"].repository_id}"
 }
 
 output "workload_identity_provider" {
@@ -75,7 +75,7 @@ output "github_actions_setup_instructions" {
     4. GCP_SERVICE_ACCOUNT: ${google_service_account.github_actions.email}
     5. APP_RUNTIME_SERVICE_ACCOUNT: ${google_service_account.app_runtime.email}
     6. BACKEND_IMAGE_BASE: ${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["backend"].repository_id}
-    7. FRONTED_IMAGE_BASE: ${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["fronted"].repository_id}
+    7. FRONTEND_IMAGE_BASE: ${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["frontend"].repository_id}
     
     Your GitHub Actions workflow will authenticate using Workload Identity Federation
     without requiring service account keys!
@@ -83,11 +83,6 @@ output "github_actions_setup_instructions" {
     Terraform State Bucket: ${var.terraform_state_bucket_name}
     Use this bucket for your staging infrastructure state.
   EOT
-}
-
-output "secrets_uploaded" {
-  description = "List of secrets uploaded to Secret Manager"
-  value       = keys(var.env_secrets)
 }
 
 # ===========================

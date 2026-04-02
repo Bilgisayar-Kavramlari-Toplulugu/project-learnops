@@ -10,6 +10,11 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",  # This ignores extra env vars not defined here
     )
+    
+    # Database settings
+    # POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB are deprecated for Cloud Run.
+    # Cloud Run uses INSTANCE_CONNECTION_NAME, DB_USER, and DB_NAME injected by Terraform.
+    # DATABASE_URL remains as the local development fallback.
 
     # Database (populated from .env via pydantic-settings)
     POSTGRES_USER: str = ""
@@ -49,7 +54,7 @@ class Settings(BaseSettings):
     BACKEND_INTERNAL_URL: str = "http://backend:8080"
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
     FRONTEND_PUBLIC_URL: str = "http://localhost:3000"
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    ALLOWED_ORIGINS: List[str] | str = ["http://localhost:3000", "http://localhost:8000"]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
@@ -78,6 +83,8 @@ class Settings(BaseSettings):
 
     @property
     def allowed_origins(self) -> List[str]:
+        if isinstance(self.ALLOWED_ORIGINS, str):
+            return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
         return self.ALLOWED_ORIGINS
 
     @property
@@ -89,13 +96,15 @@ settings = Settings()
 
 # Startup validation: reject missing required settings
 _REQUIRED_SETTINGS = [
-    "POSTGRES_USER",
-    "POSTGRES_PASSWORD",
-    "POSTGRES_DB",
-    "DATABASE_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
     "JWT_SECRET",
     "TOKEN_ENCRYPTION_KEY",
 ]
+# In non-development environments (Cloud Run), DB connection uses IAM auth via
+# INSTANCE_CONNECTION_NAME + DB_USER + DB_NAME — not POSTGRES_* or DATABASE_URL.
+if settings.ENVIRONMENT == "development":
+    _REQUIRED_SETTINGS += ["POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "DATABASE_URL"]
 _missing = [name for name in _REQUIRED_SETTINGS if not getattr(settings, name)]
 if _missing:
     raise RuntimeError(

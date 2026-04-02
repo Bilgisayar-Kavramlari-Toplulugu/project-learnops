@@ -7,7 +7,7 @@ This directory contains Terraform configuration for bootstrapping the GCP stagin
 The bootstrap phase:
 1. Creates a new GCP project for staging
 2. Enables required APIs (Cloud Run, Cloud SQL, Secret Manager, etc.)
-3. Creates two Artifact Registry Docker repositories (`<github_repo>-backend` and `<github_repo>-fronted`)
+3. Creates two Artifact Registry Docker repositories (`<github_repo>-backend` and `<github_repo>-frontend`)
 4. Creates service accounts for GitHub Actions CI/CD and app runtime
 5. Sets up Workload Identity Federation (secure, keyless authentication)
 6. Uploads environment secrets to Google Secret Manager
@@ -127,7 +127,7 @@ Add these repository secrets:
 4. **GCP_SERVICE_ACCOUNT**: From `terraform output github_actions_sa_email`
 5. **APP_RUNTIME_SERVICE_ACCOUNT**: From `terraform output app_runtime_sa_email`
 6. **BACKEND_IMAGE_BASE**: From `terraform output artifact_registry_backend_image_base`
-7. **FRONTED_IMAGE_BASE**: From `terraform output artifact_registry_fronted_image_base`
+7. **FRONTEND_IMAGE_BASE**: From `terraform output artifact_registry_frontend_image_base`
 
 **For Terraform variables in staging**, you'll also need:
 - **TF_VAR_project_id**: Same as GCP_PROJECT_ID
@@ -159,9 +159,9 @@ Instead of using service account keys (which can be leaked), Workload Identity F
 - `github_actions_sa_email`: Email of the GitHub Actions service account
 - `app_runtime_sa_email`: Email of the runtime service account
 - `artifact_registry_backend_repository`: Backend Artifact Registry repository ID
-- `artifact_registry_fronted_repository`: Fronted Artifact Registry repository ID
+- `artifact_registry_frontend_repository`: Frontend Artifact Registry repository ID
 - `artifact_registry_backend_image_base`: Base image URL for backend builds
-- `artifact_registry_fronted_image_base`: Base image URL for fronted builds
+- `artifact_registry_frontend_image_base`: Base image URL for frontend builds
 - `workload_identity_provider`: Workload Identity Provider resource name
 - `terraform_state_bucket`: GCS bucket name for Terraform state
 - `github_actions_setup_instructions`: Complete setup guide

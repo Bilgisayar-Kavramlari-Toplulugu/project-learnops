@@ -36,7 +36,7 @@ provider "google" {
 locals {
   artifact_registry_repositories = {
     backend = "${var.github_repo}-backend"
-    fronted = "${var.github_repo}-fronted"
+    frontend = "${var.github_repo}-frontend"
   }
 }
 
@@ -212,7 +212,7 @@ resource "google_service_account_iam_member" "github_workload_identity" {
 # ===========================
 
 resource "google_secret_manager_secret" "env_secrets" {
-  for_each = toset(keys(var.env_secrets))
+  for_each = toset(nonsensitive(keys(var.env_secrets)))
 
   project   = google_project.staging.project_id
   secret_id = each.value
@@ -225,7 +225,7 @@ resource "google_secret_manager_secret" "env_secrets" {
 }
 
 resource "google_secret_manager_secret_version" "env_secrets_version" {
-  for_each = toset(keys(var.env_secrets))
+  for_each = toset(nonsensitive(keys(var.env_secrets)))
 
   secret      = google_secret_manager_secret.env_secrets[each.value].id
   secret_data = var.env_secrets[each.value]
@@ -233,7 +233,7 @@ resource "google_secret_manager_secret_version" "env_secrets_version" {
 
 # Grant GitHub Actions SA access to read secrets
 resource "google_secret_manager_secret_iam_member" "github_actions_secret_access" {
-  for_each = toset(keys(var.env_secrets))
+  for_each = toset(nonsensitive(keys(var.env_secrets)))
 
   project   = google_project.staging.project_id
   secret_id = google_secret_manager_secret.env_secrets[each.value].secret_id

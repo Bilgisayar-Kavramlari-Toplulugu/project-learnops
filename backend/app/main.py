@@ -13,8 +13,9 @@ from app import (
     models as _models,  # noqa: F401 - ensure all SQLAlchemy models are registered
 )
 from app.config import settings
-from app.database import get_db
+from app.database import engine, get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
+from app.models.base import Base
 from app.routers import auth, users
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,12 @@ app.add_middleware(
     https_only=settings.ENVIRONMENT == "production",
 )
 
+@app.on_event("startup")
+async def ensure_schema_exists() -> None:
+    # In staging Cloud Run, schema may be empty after a fresh DB recreation.
+    # Create missing tables idempotently to avoid runtime UndefinedTable errors.
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 app.include_router(auth.router, prefix="/v1")
 app.include_router(users.router, prefix="/v1")

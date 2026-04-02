@@ -48,7 +48,7 @@ variable "terraform_state_bucket_name" {
 variable "env_secrets" {
   description = "Map of environment secrets to upload to Secret Manager"
   type        = map(string)
-  sensitive   = false
+  sensitive   = true
   default     = {}
 }
 
