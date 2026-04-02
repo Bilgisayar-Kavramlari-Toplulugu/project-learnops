@@ -669,3 +669,15 @@ async def check_conflict_endpoint(
         request.provider_user_id,
         request.provider_email,
     )
+
+
+# ---------------------------------------------------------------------------
+# Combined router: main.py imports auth.router → bu sayede /users/* route'ları
+# da /v1 prefix altında kayıt olur, main.py'e dokunmadan.
+# ---------------------------------------------------------------------------
+from app.routers.users import router as _users_router  # noqa: E402
+
+_combined = APIRouter()
+_combined.include_router(router)  # /auth/* route'ları (mevcut prefix korunur)
+_combined.include_router(_users_router)  # /users/* route'ları
+router = _combined  # main.py'in import ettiği değişkeni yeniden ata
