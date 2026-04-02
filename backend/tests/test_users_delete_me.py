@@ -203,8 +203,7 @@ async def test_delete_me_success_hard_deletes_and_audit_logs(
     )
     answers_count = await db_session.scalar(
         text(
-            "SELECT COUNT(*) FROM quiz_attempt_answers "
-            "WHERE attempt_id = :attempt_id"
+            "SELECT COUNT(*) FROM quiz_attempt_answers WHERE attempt_id = :attempt_id"
         ),
         {"attempt_id": str(seeded["attempt_id"])},
     )
