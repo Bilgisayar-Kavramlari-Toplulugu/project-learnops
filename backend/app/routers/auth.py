@@ -105,6 +105,8 @@ async def google_login(request: Request):
 @router.get("/google/callback")
 async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
     """Handle Google OAuth callback"""
+    frontend_url = settings.FRONTEND_PUBLIC_URL.rstrip("/")
+
     try:
         logger.info("=== CALLBACK RECEIVED ===")
 
@@ -231,7 +233,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         # Cookie'ye set et (httpOnly)
         response = RedirectResponse(
-            url=(f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"),
+            url=(f"{frontend_url.rstrip('/')}/dashboard"),
             status_code=302,
         )
         response.set_cookie(
