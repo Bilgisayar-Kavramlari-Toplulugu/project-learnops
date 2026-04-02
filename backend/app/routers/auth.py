@@ -118,7 +118,9 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         if not expected_state or received_state != expected_state:
             logger.error("State mismatch in OAuth callback")
-            raise HTTPException(status_code=400, detail="Invalid state parameter")
+            return RedirectResponse(
+                url=f"{frontend_url}/login?error=invalid_state", status_code=302
+            )
 
         # Code'u al
         code = request.query_params.get("code")
@@ -126,7 +128,9 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         if not code:
             logger.error("No code in request")
-            raise HTTPException(status_code=400, detail="Code not found")
+            return RedirectResponse(
+                url=f"{frontend_url}/login?error=invalid_code", status_code=302
+            )
 
         # Exchange code for tokens
         logger.info("Exchanging code for tokens...")
@@ -149,9 +153,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             if "error" in tokens:
                 logger.error(f"Token error: {tokens.get('error')}")
-                raise HTTPException(
-                    status_code=400,
-                    detail=tokens.get("error_description", "Token exchange failed"),
+                return RedirectResponse(
+                    url=f"{frontend_url}/login?error=oauth_failed", status_code=302
                 )
 
         # Get user info
@@ -165,16 +168,14 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
                 logger.error(
                     f"Google userinfo failed with status {user_response.status_code}"
                 )
-                raise HTTPException(
-                    status_code=502,
-                    detail="Failed to retrieve user info from Google",
+                return RedirectResponse(
+                    url=f"{frontend_url}/login?error=oauth_failed", status_code=302
                 )
             user_info = user_response.json()
             if "email" not in user_info:
                 logger.error("Google userinfo response missing email")
-                raise HTTPException(
-                    status_code=502,
-                    detail="Google did not return user email",
+                return RedirectResponse(
+                    url=f"{frontend_url}/login?error=oauth_failed", status_code=302
                 )
             logger.info(f"User email: {user_info.get('email')}")
 
@@ -260,13 +261,12 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         return response
 
-    except HTTPException:
-        await db.rollback()
-        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Callback error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        return RedirectResponse(
+            url=f"{frontend_url}/login?error=server_error", status_code=302
+        )
 
 
 @router.get("/me", response_model=UserMeResponse)
