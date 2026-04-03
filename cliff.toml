@@ -33,6 +33,8 @@ filter_unconventional = true
 split_commits = false
 commit_preprocessors = []
 commit_parsers = [
+  { message = "^BE-", skip = true },
+  { message = "^[0-9]+-", skip = true },
   { message = "^feat", group = "🚀 Yeni Özellikler" },
   { message = "^fix", group = "🐛 Hata Düzeltmeleri" },
   { message = "^refactor", group = "🔧 Refactoring" },
