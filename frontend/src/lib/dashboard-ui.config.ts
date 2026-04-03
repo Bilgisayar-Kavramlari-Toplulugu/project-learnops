@@ -53,7 +53,7 @@ export const dashboardSidebarItems: SidebarItem[] = [
     label: "Profil",
     href: routes.profile,
     icon: UserRound,
-  }
+  },
 ];
 
 export function getCourseUiMeta(courseId: string): CourseUiMeta {

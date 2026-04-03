@@ -71,9 +71,9 @@ body:
         - [ ] ...
         - [ ] ...
       value: |
-        - [ ] 
-        - [ ] 
-        - [ ] 
+        - [ ]
+        - [ ]
+        - [ ]
     validations:
       required: true
   - type: dropdown
@@ -104,7 +104,7 @@ body:
         - 🔍 Araştırma / spike
     validations:
       required: true
-  
+
   - type: input
     id: assignee
     attributes:
@@ -113,7 +113,7 @@ body:
       placeholder: "kullaniciadi"
     validations:
       required: false
-      
+
   - type: input
     id: due_date
     attributes:

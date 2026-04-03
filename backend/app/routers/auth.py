@@ -22,7 +22,6 @@ from app.schemas.auth import (
     MergeAccountRequest,
     MergeAccountResponse,
     OAuthProvider,
-    RefreshRequest,
     TokenResponse,
     UserMeResponse,
 )
@@ -84,7 +83,7 @@ async def google_login(request: Request):
         if request.query_params.get("format") == "json":
             response = JSONResponse(content={"login_url": auth_url})
         else:
-            response = RedirectResponse(url=auth_url, status_code=307)
+            response = RedirectResponse(url=auth_url, status_code=302)
 
         response.set_cookie(
             key="oauth_state",
@@ -106,6 +105,8 @@ async def google_login(request: Request):
 @router.get("/google/callback")
 async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
     """Handle Google OAuth callback"""
+    frontend_url = settings.FRONTEND_PUBLIC_URL.rstrip("/")
+
     try:
         logger.info("=== CALLBACK RECEIVED ===")
 
@@ -117,7 +118,9 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         if not expected_state or received_state != expected_state:
             logger.error("State mismatch in OAuth callback")
-            raise HTTPException(status_code=400, detail="Invalid state parameter")
+            return RedirectResponse(
+                url=f"{frontend_url}/login?error=invalid_state", status_code=302
+            )
 
         # Code'u al
         code = request.query_params.get("code")
@@ -125,7 +128,9 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         if not code:
             logger.error("No code in request")
-            raise HTTPException(status_code=400, detail="Code not found")
+            return RedirectResponse(
+                url=f"{frontend_url}/login?error=invalid_code", status_code=302
+            )
 
         # Exchange code for tokens
         logger.info("Exchanging code for tokens...")
@@ -148,9 +153,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             if "error" in tokens:
                 logger.error(f"Token error: {tokens.get('error')}")
-                raise HTTPException(
-                    status_code=400,
-                    detail=tokens.get("error_description", "Token exchange failed"),
+                return RedirectResponse(
+                    url=f"{frontend_url}/login?error=oauth_failed", status_code=302
                 )
 
         # Get user info
@@ -164,16 +168,14 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
                 logger.error(
                     f"Google userinfo failed with status {user_response.status_code}"
                 )
-                raise HTTPException(
-                    status_code=502,
-                    detail="Failed to retrieve user info from Google",
+                return RedirectResponse(
+                    url=f"{frontend_url}/login?error=oauth_failed", status_code=302
                 )
             user_info = user_response.json()
             if "email" not in user_info:
                 logger.error("Google userinfo response missing email")
-                raise HTTPException(
-                    status_code=502,
-                    detail="Google did not return user email",
+                return RedirectResponse(
+                    url=f"{frontend_url}/login?error=oauth_failed", status_code=302
                 )
             logger.info(f"User email: {user_info.get('email')}")
 
@@ -232,7 +234,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         # Cookie'ye set et (httpOnly)
         response = RedirectResponse(
-            url=(f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"),
+            url=(f"{frontend_url.rstrip('/')}/dashboard"),
             status_code=302,
         )
         response.set_cookie(
@@ -259,13 +261,12 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
         return response
 
-    except HTTPException:
-        await db.rollback()
-        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Callback error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        return RedirectResponse(
+            url=f"{frontend_url}/login?error=server_error", status_code=302
+        )
 
 
 @router.get("/me", response_model=UserMeResponse)
@@ -317,10 +318,17 @@ async def get_me(request: Request, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh(body: RefreshRequest):
-    """Refresh token ile yeni access + refresh token üretir."""
+async def refresh(request: Request):
+    """Cookie'deki refresh token ile yeni access + refresh token üretir."""
+    token = request.cookies.get("refresh_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token bulunamadı",
+        )
+
     try:
-        payload = decode_token(body.refresh_token)
+        payload = decode_token(token)
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -353,31 +361,51 @@ async def refresh(body: RefreshRequest):
     blacklist_token(jti)
 
     new_jti = str(uuid.uuid4())
-    return TokenResponse(
-        access_token=create_access_token(sub),
-        refresh_token=create_refresh_token(sub, new_jti),
+    new_access_token = create_access_token(sub)
+    new_refresh_token = create_refresh_token(sub, new_jti)
+
+    response = JSONResponse(
+        content=TokenResponse(
+            access_token=new_access_token,
+            refresh_token=new_refresh_token,
+        ).model_dump()
     )
+    response.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        httponly=True,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="strict",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=settings.ENVIRONMENT == "production",
+        samesite="strict",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+    )
+    return response
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(
-    body: RefreshRequest,
-    _current_user: str = Depends(get_current_user),
-):
-    """Refresh token'ı blacklist'e ekleyerek logout yapar."""
-    try:
-        payload = decode_token(body.refresh_token)
-    except JWTError:
-        return  # zaten geçersiz, işlem yok
+async def logout(request: Request):
+    """Cookie'deki refresh token'ı blacklist'e ekleyerek logout yapar."""
+    token = request.cookies.get("refresh_token")
+    if token:
+        try:
+            payload = decode_token(token)
+            if payload.get("type") == "refresh":
+                jti = payload.get("jti", "")
+                blacklist_token(jti)
+        except JWTError:
+            pass  # zaten geçersiz, işlem yok
 
-    if payload.get("type") != "refresh":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token gerekli",
-        )
-
-    jti = payload.get("jti", "")
-    blacklist_token(jti)
+    response = JSONResponse(content=None, status_code=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
 
 
 @router.post("/merge", response_model=MergeAccountResponse)

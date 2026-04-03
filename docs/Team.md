@@ -2,7 +2,7 @@
 <details open>
 <summary><strong>🇹🇷 Türkçe</strong></summary>
 <br>
-Bu projedeki güncel ekip üyelerini ve rollerini görmek için lütfen GitHub'ın kendi takım sayfasını ziyaret edin. 
+Bu projedeki güncel ekip üyelerini ve rollerini görmek için lütfen GitHub'ın kendi takım sayfasını ziyaret edin.
 
 Oradaki liste **her zaman günceldir**.
 

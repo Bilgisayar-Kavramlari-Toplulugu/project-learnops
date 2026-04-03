@@ -10,10 +10,10 @@ body:
     attributes:
       value: |
         ## 🔒 Gizlilik ve Güvenlik
-        
+
         Bu rapor proje yöneticileri tarafından gizli olarak incelenecektir.
         Kişisel bilgileriniz ve raporunuz korunacaktır.
-        
+
         **⚠️ Acil Güvenlik Açıkları İçin:** [Security Advisories](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/security/advisories/new) kullanın.
 
   - type: dropdown
@@ -40,7 +40,7 @@ body:
       label: Bildirmek İstediğiniz İçerik
       description: |
         Lütfen durumu detaylı bir şekilde açıklayın:
-        
+
         **Şunları belirtin:**
         - 📍 Nerede oldu? (Issue, PR, Comment, Discussion)
         - 👤 Kim tarafından? (Kullanıcı adı)
@@ -48,7 +48,7 @@ body:
         - 📝 Tam olarak ne oldu?
       placeholder: |
         Örnek:
-        
+
         - Yer: Issue #123'teki yorum
         - Kişi: @kullaniciadi
         - Zaman: 15 Kasım 2025, 14:30
@@ -64,7 +64,7 @@ body:
       placeholder: |
         https://github.com/org/repo/issues/123#issuecomment-456789
         https://github.com/org/repo/pull/456
-        
+
         (Buraya ekran görüntülerini sürükleyip bırakabilirsiniz)
     validations:
       required: false
@@ -104,12 +104,12 @@ body:
     attributes:
       value: |
         ---
-        
+
         ### 📋 Sonraki Adımlar
-        
+
         1. ⏱️ **24 saat içinde** raporunuz incelenecektir.
         2. 📧 Gerekirse sizinle iletişime geçilecektir.
         3. ✅ Sonuç hakkında bilgilendirileceksiniz.
         4. 🔒 Gizliliğiniz korunacaktır.
-        
+
         🙏 **Teşekkürler!** Topluluğumuzu güvenli tutmaya yardımcı olduğunuz için minnettarız.

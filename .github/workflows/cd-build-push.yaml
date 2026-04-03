@@ -150,5 +150,39 @@ jobs:
                       ${{ env.FRONTEND_IMAGE }}:latest
                       ${{ env.FRONTEND_IMAGE }}:${{ steps.version.outputs.IMAGE_TAG }}
                       ${{ env.FRONTEND_IMAGE }}:sha-${{ github.sha }}
+    changelog:
+        name: Generate Changelog
+        needs: [build-backend, build-frontend]
+        if: github.ref == 'refs/heads/release'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Install git-cliff
+              uses: taiki-e/install-action@v2
+              with:
+                  tool: git-cliff
 
+            - name: Read version tag
+              id: version
+              run: |
+                  VERSION=$(grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' backend/.version | tr -d '\r' | xargs)
+                  echo "VERSION=v${VERSION}" >> $GITHUB_OUTPUT
+
+            - name: Generate CHANGELOG
+              run: |
+                  git-cliff --tag ${{ steps.version.outputs.VERSION }} -o CHANGELOG.md
+
+            - name: Commit CHANGELOG
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git add CHANGELOG.md
+                  git diff --staged --quiet || git commit -m "chore(changelog): update for ${{ steps.version.outputs.VERSION }}"
+                  git push

@@ -140,7 +140,7 @@ Platform, topluluk odaklı bir yaklaşımla geliştirilmektedir. Hedef; DevOps �
 <!-- Takım üyelerini buraya ekleyin -->
  - [Takım Bilgisi için Tıklayınız](Team.md)
  <br>
- 
+
 ---
 
 ## 🔗 İlgili Bağlantılar
