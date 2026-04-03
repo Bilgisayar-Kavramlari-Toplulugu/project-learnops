@@ -49,7 +49,7 @@ That gives us two wins:
 
 ![PR Security Gate: Secrets Scan in CI](images/betterleaks-ci-workflow.png)
 
-![Betterleaks CI Flow (High-Level)](images/betterleaks-ci-flow.png)
+
 
 ## How It Works in This Repo
 Here is the high‑level logic we integrated:
@@ -71,6 +71,7 @@ Here is the high‑level logic we integrated:
 
 The most important detail:
 Betterleaks itself doesn’t “block merges” — it fails a required CI check. If branch protection requires that check, merges are blocked automatically.
+![Betterleaks CI Flow (High-Level)](images/betterleaks-ci-flow.png)
 
 ## What This Looks Like During a PR
 When a PR is opened:
