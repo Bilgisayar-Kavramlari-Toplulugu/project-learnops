@@ -2,7 +2,7 @@ import logging
 import secrets
 import uuid
 from datetime import datetime, timezone
-from typing import Union
+from typing import TypedDict, Union
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -35,12 +35,18 @@ from app.services.jwt_service import (
 )
 from app.services.oauth_service import (
     build_conflict_response,
+    get_oauth_account,
     get_user_by_email,
     merge_oauth_accounts,
 )
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 logger = logging.getLogger(__name__)
+
+
+class ResolveResult(TypedDict, total=False):
+    user: User
+    conflict: AccountConflictResponse
 
 
 def _google_redirect_uri(request: Request) -> str:
@@ -55,6 +61,69 @@ def _github_redirect_uri(request: Request) -> str:
         (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
     )
     return f"{base_url}/v1/auth/github/callback"
+
+
+async def _get_user_oauth_accounts(db: AsyncSession, user_id):
+    result = await db.execute(
+        select(OAuthAccount).where(OAuthAccount.user_id == user_id)
+    )
+    return result.scalars().all()
+
+
+async def resolve_oauth_user(
+    db,
+    *,
+    email: str,
+    provider: OAuthProvider,
+    provider_user_id: str,
+    provider_email: str,
+    display_name: str,
+) -> ResolveResult:
+    """
+    OAuth login sırasında:
+    - user bulur veya oluşturur
+    - conflict varsa döner
+    - yoksa user + oauth account hazır döner
+    """
+
+    # 1. user bul
+    user = await get_user_by_email(db, email)
+
+    if user:
+        accounts = await _get_user_oauth_accounts(db, user.id)
+
+        # provider zaten bağlı mı?
+        provider_account = next(
+            (a for a in accounts if a.provider == provider.value), None
+        )
+
+        if not provider_account:
+            # ❗ conflict
+            conflict = build_conflict_response(
+                existing_user=user,
+                existing_accounts=accounts,
+                new_provider=provider,
+                provider_user_id=provider_user_id,
+                provider_email=provider_email,
+            )
+            return {"conflict": conflict}
+
+        # mevcut kullanıcı → login
+        user.last_login_at = datetime.now(timezone.utc)
+
+    else:
+        # yeni user
+        user = User(
+            email=email,
+            display_name=display_name,
+            avatar_type="initials",
+            last_login_at=datetime.now(timezone.utc),
+        )
+        db.add(user)
+        await db.flush()
+        await db.refresh(user)
+
+    return {"user": user}
 
 
 @router.get("/google/login")
@@ -185,32 +254,28 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             logger.info(f"User email: {user_info.get('email')}")
 
         # Get or create user
-        result = await db.execute(select(User).where(User.email == user_info["email"]))
-        user = result.scalar_one_or_none()
-
-        if not user:
-            user = User(
-                email=user_info["email"],
-                display_name=user_info.get("name", user_info["email"].split("@")[0]),
-                avatar_type="initials",
-                last_login_at=datetime.now(timezone.utc),
-            )
-            db.add(user)
-            await db.flush()
-            await db.refresh(user)
-            logger.info(f"New user created: {user.email}")
-        else:
-            user.last_login_at = datetime.now(timezone.utc)
-            logger.info(f"Existing user logged in: {user.email}")
-
-        # OAuth account'u kaydet/güncelle
-        oauth_result = await db.execute(
-            select(OAuthAccount).where(
-                OAuthAccount.provider == "google",
-                OAuthAccount.provider_user_id == user_info["id"],
-            )
+        result = await resolve_oauth_user(
+            db,
+            email=user_info["email"],
+            provider=OAuthProvider.google,
+            provider_user_id=user_info["id"],
+            provider_email=user_info["email"],
+            display_name=user_info.get("name", user_info["email"].split("@")[0]),
         )
-        oauth_account = oauth_result.scalar_one_or_none()
+
+        if "conflict" in result:
+            conflict_data = result["conflict"]
+
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
+                f"&merge_token={conflict_data.merge_token}&email={user_info['email']}",
+                status_code=302,
+            )
+
+        user = result["user"]
+        provider_user_id = str(user_info["id"])
+        # OAuth account'u kaydet/güncelle
+        oauth_account = await get_oauth_account(db, "google", provider_user_id)
         refresh_token_encrypted = None
         if "refresh_token" in tokens:
             refresh_token_encrypted = encrypt_token(tokens["refresh_token"])
@@ -224,7 +289,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             oauth_account = OAuthAccount(
                 user_id=user.id,
                 provider="google",
-                provider_user_id=user_info["id"],
+                provider_user_id=provider_user_id,
                 provider_email=user_info["email"],
                 refresh_token_encrypted=refresh_token_encrypted,
             )
@@ -291,6 +356,7 @@ async def _get_github_primary_email(
         },
     )
     if resp.status_code != 200:
+        logger.warning(f"GitHub /user/emails failed: {resp.status_code}")
         return None
     for entry in resp.json():
         if entry.get("primary") and entry.get("verified"):
@@ -438,32 +504,28 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
         )
 
         # Mevcut kullanıcıyı email ile bul
-        result = await db.execute(select(User).where(User.email == email))
-        user = result.scalar_one_or_none()
+        result = await resolve_oauth_user(
+            db,
+            email=email,
+            provider=OAuthProvider.github,
+            provider_user_id=provider_user_id,
+            provider_email=email,
+            display_name=display_name,
+        )
 
-        if not user:
-            user = User(
-                email=email,
-                display_name=display_name,
-                avatar_type="initials",
-                last_login_at=datetime.now(timezone.utc),
+        if "conflict" in result:
+            conflict_data = result["conflict"]
+
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
+                f"&merge_token={conflict_data.merge_token}&email={email}",
+                status_code=302,
             )
-            db.add(user)
-            await db.flush()
-            await db.refresh(user)
-            logger.info(f"New user created via GitHub: {user.email}")
-        else:
-            user.last_login_at = datetime.now(timezone.utc)
-            logger.info(f"Existing user logged in via GitHub: {user.email}")
+
+        user = result["user"]
 
         # GitHub OAuth account kaydet/güncelle
-        oauth_result = await db.execute(
-            select(OAuthAccount).where(
-                OAuthAccount.provider == "github",
-                OAuthAccount.provider_user_id == provider_user_id,
-            )
-        )
-        oauth_account = oauth_result.scalar_one_or_none()
+        oauth_account = await get_oauth_account(db, "github", provider_user_id)
 
         # GitHub refresh token SAĞLAMAZ — bu tasarım gereği, hata değil.
         # refresh_token_encrypted her zaman NULL olarak kaydedilir.
@@ -688,8 +750,11 @@ async def check_conflict_endpoint(
     if not existing_user:
         return None
 
+    accounts = await _get_user_oauth_accounts(db, existing_user.id)
+
     return build_conflict_response(
         existing_user,
+        accounts,
         oauth_provider,
         request.provider_user_id,
         request.provider_email,

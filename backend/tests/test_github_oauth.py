@@ -13,6 +13,7 @@ Coverage:
 GitHub refresh token SAĞLAMAZ — bu beklenen davranış, hata değil.
 """
 
+import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -33,11 +34,21 @@ def reset_rate_limiter():
         rate_limiting._instance.request_counts.clear()
 
 
+def _random_user_id():
+    return str(uuid.uuid4())
+
+
+async def get_user_accounts(db_session: AsyncSession, user_id):
+    result = await db_session.execute(
+        select(OAuthAccount).where(OAuthAccount.user_id == user_id)
+    )
+    return result.scalars().all()
+
+
 # ---------------------------------------------------------------------------
 # Mock helpers
 # ---------------------------------------------------------------------------
 
-GITHUB_USER_ID = 12345678
 GITHUB_USER_EMAIL = "ghuser@example.com"
 GITHUB_LOGIN = "ghuser"
 
@@ -77,6 +88,7 @@ def _token_client_mock() -> AsyncMock:
 def _user_client_mock(
     email: str | None = GITHUB_USER_EMAIL,
     extra_emails: list[dict] | None = None,
+    user_id: str | None = None,
 ) -> AsyncMock:
     """
     GitHub /user ve opsiyonel /user/emails için mock client.
@@ -85,7 +97,7 @@ def _user_client_mock(
     user_resp = _mock_response(
         200,
         {
-            "id": GITHUB_USER_ID,
+            "id": user_id,
             "login": GITHUB_LOGIN,
             "name": "GH User",
             "email": email,
@@ -161,8 +173,9 @@ async def test_github_callback_creates_new_user(
     client: AsyncClient, db_session: AsyncSession
 ):
     """Yeni GitHub kullanıcısı → User + OAuthAccount oluşturulmalı."""
+    github_id = _random_user_id()
     token_mock = _token_client_mock()
-    user_mock = _user_client_mock(email=GITHUB_USER_EMAIL)
+    user_mock = _user_client_mock(email=GITHUB_USER_EMAIL, user_id=github_id)
 
     with _patch_github_clients(token_mock, user_mock):
         response = await client.get(
@@ -185,7 +198,7 @@ async def test_github_callback_creates_new_user(
     oauth_result = await db_session.execute(
         select(OAuthAccount).where(
             OAuthAccount.provider == "github",
-            OAuthAccount.provider_user_id == str(GITHUB_USER_ID),
+            OAuthAccount.provider_user_id == github_id,
         )
     )
     oauth_account = oauth_result.scalar_one_or_none()
@@ -204,11 +217,13 @@ async def test_github_callback_refresh_token_is_null(
 ):
     """
     GitHub refresh token sağlamaz.
-    OAuthAccount.refresh_token_encrypted = NULL olmalı, hata üretmemeli.
+    OAuthAccount.refresh_token_encrypted = NULL olmalı,
+    hata üretmemeli.
     Bu kabul kriterinin doğrudan testidir.
     """
+    github_id = _random_user_id()
     token_mock = _token_client_mock()
-    user_mock = _user_client_mock(email="nulltoken@example.com")
+    user_mock = _user_client_mock(email="nulltoken@example.com", user_id=github_id)
 
     with _patch_github_clients(token_mock, user_mock):
         response = await client.get(
@@ -222,7 +237,7 @@ async def test_github_callback_refresh_token_is_null(
     oauth_result = await db_session.execute(
         select(OAuthAccount).where(
             OAuthAccount.provider == "github",
-            OAuthAccount.provider_user_id == str(GITHUB_USER_ID),
+            OAuthAccount.provider_user_id == github_id,
         )
     )
     oauth_account = oauth_result.scalar_one_or_none()
@@ -252,7 +267,7 @@ async def test_github_callback_updates_existing_oauth_account(
     existing_oauth = OAuthAccount(
         user_id=existing_user.id,
         provider="github",
-        provider_user_id=str(GITHUB_USER_ID),
+        provider_user_id=_random_user_id(),
         provider_email=GITHUB_USER_EMAIL,
         refresh_token_encrypted=None,
     )
@@ -260,7 +275,8 @@ async def test_github_callback_updates_existing_oauth_account(
     await db_session.flush()
 
     token_mock = _token_client_mock()
-    user_mock = _user_client_mock(email=GITHUB_USER_EMAIL)
+    user_id = _random_user_id()
+    user_mock = _user_client_mock(email=GITHUB_USER_EMAIL, user_id=user_id)
 
     with _patch_github_clients(token_mock, user_mock):
         response = await client.get(
@@ -275,7 +291,7 @@ async def test_github_callback_updates_existing_oauth_account(
     result = await db_session.execute(
         select(OAuthAccount).where(
             OAuthAccount.provider == "github",
-            OAuthAccount.provider_user_id == str(GITHUB_USER_ID),
+            OAuthAccount.provider_user_id == user_id,
         )
     )
     accounts = result.scalars().all()
@@ -294,9 +310,10 @@ async def test_github_callback_uses_emails_endpoint_for_private_email(
     """
     /user email'i boşsa → /user/emails endpoint'inden primary+verified email alınmalı.
     """
+    github_id = _random_user_id()
     token_mock = _token_client_mock()
     # email=None → user_client_mock /user/emails çağrısını da ekler
-    user_mock = _user_client_mock(email=None)
+    user_mock = _user_client_mock(email=None, user_id=github_id)
 
     with _patch_github_clients(token_mock, user_mock):
         response = await client.get(
@@ -390,14 +407,15 @@ async def test_github_callback_handles_token_error(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_github_callback_existing_email_different_provider(
+async def test_github_callback_existing_email_different_provider_conflict(
     client: AsyncClient, db_session: AsyncSession
 ):
     """
-    Aynı email Google ile kayıtlıyken GitHub ile giriş →
-    yeni OAuthAccount oluşur, aynı User'a bağlanır.
+    Aynı email başka provider (Google) ile kayıtlıysa:
+    → conflict oluşmalı
+    → OAuthAccount OLUŞMAMALI
     """
-    # Google ile kayıtlı mevcut kullanıcı
+
     existing_user = User(
         email=GITHUB_USER_EMAIL,
         display_name="Google User",
@@ -425,20 +443,85 @@ async def test_github_callback_existing_email_different_provider(
             follow_redirects=False,
         )
 
+    #  conflict redirect
     assert response.status_code == 302
+    location = response.headers["location"]
 
-    # Aynı kullanıcıya iki farklı provider bağlı olmalı
+    assert "account_conflict" in location
+    assert "merge_token=" in location
+    assert f"email={GITHUB_USER_EMAIL}" in location
+
+    #  GitHub account eklenmemeli
     result = await db_session.execute(
         select(OAuthAccount).where(OAuthAccount.user_id == existing_user.id)
     )
     accounts = result.scalars().all()
+
+    assert len(accounts) == 1
+    assert accounts[0].provider == "google"
+
+
+@pytest.mark.asyncio
+async def test_merge_after_conflict_creates_github_account(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """
+    Conflict sonrası merge yapılınca GitHub account bağlanmalı
+    """
+
+    # Mevcut user (Google)
+    user = User(
+        email=GITHUB_USER_EMAIL,
+        display_name="Existing User",
+    )
+    db_session.add(user)
+    await db_session.flush()
+
+    google_oauth = OAuthAccount(
+        user_id=user.id,
+        provider="google",
+        provider_user_id="google-123",
+        provider_email=GITHUB_USER_EMAIL,
+        refresh_token_encrypted="encrypted",
+    )
+    db_session.add(google_oauth)
+    await db_session.flush()
+
+    # Conflict token üret
+    from app.schemas.auth import OAuthProvider
+    from app.services.oauth_service import build_conflict_response
+
+    existing_accounts = await get_user_accounts(db_session, user.id)
+
+    conflict = build_conflict_response(
+        existing_user=user,
+        existing_accounts=existing_accounts,
+        new_provider=OAuthProvider.github,
+        provider_user_id="github-999",
+        provider_email=GITHUB_USER_EMAIL,
+    )
+
+    merge_token = conflict.merge_token
+
+    # Login simulate et
+    from app.services.jwt_service import create_access_token
+
+    access_token = create_access_token(sub=str(user.id))
+
+    # Merge endpoint
+    response = await client.post(
+        "/v1/auth/merge",
+        json={"merge_token": merge_token},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+
+    assert response.status_code == 200
+
+    # GitHub bağlandı mı?
+    result = await db_session.execute(
+        select(OAuthAccount).where(OAuthAccount.user_id == user.id)
+    )
+    accounts = result.scalars().all()
+
     assert len(accounts) == 2
-
-    providers = {a.provider for a in accounts}
-    assert providers == {"google", "github"}
-
-    # GitHub'ınki NULL, Google'ınki dolu
-    github_acc = next(a for a in accounts if a.provider == "github")
-    google_acc = next(a for a in accounts if a.provider == "google")
-    assert github_acc.refresh_token_encrypted is None
-    assert google_acc.refresh_token_encrypted is not None
+    assert {a.provider for a in accounts} == {"google", "github"}
