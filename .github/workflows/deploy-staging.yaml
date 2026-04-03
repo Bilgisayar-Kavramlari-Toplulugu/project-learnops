@@ -13,12 +13,12 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false  # Don't cancel CD on main
+  cancel-in-progress: false # Don't cancel CD on main
 
 env:
-  GCP_REGION: 'europe-west3'
-  ARTIFACT_REGISTRY_REGION: 'europe-west3'
-  TF_VERSION: '1.6.0'
+  GCP_REGION: "europe-west3"
+  ARTIFACT_REGISTRY_REGION: "europe-west3"
+  TF_VERSION: "1.6.0"
 
 jobs:
   changes:
@@ -64,7 +64,7 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
-          token_format: 'access_token'
+          token_format: "access_token"
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -138,7 +138,7 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
-          token_format: 'access_token'
+          token_format: "access_token"
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
