@@ -16,8 +16,6 @@ concurrency:
   cancel-in-progress: false  # Don't cancel CD on main
 
 env:
-  GCP_REGION: 'europe-west3'
-  ARTIFACT_REGISTRY_REGION: 'europe-west3'
   TF_VERSION: '1.6.0'
 
 jobs:
@@ -73,13 +71,13 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
        run: |
-         gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Generate Image Tags and Versions
        id: image-tags
        run: |
          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-         REGION="${{ secrets.GCP_REGION }}"
+         REGION="${{ env.GCP_REGION }}"
          GITHUB_REPO="${{ github.event.repository.name }}"
          BACKEND_REPOSITORY="${GITHUB_REPO}-backend"
          BACKEND_IMAGE_NAME="backend"
@@ -147,13 +145,13 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
        run: |
-         gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+         gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Generate Image Tags and Versions
        id: image-tags
        run: |
          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-         REGION="${{ secrets.GCP_REGION }}"
+         REGION="${{ env.GCP_REGION }}"
          GITHUB_REPO="${{ github.event.repository.name }}"
          FRONTEND_REPOSITORY="${GITHUB_REPO}-frontend"
          FRONTEND_IMAGE_NAME="frontend"
@@ -226,7 +224,7 @@ jobs:
          cat > terraform.tfvars <<EOF
          project_id = "${{ secrets.GCP_PROJECT_ID }}"
          region = "${{ env.GCP_REGION }}"
-         artifact_registry_region = "${{ env.ARTIFACT_REGISTRY_REGION }}"
+         artifact_registry_region = "${{ env.GCP_REGION }}"
          github_repo = "${{ github.event.repository.name }}"
          backend_image = "${{ needs.build-backend.outputs.BACKEND_IMAGE_BASE }}:${{ needs.build-backend.outputs.BACKEND_VERSION }}"
          frontend_image = "${{ needs.build-frontend.outputs.FRONTEND_IMAGE_BASE }}:${{ needs.build-frontend.outputs.FRONTEND_VERSION }}"
