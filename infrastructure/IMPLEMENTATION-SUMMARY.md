@@ -43,7 +43,7 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 ```yaml
 permissions:
   id-token: write  # Required for OIDC
-  
+
 - name: Authenticate to Google Cloud
   uses: google-github-actions/auth@v2
   with:
@@ -111,10 +111,10 @@ terraform {
 ```hcl
 resource "google_secret_manager_secret" "env_secrets" {
   for_each = var.env_secrets
-  
+
   project   = google_project.staging.project_id
   secret_id = each.key
-  
+
   replication {
     auto {}
   }
@@ -122,7 +122,7 @@ resource "google_secret_manager_secret" "env_secrets" {
 
 resource "google_secret_manager_secret_version" "env_secrets_version" {
   for_each = var.env_secrets
-  
+
   secret      = google_secret_manager_secret.env_secrets[each.key].id
   secret_data = each.value
 }

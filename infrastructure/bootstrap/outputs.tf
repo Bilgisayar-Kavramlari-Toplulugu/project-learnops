@@ -66,9 +66,9 @@ output "github_actions_setup_instructions" {
   description = "Instructions for setting up GitHub Actions"
   value       = <<-EOT
     Workload Identity Federation Setup Complete!
-    
+
     Add these secrets to your GitHub Repository:
-    
+
     1. GCP_PROJECT_ID: ${google_project.staging.project_id}
     2. GCP_PROJECT_NUMBER: ${google_project.staging.number}
     3. GCP_WORKLOAD_IDENTITY_PROVIDER: ${google_iam_workload_identity_pool_provider.learnops_staging_github.name}
@@ -76,10 +76,10 @@ output "github_actions_setup_instructions" {
     5. APP_RUNTIME_SERVICE_ACCOUNT: ${google_service_account.app_runtime.email}
     6. BACKEND_IMAGE_BASE: ${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["backend"].repository_id}
     7. FRONTEND_IMAGE_BASE: ${var.region}-docker.pkg.dev/${google_project.staging.project_id}/${google_artifact_registry_repository.repos["frontend"].repository_id}
-    
+
     Your GitHub Actions workflow will authenticate using Workload Identity Federation
     without requiring service account keys!
-    
+
     Terraform State Bucket: ${var.terraform_state_bucket_name}
     Use this bucket for your staging infrastructure state.
   EOT
@@ -117,7 +117,7 @@ output "oauth_setup_instructions" {
   description = "Instructions for setting up OAuth Client ID in Google Cloud Console"
   value = <<-EOT
     OAuth2 Client ID Setup Instructions:
-    
+
     1. Go to Google Cloud Console → APIs & Services → Credentials
     2. Click on your OAuth 2.0 Client ID (Web application)
     3. Add these to "Authorized JavaScript origins":
@@ -125,7 +125,7 @@ output "oauth_setup_instructions" {
   var.frontend_domain != "" ? "https://${var.frontend_domain}" : null,
   var.backend_domain != "" ? "https://${var.backend_domain}" : null,
 ]))}
-    
+
     4. Add these to "Authorized redirect URIs":
     ${join("\n    ", concat(
 var.frontend_domain != "" ? [
@@ -137,9 +137,9 @@ var.backend_domain != "" ? [
   "https://${var.backend_domain}${path}"
 ] : []
 ))}
-    
+
     5. Click Save
-    
+
     NOTE: OAuth Client ID must be created manually first. This bootstrap only manages
     infrastructure secrets. OAuth application credentials are managed separately in GCP Console.
   EOT

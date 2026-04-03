@@ -73,13 +73,13 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
       - name: Generate Image Tags and Versions
         id: image-tags
         run: |
           PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-          REGION="${{ env.GCP_REGION }}"
+          REGION="${{ secrets.GCP_REGION }}"
           GITHUB_REPO="${{ github.event.repository.name }}"
           BACKEND_REPOSITORY="${GITHUB_REPO}-backend"
           BACKEND_IMAGE_NAME="backend"
@@ -147,13 +147,13 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
       - name: Generate Image Tags and Versions
         id: image-tags
         run: |
           PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-          REGION="${{ env.GCP_REGION }}"
+          REGION="${{ secrets.GCP_REGION }}"
           GITHUB_REPO="${{ github.event.repository.name }}"
           FRONTEND_REPOSITORY="${GITHUB_REPO}-frontend"
           FRONTEND_IMAGE_NAME="frontend"

@@ -1,7 +1,11 @@
-import os
 import asyncio
+import os
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
 
@@ -73,7 +77,11 @@ def _create_cloud_run_engine():
     )
 
 
-engine = _create_cloud_run_engine() if os.environ.get("K_REVISION") else _create_local_engine()
+engine = (
+    _create_cloud_run_engine()
+    if os.environ.get("K_REVISION")
+    else _create_local_engine()
+)
 
 AsyncSessionLocal = async_sessionmaker(
     engine,

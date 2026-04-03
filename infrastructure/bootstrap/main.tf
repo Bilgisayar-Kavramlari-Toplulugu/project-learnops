@@ -242,4 +242,3 @@ resource "google_secret_manager_secret_iam_member" "github_actions_secret_access
 
   depends_on = [google_secret_manager_secret.env_secrets]
 }
-

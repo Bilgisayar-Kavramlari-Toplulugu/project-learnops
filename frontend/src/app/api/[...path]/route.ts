@@ -6,10 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const backendBase = () =>
   (process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
-async function handler(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+async function handler(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
   const backendUrl = `${backendBase()}/v1/${path.join("/")}${request.nextUrl.search}`;
 

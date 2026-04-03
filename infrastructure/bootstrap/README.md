@@ -122,7 +122,7 @@ Go to your GitHub repository → Settings → Secrets and variables → Actions
 Add these repository secrets:
 
 1. **GCP_PROJECT_ID**: From `terraform output project_id`
-2. **GCP_PROJECT_NUMBER**: From `terraform output project_number`  
+2. **GCP_PROJECT_NUMBER**: From `terraform output project_number`
 3. **GCP_WORKLOAD_IDENTITY_PROVIDER**: From `terraform output workload_identity_provider`
 4. **GCP_SERVICE_ACCOUNT**: From `terraform output github_actions_sa_email`
 5. **APP_RUNTIME_SERVICE_ACCOUNT**: From `terraform output app_runtime_sa_email`

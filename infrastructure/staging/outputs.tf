@@ -1,5 +1,5 @@
 # ===========================
-# Staging Infrastructure Outputs  
+# Staging Infrastructure Outputs
 # ===========================
 
 output "frontend_url" {
