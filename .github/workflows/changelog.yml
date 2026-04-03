@@ -24,7 +24,7 @@ jobs:
 
       - name: CHANGELOG.md oluştur (git-cliff)
         run: |
-          git-cliff --tag ${{ github.ref_name }} -o CHANGELOG.md
+          git-cliff --tag ${{ github.ref_name }} --latest -o CHANGELOG.md
 
       - name: GitHub Release oluştur
         uses: softprops/action-gh-release@v2
