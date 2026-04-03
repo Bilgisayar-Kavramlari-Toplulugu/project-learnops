@@ -153,7 +153,7 @@ jobs:
     changelog:
         name: Generate Changelog
         needs: [build-backend, build-frontend]
-        if: github.ref == 'refs/heads/release' && always()
+        if: github.ref == 'refs/heads/release'
         runs-on: ubuntu-latest
         permissions:
             contents: write
