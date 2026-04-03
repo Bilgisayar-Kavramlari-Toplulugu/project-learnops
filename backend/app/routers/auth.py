@@ -414,9 +414,14 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             )
         )
         oauth_account = oauth_result.scalar_one_or_none()
+        refresh_token_encrypted = None
+        if "refresh_token" in tokens:
+            refresh_token_encrypted = encrypt_token(tokens["refresh_token"])
 
         if oauth_account:
             oauth_account.provider_email = user_info["email"]
+            if refresh_token_encrypted is not None:
+                oauth_account.refresh_token_encrypted = refresh_token_encrypted
             logger.info("OAuth account updated")
         else:
             oauth_account = OAuthAccount(
@@ -424,6 +429,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
                 provider="linkedin",
                 provider_user_id=user_info["sub"],
                 provider_email=user_info["email"],
+                refresh_token_encrypted=refresh_token_encrypted,
             )
             db.add(oauth_account)
             logger.info("New OAuth account created")
