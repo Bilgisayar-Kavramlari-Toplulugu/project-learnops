@@ -225,7 +225,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             )
             db.add(oauth_account)
             logger.info("New OAuth account created")
-        await db.commit()
+        await db.flush()
 
         # JWT token'ları üret
         new_jti = str(uuid.uuid4())
@@ -262,7 +262,6 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         return response
 
     except Exception as e:
-        await db.rollback()
         logger.error(f"Callback error: {str(e)}")
         return RedirectResponse(
             url=f"{frontend_url}/login?error=server_error", status_code=302
@@ -418,9 +417,7 @@ async def merge_accounts_endpoint(
         user, providers = await merge_oauth_accounts(
             db, request.merge_token, current_user
         )
-        await db.commit()
     except ValueError as e:
-        await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
     return MergeAccountResponse(
@@ -464,14 +461,3 @@ async def check_conflict_endpoint(
         request.provider_email,
     )
 
-
-# ---------------------------------------------------------------------------
-# Combined router: main.py imports auth.router → bu sayede /users/* route'ları
-# da /v1 prefix altında kayıt olur, main.py'e dokunmadan.
-# ---------------------------------------------------------------------------
-from app.routers.users import router as _users_router  # noqa: E402
-
-_combined = APIRouter()
-_combined.include_router(router)  # /auth/* route'ları (mevcut prefix korunur)
-_combined.include_router(_users_router)  # /users/* route'ları
-router = _combined  # main.py'in import ettiği değişkeni yeniden ata

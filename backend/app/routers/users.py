@@ -8,10 +8,39 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.deps import get_current_user
-from app.services.oauth_service import unlink_oauth_account
+from app.schemas.auth import OAuthAccountListResponse
+from app.services.oauth_service import get_user_oauth_accounts, unlink_oauth_account
 
 router = APIRouter(prefix="/users", tags=["users"])
 logger = logging.getLogger(__name__)
+
+
+@router.get(
+    "/me/accounts",
+    response_model=OAuthAccountListResponse,
+    summary="List linked OAuth accounts",
+)
+async def list_oauth_accounts(
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user),
+):
+    """
+    Kullanıcının bağlı OAuth hesaplarını listeler.
+
+    Her hesap için provider, email ve bağlanma tarihi döner.
+    """
+    accounts = await get_user_oauth_accounts(db, current_user_id)
+    return OAuthAccountListResponse(
+        accounts=[
+            {
+                "id": str(acc.id),
+                "provider": acc.provider,
+                "provider_email": acc.provider_email,
+                "linked_at": acc.linked_at,
+            }
+            for acc in accounts
+        ]
+    )
 
 
 @router.delete(
@@ -36,9 +65,7 @@ async def delete_oauth_account(
     """
     try:
         await unlink_oauth_account(db, account_id, current_user_id)
-        await db.commit()
     except ValueError as e:
-        await db.rollback()
         error_code = str(e)
         if error_code == "not_found":
             raise HTTPException(

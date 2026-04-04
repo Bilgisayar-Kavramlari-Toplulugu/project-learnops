@@ -44,6 +44,19 @@ async def get_oauth_account(
     return result.scalar_one_or_none()
 
 
+async def get_user_oauth_accounts(
+    db: AsyncSession,
+    user_id: str,
+) -> list[OAuthAccount]:
+    """Kullanıcının tüm bağlı OAuth hesaplarını getirir."""
+    result = await db.execute(
+        select(OAuthAccount).where(
+            OAuthAccount.user_id == uuid_mod.UUID(user_id)
+        )
+    )
+    return list(result.scalars().all())
+
+
 # ---------------------------------------------------------------------------
 # Service functions (Single Responsibility: sadece iş mantığı)
 # ---------------------------------------------------------------------------

@@ -1,12 +1,18 @@
 """
-Tests for DELETE /v1/users/me/accounts/{id} — BE-12
+Tests for /v1/users/me/accounts endpoints — BE-12
 
 Coverage:
-- 2 OAuth hesabı olan kullanıcı birini siler → 204, DB'de 1 hesap kalır
-- Son OAuth hesabını silmeye çalışır → 400
-- Var olmayan UUID ile silme → 404
-- Başka kullanıcının hesabını silme (IDOR kontrolü) → 404
-- Auth header olmadan çağrı → 401/403
+  DELETE /v1/users/me/accounts/{id}:
+  - 2 OAuth hesabı olan kullanıcı birini siler → 204, DB'de 1 hesap kalır
+  - Son OAuth hesabını silmeye çalışır → 400
+  - Var olmayan UUID ile silme → 404
+  - Başka kullanıcının hesabını silme (IDOR kontrolü) → 404
+  - Auth header olmadan çağrı → 401/403
+
+  GET /v1/users/me/accounts:
+  - 2 hesaplı kullanıcı → 200, 2 account döner
+  - Auth yok → 401/403
+  - Unlink sonrası → 1 account döner
 """
 
 import uuid
@@ -209,3 +215,86 @@ async def test_unlink_without_auth_returns_401_or_403(
         status.HTTP_401_UNAUTHORIZED,
         status.HTTP_403_FORBIDDEN,
     )
+
+
+# ---------------------------------------------------------------------------
+# GET /v1/users/me/accounts — Success
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_list_accounts_success(
+    client: AsyncClient,
+    test_user_with_two_accounts: User,
+):
+    """2 OAuth hesabı olan kullanıcı → 200, 2 account döner."""
+    user = test_user_with_two_accounts
+    access_token = create_access_token(sub=str(user.id))
+
+    response = await client.get(
+        "/v1/users/me/accounts",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data["accounts"]) == 2
+
+    providers = {acc["provider"] for acc in data["accounts"]}
+    assert providers == {"google", "github"}
+
+    # Her account'ta gerekli alanlar var
+    for acc in data["accounts"]:
+        assert "id" in acc
+        assert "provider" in acc
+        assert "provider_email" in acc
+        assert "linked_at" in acc
+
+
+# ---------------------------------------------------------------------------
+# GET /v1/users/me/accounts — No auth (401/403)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_list_accounts_without_auth_returns_401_or_403(
+    client: AsyncClient,
+):
+    """Auth header olmadan GET → 401 veya 403."""
+    response = await client.get("/v1/users/me/accounts")
+
+    assert response.status_code in (
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET /v1/users/me/accounts — After unlink
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_list_accounts_after_unlink(
+    client: AsyncClient,
+    test_user_with_two_accounts: User,
+):
+    """Unlink sonrası GET → 1 account döner."""
+    user = test_user_with_two_accounts
+    access_token = create_access_token(sub=str(user.id))
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    # İlk hesabı sil
+    account_to_delete = user.oauth_accounts[0]
+    delete_resp = await client.delete(
+        f"/v1/users/me/accounts/{account_to_delete.id}",
+        headers=headers,
+    )
+    assert delete_resp.status_code == status.HTTP_204_NO_CONTENT
+
+    # Listele — 1 hesap kalmış olmalı
+    list_resp = await client.get("/v1/users/me/accounts", headers=headers)
+    assert list_resp.status_code == status.HTTP_200_OK
+    data = list_resp.json()
+    assert len(data["accounts"]) == 1
+    assert data["accounts"][0]["id"] != str(account_to_delete.id)
