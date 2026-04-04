@@ -666,4 +666,3 @@ async def check_conflict_endpoint(
         request.provider_user_id,
         request.provider_email,
     )
-
