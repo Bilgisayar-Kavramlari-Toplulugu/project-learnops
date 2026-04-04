@@ -49,9 +49,7 @@ async def update_me(
     if body.avatar_type is not None:
         user.avatar_type = body.avatar_type
 
-    await (
-        db.commit()
-    )  # updated_at is handled automatically via onupdate=func.now() in BaseModel
+    await db.flush()  # updated_at is handled automatically via onupdate=func.now() in BaseModel
     await db.refresh(user)
 
     return UserProfileResponse(
