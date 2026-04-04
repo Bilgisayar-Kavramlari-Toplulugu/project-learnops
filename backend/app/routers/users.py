@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.deps import get_current_user
-from app.schemas.auth import OAuthAccountListResponse
+from app.schemas.auth import OAuthAccountListResponse, OAuthAccountResponse
 from app.services.oauth_service import get_user_oauth_accounts, unlink_oauth_account
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -32,12 +32,12 @@ async def list_oauth_accounts(
     accounts = await get_user_oauth_accounts(db, current_user_id)
     return OAuthAccountListResponse(
         accounts=[
-            {
-                "id": str(acc.id),
-                "provider": acc.provider,
-                "provider_email": acc.provider_email,
-                "linked_at": acc.linked_at,
-            }
+            OAuthAccountResponse(
+                id=str(acc.id),
+                provider=acc.provider,
+                provider_email=acc.provider_email,
+                linked_at=acc.linked_at,
+            )
             for acc in accounts
         ]
     )
