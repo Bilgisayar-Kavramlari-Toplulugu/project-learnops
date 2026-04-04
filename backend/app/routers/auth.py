@@ -42,11 +42,16 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 logger = logging.getLogger(__name__)
 
 
+def _oauth_base_url(request: Request) -> str:
+    return (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
+
+
 def _google_redirect_uri(request: Request) -> str:
-    base_url = (
-        (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
-    )
-    return f"{base_url}/v1/auth/google/callback"
+    return f"{_oauth_base_url(request)}/v1/auth/google/callback"
+
+
+def _linkedin_redirect_uri(request: Request) -> str:
+    return f"{_oauth_base_url(request)}/v1/auth/linkedin/callback"
 
 
 @router.get("/google/login")
@@ -266,6 +271,207 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         return RedirectResponse(
             url=f"{frontend_url}/login?error=server_error", status_code=302
         )
+
+
+@router.get("/linkedin/login")
+async def linkedin_login(request: Request):
+    """Generate LinkedIn OAuth login URL"""
+    try:
+        client_id = settings.LINKEDIN_CLIENT_ID.strip()
+        if not client_id:
+            logger.error("LINKEDIN_CLIENT_ID not configured")
+            raise HTTPException(status_code=503, detail="LinkedIn OAuth not configured")
+
+        state = secrets.token_urlsafe(32)
+        request.session["oauth_state"] = state
+        redirect_uri = _linkedin_redirect_uri(request)
+
+        auth_url = (
+            f"https://www.linkedin.com/oauth/v2/authorization"
+            f"?response_type=code"
+            f"&client_id={client_id}"
+            f"&redirect_uri={redirect_uri}"
+            f"&state={state}"
+            f"&scope=openid%20profile%20email"
+        )
+        logger.info("Generated LinkedIn OAuth URL")
+        response: Union[JSONResponse, RedirectResponse]
+        if request.query_params.get("format") == "json":
+            response = JSONResponse(content={"login_url": auth_url})
+        else:
+            response = RedirectResponse(url=auth_url, status_code=302)
+
+        response.set_cookie(
+            key="oauth_state",
+            value=state,
+            httponly=True,
+            secure=settings.ENVIRONMENT == "production",
+            samesite="lax",
+            max_age=600,
+        )
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get("/linkedin/callback")
+async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)):
+    """Handle LinkedIn OAuth callback"""
+    try:
+        logger.info("=== LINKEDIN CALLBACK RECEIVED ===")
+
+        # State kontrolü (CSRF koruması)
+        received_state = request.query_params.get("state")
+        expected_state = request.session.get("oauth_state") or request.cookies.get(
+            "oauth_state"
+        )
+
+        if not expected_state or received_state != expected_state:
+            logger.error("State mismatch in OAuth callback")
+            raise HTTPException(status_code=400, detail="Invalid state parameter")
+
+        code = request.query_params.get("code")
+        if not code:
+            logger.error("No code in request")
+            raise HTTPException(status_code=400, detail="Code not found")
+
+        # Exchange code for tokens
+        redirect_uri = _linkedin_redirect_uri(request)
+
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                "https://www.linkedin.com/oauth/v2/accessToken",
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "client_id": settings.LINKEDIN_CLIENT_ID.strip(),
+                    "client_secret": settings.LINKEDIN_CLIENT_SECRET.strip(),
+                    "redirect_uri": redirect_uri,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            tokens = token_response.json()
+
+            if "error" in tokens:
+                logger.error(f"Token error: {tokens.get('error')}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=tokens.get("error_description", "Token exchange failed"),
+                )
+
+        # Get user info (LinkedIn OpenID Connect)
+        async with httpx.AsyncClient() as client:
+            user_response = await client.get(
+                "https://api.linkedin.com/v2/userinfo",
+                headers={"Authorization": f"Bearer {tokens['access_token']}"},
+            )
+            if user_response.status_code != 200:
+                logger.error(
+                    f"LinkedIn userinfo failed with status {user_response.status_code}"
+                )
+                raise HTTPException(
+                    status_code=502,
+                    detail="Failed to retrieve user info from LinkedIn",
+                )
+            user_info = user_response.json()
+            if "email" not in user_info:
+                logger.error("LinkedIn userinfo response missing email")
+                raise HTTPException(
+                    status_code=502,
+                    detail="LinkedIn did not return user email",
+                )
+            logger.info(f"User email: {user_info.get('email')}")
+
+        # Get or create user
+        result = await db.execute(select(User).where(User.email == user_info["email"]))
+        user = result.scalar_one_or_none()
+
+        if not user:
+            user = User(
+                email=user_info["email"],
+                display_name=user_info.get("name", user_info["email"].split("@")[0]),
+                avatar_type="initials",
+                last_login_at=datetime.now(timezone.utc),
+            )
+            db.add(user)
+            await db.flush()
+            await db.refresh(user)
+            logger.info(f"New user created: {user.email}")
+        else:
+            user.last_login_at = datetime.now(timezone.utc)
+            logger.info(f"Existing user logged in: {user.email}")
+
+        # OAuth account kaydet/güncelle
+        oauth_result = await db.execute(
+            select(OAuthAccount).where(
+                OAuthAccount.provider == "linkedin",
+                OAuthAccount.provider_user_id == user_info["sub"],
+            )
+        )
+        oauth_account = oauth_result.scalar_one_or_none()
+        refresh_token_encrypted = None
+        if "refresh_token" in tokens:
+            refresh_token_encrypted = encrypt_token(tokens["refresh_token"])
+
+        if oauth_account:
+            oauth_account.provider_email = user_info["email"]
+            if refresh_token_encrypted is not None:
+                oauth_account.refresh_token_encrypted = refresh_token_encrypted
+            logger.info("OAuth account updated")
+        else:
+            oauth_account = OAuthAccount(
+                user_id=user.id,
+                provider="linkedin",
+                provider_user_id=user_info["sub"],
+                provider_email=user_info["email"],
+                refresh_token_encrypted=refresh_token_encrypted,
+            )
+            db.add(oauth_account)
+            logger.info("New OAuth account created")
+        await db.commit()
+
+        # JWT token'ları üret
+        new_jti = str(uuid.uuid4())
+        access_token = create_access_token(sub=str(user.id))
+        refresh_token = create_refresh_token(sub=str(user.id), jti=new_jti)
+
+        response = RedirectResponse(
+            url=(f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"),
+            status_code=302,
+        )
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=settings.ENVIRONMENT == "production",
+            samesite="strict",
+            max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=settings.ENVIRONMENT == "production",
+            samesite="strict",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        )
+
+        request.session.pop("oauth_state", None)
+        response.delete_cookie("oauth_state")
+
+        return response
+
+    except HTTPException:
+        await db.rollback()
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Callback error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/me", response_model=UserMeResponse)

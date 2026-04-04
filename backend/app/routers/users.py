@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,6 +41,7 @@ async def update_me(
     Rate limit: general API category (100 req/min) — intentional,
     profile updates are low-frequency.
     """
+
     if body.display_name is not None:
         user.display_name = body.display_name
     if body.bio is not None:
@@ -50,6 +52,9 @@ async def update_me(
     # Veritabanı commit/rollback işlemleri dependency (get_db)
     # veya middleware tarafından yönetilir. Router seviyesinde yapılmaz.
     await db.flush()
+    await (
+        db.commit()
+    )  # updated_at is handled automatically via onupdate=func.now() in BaseModel
     await db.refresh(user)
 
     return UserProfileResponse(
