@@ -8,12 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.users import OAuthAccount, User
+from app.schemas.auth import OAuthAccountListResponse
 from app.schemas.users import (
     LinkedAccountResponse,
     UserProfileResponse,
     UserProfileUpdate,
 )
-from app.services.oauth_service import unlink_oauth_account
+from app.services.oauth_service import get_user_oauth_accounts, unlink_oauth_account
 
 router = APIRouter(prefix="/users", tags=["users"])
 logger = logging.getLogger(__name__)
@@ -64,28 +65,32 @@ async def update_me(
     )
 
 
-@router.get("/me/accounts", response_model=list[LinkedAccountResponse])
-async def get_my_accounts(
-    user: User = Depends(get_current_user),
+@router.get(
+    "/me/accounts",
+    response_model=OAuthAccountListResponse,
+    summary="List linked OAuth accounts",
+)
+async def list_oauth_accounts(
     db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user),
 ):
-    result = await db.execute(
-        select(OAuthAccount).where(OAuthAccount.user_id == user.id)
+    """
+    Kullanıcının bağlı OAuth hesaplarını listeler.
+
+    Her hesap için provider, email ve bağlanma tarihi döner.
+    """
+    accounts = await get_user_oauth_accounts(db, current_user_id)
+    return OAuthAccountListResponse(
+        accounts=[
+            {
+                "id": str(acc.id),
+                "provider": acc.provider,
+                "provider_email": acc.provider_email,
+                "linked_at": acc.linked_at,
+            }
+            for acc in accounts
+        ]
     )
-
-    accounts = result.scalars().all()
-
-    return [
-        LinkedAccountResponse(
-            id=str(acc.id),
-            provider=acc.provider,
-            provider_email=acc.provider_email,
-            linked_at=acc.linked_at,
-        )
-        for acc in accounts
-    ]
-
-
 @router.delete(
     "/me/accounts/{account_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -108,9 +113,7 @@ async def delete_oauth_account(
     """
     try:
         await unlink_oauth_account(db, account_id, current_user_id)
-        await db.commit()
     except ValueError as e:
-        await db.rollback()
         error_code = str(e)
         if error_code == "not_found":
             raise HTTPException(
