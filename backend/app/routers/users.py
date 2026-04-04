@@ -70,14 +70,14 @@ async def update_me(
 )
 async def list_oauth_accounts(
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Kullanıcının bağlı OAuth hesaplarını listeler.
 
     Her hesap için provider, email ve bağlanma tarihi döner.
     """
-    accounts = await get_user_oauth_accounts(db, current_user_id)
+    accounts = await get_user_oauth_accounts(db, str(current_user.id))
     return OAuthAccountListResponse(
         accounts=[
             OAuthAccountResponse(
@@ -103,7 +103,7 @@ async def list_oauth_accounts(
 async def delete_oauth_account(
     account_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Kullanıcının bağlı OAuth hesaplarından birini kaldırır.
@@ -112,7 +112,7 @@ async def delete_oauth_account(
     - Hesap mevcut kullanıcıya ait olmalıdır (IDOR koruması → 404).
     """
     try:
-        await unlink_oauth_account(db, account_id, current_user_id)
+        await unlink_oauth_account(db, account_id, str(current_user.id))
     except ValueError as e:
         error_code = str(e)
         if error_code == "not_found":

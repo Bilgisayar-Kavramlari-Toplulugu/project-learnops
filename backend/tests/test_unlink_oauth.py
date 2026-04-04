@@ -83,7 +83,7 @@ async def test_unlink_oauth_success(
     access_token = create_access_token(sub=str(user.id))
     response = await client.delete(
         f"/v1/users/me/accounts/{account_to_delete.id}",
-        headers={"Authorization": f"Bearer {access_token}"},
+        cookies={"access_token": access_token},
     )
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -113,19 +113,19 @@ async def test_unlink_last_account_blocked(
     accounts = user.oauth_accounts
 
     access_token = create_access_token(sub=str(user.id))
-    headers = {"Authorization": f"Bearer {access_token}"}
+    cookies = {"access_token": access_token}
 
     # İlk hesabı sil (2 → 1)
     resp1 = await client.delete(
         f"/v1/users/me/accounts/{accounts[0].id}",
-        headers=headers,
+        cookies=cookies,
     )
     assert resp1.status_code == status.HTTP_204_NO_CONTENT
 
     # Son kalan hesabı silmeye çalış (1 → 0 engellenmeli)
     resp2 = await client.delete(
         f"/v1/users/me/accounts/{accounts[1].id}",
-        headers=headers,
+        cookies=cookies,
     )
     assert resp2.status_code == status.HTTP_400_BAD_REQUEST
     assert "En az bir OAuth hesabı" in resp2.json()["detail"]
@@ -147,7 +147,7 @@ async def test_unlink_nonexistent_account_returns_404(
 
     response = await client.delete(
         f"/v1/users/me/accounts/{fake_id}",
-        headers={"Authorization": f"Bearer {access_token}"},
+        cookies={"access_token": access_token},
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -189,7 +189,7 @@ async def test_unlink_other_users_account_returns_404(
 
     response = await client.delete(
         f"/v1/users/me/accounts/{victim_account_id}",
-        headers={"Authorization": f"Bearer {attacker_token}"},
+        cookies={"access_token": attacker_token},
     )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -233,7 +233,7 @@ async def test_list_accounts_success(
 
     response = await client.get(
         "/v1/users/me/accounts",
-        headers={"Authorization": f"Bearer {access_token}"},
+        cookies={"access_token": access_token},
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -282,18 +282,18 @@ async def test_list_accounts_after_unlink(
     """Unlink sonrası GET → 1 account döner."""
     user = test_user_with_two_accounts
     access_token = create_access_token(sub=str(user.id))
-    headers = {"Authorization": f"Bearer {access_token}"}
+    cookies = {"access_token": access_token}
 
     # İlk hesabı sil
     account_to_delete = user.oauth_accounts[0]
     delete_resp = await client.delete(
         f"/v1/users/me/accounts/{account_to_delete.id}",
-        headers=headers,
+        cookies=cookies,
     )
     assert delete_resp.status_code == status.HTTP_204_NO_CONTENT
 
     # Listele — 1 hesap kalmış olmalı
-    list_resp = await client.get("/v1/users/me/accounts", headers=headers)
+    list_resp = await client.get("/v1/users/me/accounts", cookies=cookies)
     assert list_resp.status_code == status.HTTP_200_OK
     data = list_resp.json()
     assert len(data["accounts"]) == 1
