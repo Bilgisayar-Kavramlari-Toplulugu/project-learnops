@@ -55,7 +55,6 @@ async def test_get_accounts_returns_linked_accounts(
     assert "linked_at" in account
 
 
-
 # ==================== PATCH /users/me ====================
 
 
