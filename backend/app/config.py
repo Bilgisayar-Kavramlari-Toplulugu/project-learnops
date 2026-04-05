@@ -120,18 +120,10 @@ _REQUIRED_BY_ENV: dict[str, list[str]] = {
         "GOOGLE_CLIENT_SECRET",
     ],
     "staging": [
-        "DATABASE_URL",
-        "POSTGRES_USER",
-        "POSTGRES_PASSWORD",
-        "POSTGRES_DB",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
     ],
     "production": [
-        "DATABASE_URL",
-        "POSTGRES_USER",
-        "POSTGRES_PASSWORD",
-        "POSTGRES_DB",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
     ],

@@ -10,7 +10,7 @@ variable "project_id" {
 variable "region" {
   description = "GCP Region"
   type        = string
-  default     = "us-central1"
+  default     = "europe-west3"
 }
 
 variable "vpc_name" {
@@ -66,7 +66,7 @@ variable "frontend_image" {
 variable "artifact_registry_region" {
   description = "Artifact Registry region"
   type        = string
-  default     = "us-central1"
+  default     = "europe-west3"
 }
 
 variable "secret_jwt_secret" {

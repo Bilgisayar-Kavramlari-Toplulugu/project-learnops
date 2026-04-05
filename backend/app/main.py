@@ -63,8 +63,8 @@ app.add_middleware(
     secret_key=settings.SESSION_SECRET,
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
-    same_site="lax",  # OAuth callback cross-site redirect requires lax
-    https_only=settings.ENVIRONMENT == "production",
+    same_site="none",  # OAuth callback cross-site redirect requires none
+    https_only=settings.ENVIRONMENT not in ("development"),
 )
 
 

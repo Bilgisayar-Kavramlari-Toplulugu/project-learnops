@@ -47,10 +47,19 @@ def _oauth_base_url(request: Request) -> str:
 
 
 def _google_redirect_uri(request: Request) -> str:
+    # In deployed environments the login goes through the Next.js proxy (/api/...),
+    # so the session/state cookie is stored on the frontend domain.
+    # The callback must go through the same proxy so the browser sends that cookie back.
+    if settings.ENVIRONMENT not in ("development", "testing"):
+        frontend = settings.FRONTEND_PUBLIC_URL.strip().rstrip("/")
+        return f"{frontend}/api/auth/google/callback"
     return f"{_oauth_base_url(request)}/v1/auth/google/callback"
 
 
 def _linkedin_redirect_uri(request: Request) -> str:
+    if settings.ENVIRONMENT not in ("development", "testing"):
+        frontend = settings.FRONTEND_PUBLIC_URL.strip().rstrip("/")
+        return f"{frontend}/api/auth/linkedin/callback"
     return f"{_oauth_base_url(request)}/v1/auth/linkedin/callback"
 
 
@@ -94,8 +103,8 @@ async def google_login(request: Request):
             key="oauth_state",
             value=state,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
-            samesite="lax",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
+            samesite="none",
             max_age=600,
         )
         return response
@@ -246,7 +255,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
@@ -255,7 +264,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
@@ -306,7 +315,7 @@ async def linkedin_login(request: Request):
             key="oauth_state",
             value=state,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="lax",
             max_age=600,
         )
@@ -448,7 +457,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
@@ -456,7 +465,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
@@ -580,7 +589,7 @@ async def refresh(request: Request):
         key="access_token",
         value=new_access_token,
         httponly=True,
-        secure=settings.ENVIRONMENT == "production",
+        secure=settings.ENVIRONMENT not in ("development", "testing"),
         samesite="strict",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
@@ -588,7 +597,7 @@ async def refresh(request: Request):
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
-        secure=settings.ENVIRONMENT == "production",
+        secure=settings.ENVIRONMENT not in ("development", "testing"),
         samesite="strict",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )

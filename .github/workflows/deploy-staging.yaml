@@ -62,7 +62,7 @@ jobs:
         id: auth
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
           token_format: "access_token"
 
@@ -73,13 +73,13 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Generate Image Tags and Versions
         id: image-tags
         run: |
           PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-          REGION="${{ secrets.GCP_REGION }}"
+          REGION="${{ env.GCP_REGION }}"
           GITHUB_REPO="${{ github.event.repository.name }}"
           BACKEND_REPOSITORY="${GITHUB_REPO}-backend"
           BACKEND_IMAGE_NAME="backend"
@@ -136,7 +136,7 @@ jobs:
         id: auth
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
           token_format: "access_token"
 
@@ -147,13 +147,13 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
       - name: Generate Image Tags and Versions
         id: image-tags
         run: |
           PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
-          REGION="${{ secrets.GCP_REGION }}"
+          REGION="${{ env.GCP_REGION }}"
           GITHUB_REPO="${{ github.event.repository.name }}"
           FRONTEND_REPOSITORY="${GITHUB_REPO}-frontend"
           FRONTEND_IMAGE_NAME="frontend"
@@ -194,6 +194,14 @@ jobs:
     name: Deploy Infrastructure with Terraform
     runs-on: ubuntu-latest
     needs: [build-backend, build-frontend]
+
+    if: |
+        always() &&
+        (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') &&
+        (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped') &&
+        (needs.build-backend.result == 'success' || needs.build-frontend.result == 'success')
+
+
     defaults:
       run:
         working-directory: infrastructure/staging
@@ -207,7 +215,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
