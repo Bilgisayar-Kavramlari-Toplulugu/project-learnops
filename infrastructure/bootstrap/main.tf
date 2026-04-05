@@ -35,7 +35,7 @@ provider "google" {
 
 locals {
   artifact_registry_repositories = {
-    backend = "${var.github_repo}-backend"
+    backend  = "${var.github_repo}-backend"
     frontend = "${var.github_repo}-frontend"
   }
 }

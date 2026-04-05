@@ -39,9 +39,9 @@ locals {
     google_service_account.backend_runtime.email,
     ".gserviceaccount.com"
   )
-  backend_artifact_repository_id = "${var.github_repo}-backend"
+  backend_artifact_repository_id  = "${var.github_repo}-backend"
   frontend_artifact_repository_id = "${var.github_repo}-frontend"
-  cloud_run_service_agent_email  = "service-${data.google_project.project.number}@serverless-robot-prod.iam.gserviceaccount.com"
+  cloud_run_service_agent_email   = "service-${data.google_project.project.number}@serverless-robot-prod.iam.gserviceaccount.com"
   # Direct Cloud Run URLs (stable, deterministic — used for internal service-to-service calls)
   backend_run_url  = "https://${var.backend_service_name}-${data.google_project.project.number}.${var.region}.run.app"
   frontend_run_url = "https://${var.frontend_service_name}-${data.google_project.project.number}.${var.region}.run.app"
@@ -240,8 +240,8 @@ data "google_secret_manager_secret_version" "token_encryption_key" {
 }
 
 resource "google_cloud_run_v2_service" "backend" {
-  name                = var.backend_service_name
-  location            = var.region
+  name     = var.backend_service_name
+  location = var.region
 
   template {
     annotations = {
@@ -524,8 +524,8 @@ resource "google_artifact_registry_repository_iam_member" "cloud_run_service_age
 # ===========================
 
 resource "google_cloud_run_v2_service" "frontend" {
-  name                = var.frontend_service_name
-  location            = var.region
+  name     = var.frontend_service_name
+  location = var.region
 
   template {
     annotations = {
