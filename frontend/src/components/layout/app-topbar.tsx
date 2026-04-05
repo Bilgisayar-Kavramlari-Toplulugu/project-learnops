@@ -3,12 +3,12 @@
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import type { DashboardUser } from "@/types";
+import type { DashboardProfile } from "@/types";
 import { UserMenu } from "./topbar/user-menu";
 import { ThemeToggle } from "./theme-toggle";
 
 interface AppTopbarProps {
-  user: DashboardUser;
+  user: DashboardProfile;
   mobileNav?: ReactNode;
 }
 

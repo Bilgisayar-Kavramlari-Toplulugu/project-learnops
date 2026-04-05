@@ -31,8 +31,8 @@ export default function OAuthButton({
       {isLoading
         ? "Yönlendiriliyor..."
         : comingSoon
-          ? `${provider} ile Giriş Yap — Yakında`
-          : `${provider} ile Giriş Yap`}
+        ? `${provider} ile Giriş Yap — Yakında`
+        : `${provider} ile Giriş Yap`}
     </Button>
   );
 }

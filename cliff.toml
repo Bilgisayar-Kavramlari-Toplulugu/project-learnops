@@ -1,0 +1,60 @@
+[changelog]
+header = """
+# Changelog
+
+Bu dosya git-cliff tarafından otomatik oluşturulmaktadır.
+Tüm önemli değişiklikler burada belgelenmiştir.\n
+"""
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] — {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [Yayınlanmamış]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim | upper_first }}
+{% for commit in commits %}\
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}\
+{{ commit.message | upper_first }}\
+{% if commit.author.name %} — {{ commit.author.name }}{% endif %} \
+([`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/{{ commit.id }}))
+{% endfor %}
+{% endfor %}\n
+"""
+footer = """
+---
+"""
+trim = true
+postprocessors = []
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_preprocessors = []
+commit_parsers = [
+  { message = "^BE-", skip = true },
+  { message = "^[0-9]+-", skip = true },
+  { message = "^feat", group = "🚀 Yeni Özellikler" },
+  { message = "^fix", group = "🐛 Hata Düzeltmeleri" },
+  { message = "^refactor", group = "🔧 Refactoring" },
+  { message = "^perf", group = "⚡ Performans" },
+  { message = "^docs", group = "📚 Dokümantasyon" },
+  { message = "^test", group = "✅ Testler" },
+  { message = "^chore", group = "⚙️ Genel" },
+  { message = "^style", group = "💅 Stil" },
+  { message = "^chore\\(release\\)", skip = true },
+  { message = "^ci", group = "🔁 CI/CD" },
+  { message = "^[Mm]erge", skip = true },
+]
+protect_breaking_commits = false
+filter_commits = true
+tag_pattern = "v[0-9].*"
+skip_tags = "v0\\.1\\..*"   # sprint 1-2 öncesi geçici tagleri atla
+ignore_tags = ""
+topo_order = false
+sort_commits = "oldest"
+
+[remote.github]
+owner = "Bilgisayar-Kavramlari-Toplulugu"
+repo = "project-learnops"
