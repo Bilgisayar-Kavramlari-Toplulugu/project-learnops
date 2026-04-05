@@ -134,7 +134,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+infrastructure/.env
 .envrc
 .venv
 env/
@@ -243,3 +243,4 @@ logs/
 google.env*
 *.backup
 .bak
+.idea/

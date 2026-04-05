@@ -1,6 +1,5 @@
 import logging
 import secrets
-import uuid
 from datetime import datetime, timezone
 from typing import TypedDict, Union
 
@@ -34,6 +33,7 @@ from app.services.jwt_service import (
     is_blacklisted,
 )
 from app.services.oauth_service import (
+    _get_user_oauth_accounts,
     build_conflict_response,
     get_oauth_account,
     get_user_by_email,
@@ -61,13 +61,6 @@ def _github_redirect_uri(request: Request) -> str:
         (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
     )
     return f"{base_url}/v1/auth/github/callback"
-
-
-async def _get_user_oauth_accounts(db: AsyncSession, user_id):
-    result = await db.execute(
-        select(OAuthAccount).where(OAuthAccount.user_id == user_id)
-    )
-    return result.scalars().all()
 
 
 async def resolve_oauth_user(
@@ -298,9 +291,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         await db.commit()
 
         # JWT token'ları üret
-        new_jti = str(uuid.uuid4())
         access_token = create_access_token(sub=str(user.id))
-        refresh_token = create_refresh_token(sub=str(user.id), jti=new_jti)
+        refresh_token = create_refresh_token(sub=str(user.id))
 
         # Cookie'ye set et (httpOnly)
         response = RedirectResponse(
@@ -550,9 +542,8 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
         await db.commit()
 
         # Kendi JWT çiftimizi üret (GitHub token'ı saklanmaz)
-        new_jti = str(uuid.uuid4())
         access_token = create_access_token(sub=str(user.id))
-        refresh_token = create_refresh_token(sub=str(user.id), jti=new_jti)
+        refresh_token = create_refresh_token(sub=str(user.id))
 
         response = RedirectResponse(
             url=(f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"),
@@ -673,10 +664,9 @@ async def refresh(body: RefreshRequest):
     # sub doğrulandıktan SONRA yapılmalı, yoksa geçersiz token rotation'ı tetikler
     blacklist_token(jti)
 
-    new_jti = str(uuid.uuid4())
     return TokenResponse(
         access_token=create_access_token(sub),
-        refresh_token=create_refresh_token(sub, new_jti),
+        refresh_token=create_refresh_token(sub),
     )
 
 
