@@ -46,6 +46,8 @@ logger = logging.getLogger(__name__)
 class ResolveResult(TypedDict, total=False):
     user: User
     conflict: AccountConflictResponse
+
+
 def _oauth_base_url(request: Request) -> str:
     return (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
 

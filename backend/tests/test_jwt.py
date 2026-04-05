@@ -58,8 +58,7 @@ def test_access_token_has_correct_expiry():
 
 def test_refresh_token_has_correct_expiry():
     """Refresh token'ın exp süresi ~7 gün olmalı."""
-    jti = str(uuid.uuid4())
-    token = create_refresh_token(sub="user-789", jti=jti)
+    token = create_refresh_token(sub="user-789")
     payload = decode_token(token)
 
     exp = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
