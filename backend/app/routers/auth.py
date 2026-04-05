@@ -507,9 +507,8 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
         await db.commit()
 
         # JWT token'ları üret
-        new_jti = str(uuid.uuid4())
         access_token = create_access_token(sub=str(user.id))
-        refresh_token = create_refresh_token(sub=str(user.id), jti=new_jti)
+        refresh_token = create_refresh_token(sub=str(user.id))
 
         response = RedirectResponse(
             url=(f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/dashboard"),
