@@ -1,0 +1,56 @@
+# ===========================
+# Staging Environment Configuration
+# These values should be provided via GitHub Actions secrets as TF_VAR_* environment variables
+# ===========================
+
+# GCP Project ID (from bootstrap)
+# Set as GitHub Secret: TF_VAR_project_id
+project_id = "learnops-staging"
+
+# GCP region for Cloud Run and other resources
+region = "europe-west3"
+
+# Artifact Registry region (where your Docker images are stored)
+artifact_registry_region = "europe-west3"
+
+# VPC Network name
+vpc_name = "learnops-vpc"
+
+
+# Database configuration
+# Note: Cloud Run uses IAM database auth. Terraform derives the DB IAM username
+# from the backend runtime service account and injects the runtime env vars.
+db_instance_name = "learnops-staging-db"
+db_name          = "learnops-staging-db"
+
+# Cloud Run service names
+backend_service_name  = "backend"
+frontend_service_name = "frontend"
+
+# Custom domain for frontend HTTPS load balancer (A record must point to frontend static IP)
+frontend_domain = "learnops-staging.findmywayapp.com"
+
+# GitHub repository name used as Artifact Registry repository prefix
+github_repo = "project-learnops"
+
+# Docker images from Artifact Registry
+# These will be provided by GitHub Actions after building
+# Set as GitHub Secrets: TF_VAR_backend_image and TF_VAR_frontend_image
+backend_image  = "europe-west3-docker.pkg.dev/learnops-staging/project-learnops-backend/backend:latest"
+frontend_image = "europe-west3-docker.pkg.dev/learnops-staging/project-learnops-frontend/frontend:latest"
+
+# Secret Manager Secret IDs (must match what was created in bootstrap)
+# These are the names of the secrets in Secret Manager, not the values
+secret_jwt_secret     = "JWT_SECRET"
+secret_session_secret = "SESSION_SECRET"
+
+secret_google_client_id     = "GOOGLE_CLIENT_ID"
+secret_google_client_secret = "GOOGLE_CLIENT_SECRET"
+
+secret_github_client_id     = "GITHUB_CLIENT_ID"
+secret_github_client_secret = "GITHUB_CLIENT_SECRET"
+
+secret_linkedin_client_id     = "LINKEDIN_CLIENT_ID"
+secret_linkedin_client_secret = "LINKEDIN_CLIENT_SECRET"
+
+secret_token_encryption_key = "TOKEN_ENCRYPTION_KEY"
