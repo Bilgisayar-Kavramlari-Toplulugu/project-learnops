@@ -1,7 +1,7 @@
 import uuid as uuid_mod
 
 from jose import JWTError
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -44,11 +44,15 @@ async def get_oauth_account(
     return result.scalar_one_or_none()
 
 
-async def _get_user_oauth_accounts(db: AsyncSession, user_id):
+async def get_user_oauth_accounts(
+    db: AsyncSession,
+    user_id: uuid_mod.UUID,
+) -> list[OAuthAccount]:
+    """Kullanıcının tüm bağlı OAuth hesaplarını getirir."""
     result = await db.execute(
         select(OAuthAccount).where(OAuthAccount.user_id == user_id)
     )
-    return result.scalars().all()
+    return list(result.scalars().all())
 
 
 # ---------------------------------------------------------------------------
@@ -144,3 +148,42 @@ async def merge_oauth_accounts(
     await db.refresh(user, attribute_names=["oauth_accounts"])
     providers = [acc.provider for acc in user.oauth_accounts]
     return user, providers
+
+
+async def unlink_oauth_account(
+    db: AsyncSession,
+    account_id: uuid_mod.UUID,
+    current_user_id: str,
+) -> None:
+    """
+    OAuth hesap bağlantısını kaldırır (hard delete).
+
+    Kısıtlar:
+    - Hesap mevcut kullanıcıya ait olmalı (yoksa → ValueError "not_found")
+    - Kullanıcının en az 1 OAuth hesabı kalmalı (yoksa → ValueError "last_account")
+
+    Raises:
+        ValueError("not_found"): Hesap bulunamadı veya başka kullanıcıya ait
+        ValueError("last_account"): Son OAuth hesabı silinemez
+    """
+    # 1. OAuth hesabını bul
+    result = await db.execute(select(OAuthAccount).where(OAuthAccount.id == account_id))
+    oauth_account = result.scalar_one_or_none()
+
+    # 2. Hesap var mı ve current user'a ait mi? (IDOR koruması)
+    if not oauth_account or str(oauth_account.user_id) != current_user_id:
+        raise ValueError("not_found")
+
+    # 3. Kullanıcının toplam OAuth hesap sayısını kontrol et
+    count_result = await db.execute(
+        select(func.count(OAuthAccount.id)).where(
+            OAuthAccount.user_id == oauth_account.user_id
+        )
+    )
+    total_accounts = count_result.scalar_one()
+
+    if total_accounts <= 1:
+        raise ValueError("last_account")
+
+    # 4. Hard delete
+    await db.delete(oauth_account)

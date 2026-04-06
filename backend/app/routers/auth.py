@@ -32,10 +32,10 @@ from app.services.jwt_service import (
     is_blacklisted,
 )
 from app.services.oauth_service import (
-    _get_user_oauth_accounts,
     build_conflict_response,
     get_oauth_account,
     get_user_by_email,
+    get_user_oauth_accounts,
     merge_oauth_accounts,
 )
 
@@ -96,7 +96,7 @@ async def resolve_oauth_user(
     user = await get_user_by_email(db, email)
 
     if user:
-        accounts = await _get_user_oauth_accounts(db, user.id)
+        accounts = await get_user_oauth_accounts(db, user.id)
 
         # provider zaten bağlı mı?
         provider_account = next(
@@ -304,7 +304,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             )
             db.add(oauth_account)
             logger.info("New OAuth account created")
-        await db.commit()
+        await db.flush()
 
         # JWT token'ları üret
         access_token = create_access_token(sub=str(user.id))
@@ -340,7 +340,6 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         return response
 
     except Exception as e:
-        await db.rollback()
         logger.error(f"Callback error: {str(e)}")
         return RedirectResponse(
             url=f"{frontend_url}/login?error=server_error", status_code=302
@@ -943,9 +942,7 @@ async def merge_accounts_endpoint(
         user, providers = await merge_oauth_accounts(
             db, request.merge_token, current_user
         )
-        await db.commit()
     except ValueError as e:
-        await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
     return MergeAccountResponse(
@@ -982,7 +979,7 @@ async def check_conflict_endpoint(
     if not existing_user:
         return None
 
-    accounts = await _get_user_oauth_accounts(db, existing_user.id)
+    accounts = await get_user_oauth_accounts(db, existing_user.id)
 
     return build_conflict_response(
         existing_user,
