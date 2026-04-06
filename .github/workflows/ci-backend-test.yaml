@@ -10,9 +10,6 @@ on:
             - develop
             - release
             - main
-        paths:
-            - "backend/**"
-            - ".github/workflows/ci-backend-test.yaml"
     workflow_dispatch:
 
 defaults:
@@ -53,19 +50,36 @@ jobs:
             - name: checkout
               uses: actions/checkout@v6
 
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      backend:
+                        - "backend/**"
+                        - ".github/workflows/ci-backend-test.yaml"
+
             - uses: actions/setup-python@v6
+              if: steps.filter.outputs.backend == 'true'
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
 
             - name: Install Poetry
+              if: steps.filter.outputs.backend == 'true'
               run: pipx install poetry==${{ env.POETRY_VERSION }}
 
             - name: Install dependencies
+              if: steps.filter.outputs.backend == 'true'
               run: poetry install --no-interaction --no-ansi
 
             - name: Run Alembic migrations
+              if: steps.filter.outputs.backend == 'true'
               run: poetry run alembic upgrade head
 
             - name: Run tests with coverage
+              if: steps.filter.outputs.backend == 'true'
               working-directory: ./backend
               run: poetry run pytest --tb=short -q --cov=app --cov-report=term-missing
+
+            - name: Skip - no backend changes
+              if: steps.filter.outputs.backend != 'true'
+              run: echo "No backend changes detected, skipping tests"
