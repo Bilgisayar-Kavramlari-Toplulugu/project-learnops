@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.users import User
-from app.schemas.auth import OAuthAccountListResponse, OAuthAccountResponse
 from app.schemas.users import (
+    OAuthAccountListResponse,
+    OAuthAccountResponse,
     UserProfileResponse,
     UserProfileUpdate,
 )
@@ -77,7 +78,7 @@ async def list_oauth_accounts(
 
     Her hesap için provider, email ve bağlanma tarihi döner.
     """
-    accounts = await get_user_oauth_accounts(db, str(current_user.id))
+    accounts = await get_user_oauth_accounts(db, current_user.id)
     return OAuthAccountListResponse(
         accounts=[
             OAuthAccountResponse(

@@ -35,8 +35,16 @@ class UserProfileUpdate(BaseModel):
         return v
 
 
-class LinkedAccountResponse(BaseModel):
+class OAuthAccountResponse(BaseModel):
+    """Tek bir OAuth hesap bağlantısı"""
+
     id: str
     provider: str
     provider_email: str
     linked_at: datetime
+
+
+class OAuthAccountListResponse(BaseModel):
+    """Kullanıcının bağlı OAuth hesaplarının listesi"""
+
+    accounts: list[OAuthAccountResponse]

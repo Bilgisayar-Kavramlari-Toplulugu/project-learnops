@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, EmailStr
@@ -59,18 +58,3 @@ class AccountConflictResponse(BaseModel):
     existing_providers: list[str]  # Mevcut hesapta hangi provider'lar var
     new_provider: OAuthProvider
     merge_token: str  # Frontend bu token'ı onay sırasında geri gönderecek
-
-
-class OAuthAccountResponse(BaseModel):
-    """Tek bir OAuth hesap bağlantısı"""
-
-    id: str
-    provider: str
-    provider_email: str
-    linked_at: datetime
-
-
-class OAuthAccountListResponse(BaseModel):
-    """Kullanıcının bağlı OAuth hesaplarının listesi"""
-
-    accounts: list[OAuthAccountResponse]

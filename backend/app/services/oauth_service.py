@@ -46,11 +46,11 @@ async def get_oauth_account(
 
 async def get_user_oauth_accounts(
     db: AsyncSession,
-    user_id: str,
+    user_id: uuid_mod.UUID,
 ) -> list[OAuthAccount]:
     """Kullanıcının tüm bağlı OAuth hesaplarını getirir."""
     result = await db.execute(
-        select(OAuthAccount).where(OAuthAccount.user_id == uuid_mod.UUID(user_id))
+        select(OAuthAccount).where(OAuthAccount.user_id == user_id)
     )
     return list(result.scalars().all())
 
