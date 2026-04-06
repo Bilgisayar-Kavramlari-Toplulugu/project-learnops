@@ -44,6 +44,13 @@ class Settings(BaseSettings):
 
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
+    GITHUB_CLIENT_ID_DEV: str = ""
+    GITHUB_CLIENT_SECRET_DEV: str = ""
+    GITHUB_CLIENT_ID_STG: str = ""
+    GITHUB_CLIENT_SECRET_STG: str = ""
+    GITHUB_CLIENT_ID_PROD: str = ""
+    GITHUB_CLIENT_SECRET_PROD: str = ""
+
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
 
@@ -84,6 +91,27 @@ class Settings(BaseSettings):
     @property
     def google_client_secret(self) -> str:
         return self.GOOGLE_CLIENT_SECRET.strip()
+
+    # Github
+    @property
+    def github_client_id(self) -> str:
+        """ENVIRONMENT'a göre doğru GitHub Client ID'yi döner."""
+        env = self.ENVIRONMENT.lower()
+        if env == "production":
+            return (self.GITHUB_CLIENT_ID_PROD or self.GITHUB_CLIENT_ID).strip()
+        if env == "staging":
+            return (self.GITHUB_CLIENT_ID_STG or self.GITHUB_CLIENT_ID).strip()
+        return (self.GITHUB_CLIENT_ID_DEV or self.GITHUB_CLIENT_ID).strip()
+
+    @property
+    def github_client_secret(self) -> str:
+        """ENVIRONMENT'a göre doğru GitHub Client Secret'ı döner."""
+        env = self.ENVIRONMENT.lower()
+        if env == "production":
+            return (self.GITHUB_CLIENT_SECRET_PROD or self.GITHUB_CLIENT_SECRET).strip()
+        if env == "staging":
+            return (self.GITHUB_CLIENT_SECRET_STG or self.GITHUB_CLIENT_SECRET).strip()
+        return (self.GITHUB_CLIENT_SECRET_DEV or self.GITHUB_CLIENT_SECRET).strip()
 
     @property
     def allowed_origins(self) -> List[str]:

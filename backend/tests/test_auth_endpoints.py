@@ -33,11 +33,11 @@ def clear_blacklist():
     _blacklisted_tokens.clear()
 
 
-def _make_refresh_token(sub: str = "user-123") -> tuple[str, str]:
-    """Helper: create a refresh token and return (token, jti)."""
-    jti = str(uuid.uuid4())
-    token = create_refresh_token(sub=sub, jti=jti)
-    return token, jti
+def _make_refresh_token(
+    sub: str = "user-123",
+) -> str:  # ← tuple[str, str] değil, sadece str
+    """Helper: create a refresh token."""
+    return create_refresh_token(sub=sub)
 
 
 def _make_access_token(sub: str = "user-123") -> str:
@@ -48,7 +48,7 @@ def _make_access_token(sub: str = "user-123") -> str:
 
 
 def test_refresh_returns_new_tokens():
-    token, _ = _make_refresh_token()
+    token = _make_refresh_token()
     resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 200
     data = resp.json()
@@ -58,7 +58,7 @@ def test_refresh_returns_new_tokens():
 
 
 def test_refresh_rotates_token_blacklists_old():
-    token, jti = _make_refresh_token()
+    token = _make_refresh_token()
 
     resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
     assert resp.status_code == 200
@@ -115,7 +115,7 @@ def test_refresh_rejects_token_without_sub():
 
 
 def test_logout_blacklists_refresh_token():
-    refresh, jti = _make_refresh_token()
+    refresh = _make_refresh_token()
 
     resp = client.post("/v1/auth/logout", cookies={"refresh_token": refresh})
     assert resp.status_code == 204

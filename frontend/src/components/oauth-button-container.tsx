@@ -3,7 +3,7 @@ import OAuthButton from "./oauth-button";
 export default function OAuthButtonContainer() {
   const providers = [
     { name: "Google", comingSoon: false },
-    { name: "GitHub", comingSoon: true },
+    { name: "GitHub", comingSoon: false },
     { name: "LinkedIn", comingSoon: true },
   ];
 

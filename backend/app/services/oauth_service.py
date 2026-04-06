@@ -44,6 +44,13 @@ async def get_oauth_account(
     return result.scalar_one_or_none()
 
 
+async def _get_user_oauth_accounts(db: AsyncSession, user_id):
+    result = await db.execute(
+        select(OAuthAccount).where(OAuthAccount.user_id == user_id)
+    )
+    return result.scalars().all()
+
+
 # ---------------------------------------------------------------------------
 # Service functions (Single Responsibility: sadece iş mantığı)
 # ---------------------------------------------------------------------------
@@ -51,6 +58,7 @@ async def get_oauth_account(
 
 def build_conflict_response(
     existing_user: User,
+    existing_accounts: list[OAuthAccount],
     new_provider: OAuthProvider,
     provider_user_id: str,
     provider_email: str,
@@ -66,7 +74,7 @@ def build_conflict_response(
         provider_email=provider_email,
     )
 
-    existing_providers = [acc.provider for acc in existing_user.oauth_accounts]
+    existing_providers = [acc.provider for acc in existing_accounts]
     providers_str = (
         ", ".join(existing_providers) if existing_providers else "başka bir hesap"
     )
