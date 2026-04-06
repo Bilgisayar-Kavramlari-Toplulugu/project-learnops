@@ -1,0 +1,22 @@
+# ===========================
+# Bootstrap-After-Run Configuration
+# Apply this stack after infrastructure/staging is applied.
+# ===========================
+
+project_id = "learnops-staging"
+region     = "europe-west3"
+
+# Remote state location of staging stack
+staging_state_bucket = "project-learnops-staging-terraform-statefiles"
+staging_state_prefix = "staging"
+
+# Optional overrides (leave empty to read from staging remote state)
+# postgres_admin_password_override = ""
+# db_name_override                = ""
+# db_instance_name_override       = ""
+# backend_db_iam_user_override    = ""
+
+# Security hardening toggle:
+# Keep false for the first successful backend startup (table bootstrap).
+# Set true and re-apply later if you want to revoke CREATE on schema public.
+revoke_create_after_bootstrap = false

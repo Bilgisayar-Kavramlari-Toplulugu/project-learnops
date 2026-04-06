@@ -7,12 +7,15 @@ Transaction isolation strategy:
 - This means router-level db.commit() calls are neutralized:
   SQLAlchemy translates commit() to RELEASE SAVEPOINT inside a nested transaction,
   which does NOT actually commit to DB. The outer rollback cleans everything up.
++ Tests are safe to run in parallel thanks to SAVEPOINT isolation.
++ Using unique IDs (_random_user_id()) adds an additional safety layer.
 
 No separate test DB needed — SAVEPOINT isolation handles cleanup.
 Tests run against the same DB as development (see strategy above).
 
 Run tests:
      docker compose exec backend poetry run pytest
+     docker compose exec backend poetry run pytest -n auto  # Parallel run
 """
 
 import os

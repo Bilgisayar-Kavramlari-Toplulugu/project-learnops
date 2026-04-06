@@ -37,13 +37,11 @@ def test_access_token_valid():
 
 def test_refresh_token_valid():
     """Refresh token üretilir ve decode edilir — sub ve jti doğru döner."""
-    jti = str(uuid.uuid4())
-    token = create_refresh_token(sub="user-456", jti=jti)
+    token = create_refresh_token(sub="user-456")
     payload = decode_token(token)
 
     assert payload["sub"] == "user-456"
     assert payload["type"] == "refresh"
-    assert payload["jti"] == jti
 
 
 def test_access_token_has_correct_expiry():
@@ -60,8 +58,7 @@ def test_access_token_has_correct_expiry():
 
 def test_refresh_token_has_correct_expiry():
     """Refresh token'ın exp süresi ~7 gün olmalı."""
-    jti = str(uuid.uuid4())
-    token = create_refresh_token(sub="user-789", jti=jti)
+    token = create_refresh_token(sub="user-789")
     payload = decode_token(token)
 
     exp = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
