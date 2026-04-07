@@ -1,22 +1,71 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.users import User
 from app.schemas.users import (
+    DeleteAccountRequest,
     OAuthAccountListResponse,
     OAuthAccountResponse,
     UserProfileResponse,
     UserProfileUpdate,
 )
+from app.services.jwt_service import blacklist_refresh_token_if_valid, decode_token
 from app.services.oauth_service import get_user_oauth_accounts, unlink_oauth_account
+from app.services.user_service import hard_delete_user_account
 
 router = APIRouter(prefix="/users", tags=["users"])
 logger = logging.getLogger(__name__)
+
+DELETE_CONFIRMATION_TEXT = "HESABIMI SİL"
+
+
+def _get_current_user_id_from_request(request: Request) -> str:
+    auth_header = request.headers.get("authorization")
+    token: str | None = None
+
+    if auth_header and auth_header.lower().startswith("bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    else:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    try:
+        payload = decode_token(token)
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token geçersiz veya süresi dolmuş",
+        )
+
+    if payload.get("type") != "access":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Access token gerekli",
+        )
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token geçersiz",
+        )
+
+    return str(user_id)
+
+
+async def get_current_user_id(request: Request) -> str:
+    return _get_current_user_id_from_request(request)
 
 
 @router.get("/me", response_model=UserProfileResponse)
@@ -130,3 +179,33 @@ async def delete_oauth_account(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_my_account(
+    request: DeleteAccountRequest,
+    http_request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id),
+):
+    if request.confirmation != DELETE_CONFIRMATION_TEXT:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Geçersiz onay metni. Lütfen '{DELETE_CONFIRMATION_TEXT}' yazın.",
+        )
+
+    deleted = await hard_delete_user_account(db, current_user_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    refresh_token = http_request.cookies.get("refresh_token")
+    if refresh_token:
+        blacklist_refresh_token_if_valid(refresh_token)
+
+    response = Response(status_code=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response

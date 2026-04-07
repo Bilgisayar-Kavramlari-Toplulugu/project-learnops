@@ -24,6 +24,21 @@ def is_blacklisted(jti: str) -> bool:
     return jti in _blacklisted_tokens
 
 
+def blacklist_refresh_token_if_valid(token: str) -> None:
+    """
+    Refresh token geçerliyse jti değerini blacklist'e ekler.
+    Geçersiz token'larda sessizce devam eder.
+    """
+    try:
+        payload = decode_token(token)
+        if payload.get("type") == "refresh":
+            jti = payload.get("jti", "")
+            if jti:
+                blacklist_token(jti)
+    except JWTError:
+        pass
+
+
 # ---------- Token üretimi ----------
 def create_access_token(sub: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
@@ -37,9 +52,9 @@ def create_access_token(sub: str) -> str:
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 
 
-def create_refresh_token(sub: str) -> str:
-
-    jti = str(uuid.uuid4())
+def create_refresh_token(sub: str, jti: str | None = None) -> str:
+    if jti is None:
+        jti = str(uuid.uuid4())
     expire = datetime.now(timezone.utc) + timedelta(
         days=settings.REFRESH_TOKEN_EXPIRE_DAYS
     )

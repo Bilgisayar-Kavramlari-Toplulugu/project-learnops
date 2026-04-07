@@ -48,3 +48,7 @@ class OAuthAccountListResponse(BaseModel):
     """Kullanıcının bağlı OAuth hesaplarının listesi"""
 
     accounts: list[OAuthAccountResponse]
+
+
+class DeleteAccountRequest(BaseModel):
+    confirmation: str
