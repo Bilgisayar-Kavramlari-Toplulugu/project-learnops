@@ -1,16 +1,7 @@
 import type { NextConfig } from "next";
 
-const backendInternalUrl = process.env.BACKEND_INTERNAL_URL?.trim() || "http://localhost:8000";
-
-const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${backendInternalUrl}/v1/:path*`,
-      },
-    ];
-  },
-};
+// Proxy to backend is handled at runtime by src/app/api/[...path]/route.ts
+// so that BACKEND_INTERNAL_URL is read at request time, not baked into the image.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

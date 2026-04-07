@@ -4,13 +4,13 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { routes } from "@/lib/routes";
-import type { DashboardUser, SidebarItem } from "@/types";
+import type { DashboardProfile, SidebarItem } from "@/types";
 import { AppFooter } from "./app-footer";
 import { AppSidebar } from "./app-sidebar";
 import { AppTopbar } from "./app-topbar";
 
 interface DashboardShellProps {
-  user: DashboardUser;
+  user: DashboardProfile;
   sidebarItems: SidebarItem[];
   activePath?: string;
   children: ReactNode;

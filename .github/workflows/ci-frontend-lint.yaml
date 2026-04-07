@@ -9,9 +9,6 @@ on:
             - develop
             - release
             - main
-        paths:
-            - "frontend/**"
-            - ".github/workflows/ci-frontend-lint.yaml"
     workflow_dispatch:
 
 defaults:
@@ -25,17 +22,33 @@ jobs:
         steps:
             - uses: actions/checkout@v6
 
+            - uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      frontend:
+                        - "frontend/**"
+                        - ".github/workflows/ci-frontend-lint.yaml"
+
             - uses: actions/setup-node@v6
+              if: steps.filter.outputs.frontend == 'true'
               with:
                   node-version: ${{ env.NODE_VERSION }}
                   cache: npm
                   cache-dependency-path: frontend/package-lock.json
 
             - name: Install Dependencies
+              if: steps.filter.outputs.frontend == 'true'
               run: npm ci
 
             - name: Run ESlint
+              if: steps.filter.outputs.frontend == 'true'
               run: npm run lint
 
             - name: Type check
+              if: steps.filter.outputs.frontend == 'true'
               run: npx tsc --noEmit
+
+            - name: Skip - no frontend changes
+              if: steps.filter.outputs.frontend != 'true'
+              run: echo "No frontend changes detected, skipping lint"

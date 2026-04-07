@@ -1,4 +1,4 @@
-import base64
+import base64  # noqa: test ci skip detection
 
 from cryptography.fernet import Fernet
 
@@ -8,7 +8,7 @@ from app.config import settings
 def _get_fernet() -> Fernet:
     """Create Fernet instance from env key.
 
-    Accepts either:
+    Accepts either::
     - Standard Fernet key (32 url-safe base64-encoded bytes)
     - 64-char hex key (legacy format), converted to Fernet format
     """

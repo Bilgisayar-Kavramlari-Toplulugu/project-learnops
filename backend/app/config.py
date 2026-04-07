@@ -11,6 +11,12 @@ class Settings(BaseSettings):
         extra="ignore",  # This ignores extra env vars not defined here
     )
 
+    # Database settings
+    # POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB are deprecated
+    # for Cloud Run. Cloud Run uses INSTANCE_CONNECTION_NAME, DB_USER,
+    # and DB_NAME injected by Terraform.
+    # DATABASE_URL remains as the local development fallback.
+
     # Database (populated from .env via pydantic-settings)
     POSTGRES_USER: str = ""
     POSTGRES_PASSWORD: str = ""
@@ -38,6 +44,13 @@ class Settings(BaseSettings):
 
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
+    GITHUB_CLIENT_ID_DEV: str = ""
+    GITHUB_CLIENT_SECRET_DEV: str = ""
+    GITHUB_CLIENT_ID_STG: str = ""
+    GITHUB_CLIENT_SECRET_STG: str = ""
+    GITHUB_CLIENT_ID_PROD: str = ""
+    GITHUB_CLIENT_SECRET_PROD: str = ""
+
     LINKEDIN_CLIENT_ID: str = ""
     LINKEDIN_CLIENT_SECRET: str = ""
 
@@ -49,7 +62,10 @@ class Settings(BaseSettings):
     BACKEND_INTERNAL_URL: str = "http://backend:8080"
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
     FRONTEND_PUBLIC_URL: str = "http://localhost:3000"
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8000"]
+    ALLOWED_ORIGINS: List[str] | str = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
@@ -76,8 +92,35 @@ class Settings(BaseSettings):
     def google_client_secret(self) -> str:
         return self.GOOGLE_CLIENT_SECRET.strip()
 
+    # Github
+    @property
+    def github_client_id(self) -> str:
+        """ENVIRONMENT'a göre doğru GitHub Client ID'yi döner."""
+        env = self.ENVIRONMENT.lower()
+        if env == "production":
+            return (self.GITHUB_CLIENT_ID_PROD or self.GITHUB_CLIENT_ID).strip()
+        if env == "staging":
+            return (self.GITHUB_CLIENT_ID_STG or self.GITHUB_CLIENT_ID).strip()
+        return (self.GITHUB_CLIENT_ID_DEV or self.GITHUB_CLIENT_ID).strip()
+
+    @property
+    def github_client_secret(self) -> str:
+        """ENVIRONMENT'a göre doğru GitHub Client Secret'ı döner."""
+        env = self.ENVIRONMENT.lower()
+        if env == "production":
+            return (self.GITHUB_CLIENT_SECRET_PROD or self.GITHUB_CLIENT_SECRET).strip()
+        if env == "staging":
+            return (self.GITHUB_CLIENT_SECRET_STG or self.GITHUB_CLIENT_SECRET).strip()
+        return (self.GITHUB_CLIENT_SECRET_DEV or self.GITHUB_CLIENT_SECRET).strip()
+
     @property
     def allowed_origins(self) -> List[str]:
+        if isinstance(self.ALLOWED_ORIGINS, str):
+            return [
+                origin.strip()
+                for origin in self.ALLOWED_ORIGINS.split(",")
+                if origin.strip()
+            ]
         return self.ALLOWED_ORIGINS
 
     @property
@@ -87,19 +130,41 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Startup validation: reject missing required settings
-_REQUIRED_SETTINGS = [
-    "POSTGRES_USER",
-    "POSTGRES_PASSWORD",
-    "POSTGRES_DB",
-    "DATABASE_URL",
-    "JWT_SECRET",
-    "TOKEN_ENCRYPTION_KEY",
-]
-_missing = [name for name in _REQUIRED_SETTINGS if not getattr(settings, name)]
+# Startup validation: reject missing required settings per environment.
+_REQUIRED_BY_ENV: dict[str, list[str]] = {
+    "_common": [
+        "JWT_SECRET",
+        "TOKEN_ENCRYPTION_KEY",
+    ],
+    "testing": [
+        "DATABASE_URL",
+    ],
+    "development": [
+        "DATABASE_URL",
+        "POSTGRES_USER",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_DB",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+    ],
+    "staging": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+    ],
+    "production": [
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+    ],
+}
+
+_required = _REQUIRED_BY_ENV.get("_common", []) + _REQUIRED_BY_ENV.get(
+    settings.ENVIRONMENT, []
+)
+_missing = [name for name in _required if not getattr(settings, name)]
 if _missing:
     raise RuntimeError(
-        f"Missing required environment variables: {', '.join(_missing)}. "
+        f"Missing required environment variables for "
+        f"'{settings.ENVIRONMENT}': {', '.join(_missing)}. "
         "Set them in .env or as environment variables."
     )
 
@@ -108,7 +173,7 @@ _INSECURE_DEFAULTS = {
     "change-me-in-production-min-32-chars",
     "change-me-session-secret-min-32-chars",
 }
-if settings.ENVIRONMENT != "development":
+if settings.ENVIRONMENT not in ("development", "testing"):
     if settings.JWT_SECRET in _INSECURE_DEFAULTS:
         raise RuntimeError(
             "JWT_SECRET must be changed from the default "
