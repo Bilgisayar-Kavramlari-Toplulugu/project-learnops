@@ -4,8 +4,8 @@ Reads meta.json for course metadata and MDX frontmatter for sections.
 UPSERT logic based on slug (courses) and section_id_str (sections).
 
 Usage:
-    python scripts/seed_content.py --env development
-    python scripts/seed_content.py --env development --dry-run
+    python scripts/seed_content.py
+    python scripts/seed_content.py --dry-run
 """
 
 import argparse
@@ -108,7 +108,7 @@ def validate_meta(meta: dict, course_dir: str) -> list[str]:
 
     if "duration_minutes" in meta and meta["duration_minutes"] is not None:
         dur = meta["duration_minutes"]
-        if not isinstance(dur, int) or dur < 0:
+        if not isinstance(dur, int) or dur <= 0:
             errors.append(
                 f"{course_dir}/meta.json: duration_minutes must be a positive integer"
             )
@@ -222,6 +222,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
                 "duration_minutes": stmt.excluded.duration_minutes,
                 "is_published": stmt.excluded.is_published,
                 "display_order": stmt.excluded.display_order,
+                "updated_at": sa.func.now(),
             },
         )
         session.execute(stmt)
@@ -252,6 +253,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
                     "course_id": stmt.excluded.course_id,
                     "title": stmt.excluded.title,
                     "order_index": stmt.excluded.order_index,
+                    "updated_at": sa.func.now(),
                 },
             )
             session.execute(stmt)
@@ -266,20 +268,12 @@ def main():
         description="Seed courses and sections from content/"
     )
     parser.add_argument(
-        "--env",
-        default="development",
-        help="Environment name (default: development)",
-    )
-    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Parse and validate without writing to DB. Exit 1 on errors.",
     )
     args = parser.parse_args()
 
-    os.environ.setdefault("ENVIRONMENT", args.env)
-
-    logger.info(f"Environment: {args.env}")
     logger.info(f"Content directory: {CONTENT_DIR}")
     logger.info(f"Dry run: {args.dry_run}")
 
@@ -293,11 +287,20 @@ def main():
 
     # --- Validate ---
     all_errors: list[str] = []
+    slugs: set[str] = set()
     section_ids: set[str] = set()
 
     for course_data in courses:
         meta = course_data["meta"]
         all_errors.extend(validate_meta(meta, course_data["dir"]))
+
+        # Check for duplicate slugs
+        slug = meta.get("slug", "")
+        if slug in slugs:
+            all_errors.append(
+                f"{course_data['dir']}/meta.json: duplicate slug '{slug}'"
+            )
+        slugs.add(slug)
 
         for section_data in course_data["sections"]:
             fm = section_data["frontmatter"]
