@@ -32,18 +32,6 @@ export interface UpcomingExam {
 
 export type CourseProgressTone = "emerald" | "blue" | "indigo";
 
-export interface CourseCardItem {
-  id: string;
-  title: string;
-  description: string;
-  progress: number;
-  completedLessons: number;
-  totalLessons: number;
-  level: string;
-  progressTone: CourseProgressTone;
-  icon: LucideIcon;
-}
-
 export interface DashboardSuggestion {
   title: string;
   level: string;
@@ -52,14 +40,14 @@ export interface DashboardSuggestion {
 
 // ─── Course Listing Types ─────────────────────────────────────────────────────
 
-export type CourseDifficulty = "beginner" | "intermediate" | "advanced";
-
 export interface Course {
+  id: number;
   slug: string;
   title: string;
   description: string;
   category: string;
-  difficulty: CourseDifficulty;
+  difficulty: string;
   duration_minutes: number;
   is_published: boolean;
+  created_at: string;
 }
