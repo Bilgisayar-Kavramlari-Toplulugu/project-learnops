@@ -49,3 +49,17 @@ export interface DashboardSuggestion {
   level: string;
   icon: LucideIcon;
 }
+
+// ─── Course Listing Types ─────────────────────────────────────────────────────
+
+export type CourseDifficulty = "beginner" | "intermediate" | "advanced";
+
+export interface Course {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: CourseDifficulty;
+  duration_minutes: number;
+  is_published: boolean;
+}
