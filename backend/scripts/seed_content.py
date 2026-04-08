@@ -66,6 +66,9 @@ def parse_frontmatter(text: str) -> dict:
     """Extract YAML-like frontmatter from MDX content.
 
     Supports simple key: value and key: "quoted value" pairs.
+
+    Limitations: only scalar values (no lists, multiline, or booleans).
+    Boolean/nested fields should come from meta.json (native JSON types).
     """
     match = FRONTMATTER_RE.match(text)
     if not match:
@@ -179,8 +182,8 @@ def discover_courses() -> list[dict]:
 # ---------------------------------------------------------------------------
 # Database operations
 # ---------------------------------------------------------------------------
-def get_database_url(env: str) -> str:
-    """Resolve database URL from environment."""
+def get_database_url() -> str:
+    """Resolve database URL from DATABASE_URL environment variable."""
     url = os.getenv("DATABASE_URL", "")
     if not url:
         raise RuntimeError(
@@ -210,7 +213,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
 
         stmt = pg_insert(Course.__table__).values(**course_values)
         stmt = stmt.on_conflict_do_update(
-            index_elements=["slug"],
+            constraint="uq_courses_slug",
             set_={
                 "title": stmt.excluded.title,
                 "description": stmt.excluded.description,
@@ -244,7 +247,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
 
             stmt = pg_insert(Section.__table__).values(**section_values)
             stmt = stmt.on_conflict_do_update(
-                index_elements=["section_id_str"],
+                constraint="uq_sections_section_id_str",
                 set_={
                     "course_id": stmt.excluded.course_id,
                     "title": stmt.excluded.title,
@@ -331,7 +334,7 @@ def main():
         sys.exit(0)
 
     # --- Seed ---
-    db_url = get_database_url(args.env)
+    db_url = get_database_url()
     engine = create_engine(db_url)
 
     with Session(engine) as session:
