@@ -1,0 +1,10 @@
+{
+  "title": "Python Temelleri",
+  "slug": "python-temelleri",
+  "description": "Python programlama dilinin temellerini uygulamalı olarak ogreneceginiz kapsamli bir kurs.",
+  "category": "programlama",
+  "difficulty": "beginner",
+  "duration_minutes": 120,
+  "is_published": true,
+  "recommended_order": 1
+}
