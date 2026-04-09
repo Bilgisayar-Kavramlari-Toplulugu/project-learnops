@@ -1,28 +1,31 @@
-import CourseItem from "@/components/features/courses/course-item";
-import course_list from "@/data/fake-courses";
+import { getCourses, getCourseBySlug } from "@/lib/fetchCourses";
+import WrapperContainer from "@/components/features/dashboard/wrapper-container";
+import CourseDetailClient from "@/components/features/courses/course-detail-client";
+import { notFound } from "next/navigation";
 
-export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateStaticParams() {
+  const courses = await getCourses();
+
+  if (!Array.isArray(courses) || courses.length === 0) {
+    return [];
+  }
+
+  return courses.map((course) => ({
+    slug: course.slug,
+  }));
+}
+
+export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const course = course_list.find((c) => c.slug == slug);
-
-  /* const fetchCourse = () => {
-    return fetch(`https://api.example.com/courses/${slug}`, {
-      cache: "force-cache",
-    }).then((res) => res.json());
-  }; */
-
-  // const course = await fetchCourse();
+  const course = await getCourseBySlug(slug);
 
   if (!course) {
-    return <div>Course not found</div>;
+    notFound();
   }
 
   return (
-    <div>
-      <CourseItem course={course} />
-      {/* {sections.map((s) => (
-        <SectionItem key={s.id} section={s} />
-      ))} */}
-    </div>
+    <WrapperContainer>
+      <CourseDetailClient course={course} />
+    </WrapperContainer>
   );
 }

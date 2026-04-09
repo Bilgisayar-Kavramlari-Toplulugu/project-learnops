@@ -63,3 +63,19 @@ export interface Course {
   is_published: boolean;
   created_at: string;
 }
+
+export interface CourseSection {
+  id: number; // or string based on uuid, but kept matching current
+  course_id: number;
+  title: string;
+  section_id_str: string;
+  description: string | null;
+  order_index: number;
+  is_published: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CourseDetail extends Course {
+  sections: CourseSection[];
+}
