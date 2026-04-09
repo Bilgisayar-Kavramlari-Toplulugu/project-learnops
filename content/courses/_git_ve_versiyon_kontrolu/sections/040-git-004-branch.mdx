@@ -1,0 +1,173 @@
+---
+id: "git-004-branch"
+title: "Branch Stratejisi ve Merge Tipleri"
+order: 40
+order_index: 40
+---
+
+# Branch Stratejisi ve Merge Tipleri
+
+Branch (dal), bağımsız bir geliştirme hattıdır. `main` branch'i kararlı kodu barındırırken yeni özellikler, hata düzeltmeleri ve deneyler ayrı dallarda geliştirilir. Hazır olunca `main`'e birleştirilir.
+
+## Branch Nedir?
+
+Git'te bir branch, teknik olarak yalnızca bir commit'e işaret eden hafif bir referanstır. Dal oluşturmak, o anki commit'i gösteren yeni bir etiket yaratmaktan ibarettir; dosya kopyalamak değil.
+
+```
+main:    A → B → C
+                  ↘
+feature:           D → E
+```
+
+## Temel Branch Komutları
+
+```bash
+# Mevcut branch'leri listele (* aktif branch'i gösterir)
+git branch
+# * main
+#   feature/login
+
+# Yeni branch oluştur
+git branch feature/kullanici-girisi
+
+# Branch'e geç
+git switch feature/kullanici-girisi
+
+# Oluştur ve geç (kısayol)
+git switch -c feature/kullanici-girisi
+
+# Branch sil (merge edilmişse)
+git branch -d feature/kullanici-girisi
+
+# Branch sil (merge edilmemiş olsa bile zorla)
+git branch -D feature/kullanici-girisi
+
+# Tüm branch'leri listele (remote dahil)
+git branch -a
+```
+
+> **Not:** `git checkout -b` eski sözdizimi de çalışır; ancak Git 2.23'ten itibaren `git switch` tercih edilmektedir — amacı daha açıktır.
+
+## Branch Adlandırma Konvansiyonu
+
+Proje boyunca tutarlı bir adlandırma şeması kullanmak ekip içi iletişimi kolaylaştırır:
+
+```
+feature/kullanici-girisi    → Yeni özellik
+fix/navbar-hizalama         → Hata düzeltmesi
+hotfix/kritik-guvenlik      → Üretimde acil düzeltme
+chore/bagimlilik-guncelle   → Bakım görevi
+content/CNT-03-git          → İçerik ekibine özel (bu projede)
+```
+
+## Merge Tipleri
+
+İki branch'i birleştirmenin üç farklı yolu vardır. Hangisini seçeceğiniz geçmiş temizliği ve iş akışı tercihlerinize bağlıdır.
+
+### 1. Fast-Forward Merge
+
+`main` branch'i ilerlememiş, `feature` branch'i `main`'in düz devamıysa Git branch işaretçisini öne taşır. Ekstra merge commit oluşmaz.
+
+```
+Önce:
+main:    A → B
+              ↘
+feature:       C → D
+
+Sonra (fast-forward):
+main:    A → B → C → D
+```
+
+```bash
+git switch main
+git merge feature/kullanici-girisi
+# Fast-forward
+```
+
+**Ne zaman kullanılır:** Kısa ömürlü, tek geliştirici branch'lerinde. Geçmiş düz ve temiz kalır.
+
+### 2. Three-Way Merge (Merge Commit)
+
+`main` branch'i `feature` ayrıldıktan sonra ilerlemiş durumdaysa Git, ortak ata commit'i bulur ve iki ucu birleştiren yeni bir **merge commit** oluşturur.
+
+```
+Önce:
+main:    A → B → E
+              ↘
+feature:       C → D
+
+Sonra (merge commit):
+main:    A → B → E → M   ← M iki ebeveyne sahip
+              ↘       ↗
+feature:       C → D
+```
+
+```bash
+git switch main
+git merge --no-ff feature/kullanici-girisi
+# Merge commit oluşur
+```
+
+**Ne zaman kullanılır:** Uzun süreli veya ekip branch'lerinde; "bu özellik hangi commit'lerden oluştu?" sorusunu yanıtlanabilir kılar.
+
+### 3. Squash Merge
+
+`feature` branch'indeki tüm commit'leri tek bir commit'e sıkıştırır ve `main`'e ekler. `feature` branch'inin geçmişi `main`'e taşınmaz.
+
+```
+Önce:
+feature: C → D → E (3 commit)
+
+Sonra:
+main: A → B → CDE (1 birleşik commit)
+```
+
+```bash
+git switch main
+git merge --squash feature/kullanici-girisi
+git commit -m "feat: kullanıcı girişi eklendi"
+```
+
+**Ne zaman kullanılır:** "WIP", "düzeltme" gibi kirli commit'leri gizlemek istediğinizde. `main` geçmişini temiz tutar.
+
+## Merge Karşılaştırması
+
+| Tip | Geçmiş | Ne Zaman |
+|---|---|---|
+| Fast-forward | Düz, ekstra commit yok | Kısa bireysel branch |
+| Three-way | Dallanma görünür, merge commit var | Ekip branch, uzun ömürlü özellik |
+| Squash | Temiz, tüm iş tek commit | Kirli geçmişi gizleme |
+
+## Tam İş Akışı Örneği
+
+```bash
+# 1. main'den yeni branch oluştur
+git switch main
+git switch -c feature/profil-sayfasi
+
+# 2. Geliştirme yap
+echo "Profil sayfası" > profil.html
+git add profil.html
+git commit -m "feat: profil sayfası oluşturuldu"
+
+# 3. main'e geri dön ve merge et
+git switch main
+git merge --no-ff feature/profil-sayfasi
+# Merge commit mesajı girin
+
+# 4. Branch'i temizle
+git branch -d feature/profil-sayfasi
+```
+
+## Geçmişi Görselleştirme
+
+```bash
+git log --oneline --graph --all
+# * a1b2c3d (main) Merge branch 'feature/profil-sayfasi'
+# |\
+# | * d4e5f6g feat: profil sayfası oluşturuldu
+# |/
+# * b7c8d9e ilk commit: README oluşturuldu
+```
+
+Bir sonraki bölümde, değişikliklerinizi uzak depoyla nasıl paylaşacağınızı öğreneceğiz.

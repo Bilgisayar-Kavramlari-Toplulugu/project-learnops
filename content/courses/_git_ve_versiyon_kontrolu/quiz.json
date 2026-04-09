@@ -1,0 +1,203 @@
+{
+  "_note": "Eğitim amaçlı. Cevaplar kasıtlı açıktır. v2.0'da private repo'ya taşınır.",
+  "course_slug": "git-versiyon-kontrolu",
+  "pass_threshold": 0.70,
+  "duration_seconds": 1500,
+  "questions": [
+    {
+      "order_index": 1,
+      "is_active": true,
+      "text": "Git'in dağıtık (distributed) mimaride çalışması ne anlama gelir?",
+      "options": [
+        {"index": 0, "text": "Tüm commit'ler merkezi bir sunucuda tutulur, geliştiriciler yalnızca değişiklikleri indirir."},
+        {"index": 1, "text": "Her geliştirici, deponun tam geçmişini kendi makinesinde saklar ve sunucu olmadan da commit yapabilir."},
+        {"index": 2, "text": "Kod değişiklikleri otomatik olarak tüm ekip üyelerine dağıtılır."},
+        {"index": 3, "text": "Birden fazla sunucu üzerinde yük dengelemesi yapılarak geçmiş saklanır."}
+      ],
+      "correct_index": 1,
+      "explanation": "Dağıtık mimaride her klon (clone), deponun tam commit geçmişini barındırır; bu sayede merkezi sunucu olmadan da git log, git diff veya git commit gibi komutlar kullanılabilir. Bu tasarım aynı zamanda her kopyayı tam birer yedek haline getirir."
+    },
+    {
+      "order_index": 2,
+      "is_active": true,
+      "text": "Bir geliştirici `git add README.md` komutunu çalıştırdıktan sonra `git status` çıktısında README.md hangi bölümde görünür?",
+      "options": [
+        {"index": 0, "text": "Untracked files"},
+        {"index": 1, "text": "Changes not staged for commit"},
+        {"index": 2, "text": "Changes to be committed"},
+        {"index": 3, "text": "On branch main, nothing to commit"}
+      ],
+      "correct_index": 2,
+      "explanation": "`git add` komutu dosyayı çalışma dizininden (working directory) staging area'ya (index) taşır. Staging area'daki dosyalar `git status` çıktısında 'Changes to be committed' başlığı altında listelenir ve bir sonraki `git commit` komutuna dahil edilmeye hazırdır."
+    },
+    {
+      "order_index": 3,
+      "is_active": true,
+      "text": "Aşağıdaki komutlardan hangisi yeni bir branch oluşturup aynı anda o branch'e geçer?",
+      "options": [
+        {"index": 0, "text": "git branch -c yeni-branch"},
+        {"index": 1, "text": "git checkout yeni-branch"},
+        {"index": 2, "text": "git branch yeni-branch && git checkout yeni-branch"},
+        {"index": 3, "text": "git switch -c yeni-branch"}
+      ],
+      "correct_index": 3,
+      "explanation": "`git switch -c <branch-adı>` hem branch'i oluşturur hem de o branch'e geçer; Git 2.23 sürümünde tanıtılan bu sözdizimi, amacı daha açık olduğu için `git checkout -b` yerine tercih edilmektedir. `git checkout -b` de çalışır ancak `checkout` komutunun birden fazla işlevi olduğundan okunabilirliği düşüktür."
+    },
+    {
+      "order_index": 4,
+      "is_active": true,
+      "text": "Bir geliştirici `git log --oneline --graph --all` komutunu çalıştırıyor. Bu komutun çıktısı ne gösterir?",
+      "options": [
+        {"index": 0, "text": "Yalnızca aktif branch'in son commit'ini gösterir."},
+        {"index": 1, "text": "Tüm branch'lerin commit geçmişini dal grafiğiyle tek satırda özetleyerek gösterir."},
+        {"index": 2, "text": "Remote depodaki commit'leri yerel commit'lerle karşılaştırır."},
+        {"index": 3, "text": "Değiştirilmiş dosyaların listesini ve diff'ini gösterir."}
+      ],
+      "correct_index": 1,
+      "explanation": "`--oneline` her commit'i tek satırda (kısa hash + mesaj) özetler; `--graph` branch ve merge ilişkilerini ASCII grafiğiyle görselleştirir; `--all` yalnızca aktif branch'le sınırlı kalmayıp tüm local ve remote branch'leri dahil eder. Bu kombinasyon, deponun genel durumunu hızlıca anlamak için en kullanışlı log formatlarından biridir."
+    },
+    {
+      "order_index": 5,
+      "is_active": true,
+      "text": "Bir ekipte iki geliştirici aynı dosyanın aynı satırını farklı şekillerde düzenledi ve merge işlemi sırasında conflict oluştu. Conflict işaretçileri temizlendikten sonra sıradaki adım nedir?",
+      "options": [
+        {"index": 0, "text": "git merge --continue komutunu çalıştırmak"},
+        {"index": 1, "text": "git reset --hard komutunu çalıştırarak merge'i iptal etmek"},
+        {"index": 2, "text": "Düzenlenen dosyayı git add ile staging'e ekleyip git commit yapmak"},
+        {"index": 3, "text": "git push komutunu çalıştırmak, Git conflict'i otomatik çözer"}
+      ],
+      "correct_index": 2,
+      "explanation": "Conflict işaretçileri (`<<<<<<<`, `=======`, `>>>>>>>`) manuel olarak temizlendikten sonra dosya `git add <dosya>` komutuyla 'çözüldü' olarak işaretlenir; ardından `git commit` çalıştırılarak merge commit oluşturulur. `git merge --continue` de çalışır ancak yalnızca tüm conflict'li dosyalar staging'e eklendikten sonra kullanılabilir."
+    },
+    {
+      "order_index": 6,
+      "is_active": true,
+      "text": "Bir geliştirici feature branch'inde çalışırken `git fetch origin` komutunu çalıştırıyor. Bu komut çalışma dizinini nasıl etkiler?",
+      "options": [
+        {"index": 0, "text": "Remote'daki değişiklikleri indirir ve aktif branch'le otomatik birleştirir."},
+        {"index": 1, "text": "Çalışma dizinini hiç etkilemez; yalnızca remote commit'leri yerel depoya indirir."},
+        {"index": 2, "text": "Çalışma dizinindeki tüm değişiklikleri geri alır ve remote sürümüyle eşitler."},
+        {"index": 3, "text": "Yalnızca aktif branch'in değişikliklerini indirir, diğer branch'leri atlar."}
+      ],
+      "correct_index": 1,
+      "explanation": "`git fetch` yalnızca remote'daki yeni commit'leri ve branch referanslarını yerel depoya indirir; çalışma dizinindeki dosyalara ya da HEAD'e dokunmaz. Bu güvenli davranış sayesinde remote'da ne değiştiğini `git log origin/main` ile inceleyip birleştirmeyi bilinçli olarak kontrol edebilirsiniz. Birleştirme yapmak için ardından `git merge` veya `git pull` gereklidir."
+    },
+    {
+      "order_index": 7,
+      "is_active": true,
+      "text": "Fast-forward merge ne zaman gerçekleşir?",
+      "options": [
+        {"index": 0, "text": "İki branch'te aynı dosya değiştirildiğinde ve Git otomatik birleştirebiliyorsa"},
+        {"index": 1, "text": "Birleştirilmek istenen branch, hedef branch'ten ayrıldığından bu yana hedef branch'te hiç yeni commit eklenmemişse"},
+        {"index": 2, "text": "git merge --ff-only komutu açıkça belirtildiğinde"},
+        {"index": 3, "text": "Yalnızca tek bir dosya değiştirilmiş ve conflict yoksa"}
+      ],
+      "correct_index": 1,
+      "explanation": "Fast-forward merge, hedef branch (genellikle main) birleştirilmek istenen branch'ten (feature) sonra ilerlememişse, yani feature doğrudan main'in devamıysa gerçekleşir. Bu durumda Git yeni bir merge commit oluşturmak yerine yalnızca hedef branch'in işaretçisini öne taşır; sonuç doğrusal ve temiz bir geçmiştir."
+    },
+    {
+      "order_index": 8,
+      "is_active": true,
+      "text": "Aşağıdaki .gitignore kurallarından hangisi `logs/` dizininin tamamını ve tüm `.tmp` uzantılı dosyaları takip dışı bırakır?",
+      "options": [
+        {"index": 0, "text": "ignore logs/ \nignore *.tmp"},
+        {"index": 1, "text": "exclude: logs/\nexclude: *.tmp"},
+        {"index": 2, "text": "logs/\n*.tmp"},
+        {"index": 3, "text": "#logs\n#*.tmp"}
+      ],
+      "correct_index": 2,
+      "explanation": ".gitignore dosyasında her kural ayrı satıra yazılır; özel bir anahtar kelime kullanılmaz. `logs/` slash ile biten bir desen, o adlı dizini ve içeriğini yoksayar; `*.tmp` ise herhangi bir konumdaki `.tmp` uzantılı tüm dosyaları kapsar. `#` ile başlayan satırlar yorum satırıdır ve Git tarafından görmezden gelinir."
+    },
+    {
+      "order_index": 9,
+      "is_active": true,
+      "text": "Bir geliştirici yerel `main` branch'inde yaptığı commit'i push etmeden önce `git commit --amend -m 'yeni mesaj'` komutunu çalıştırıyor. Bu komut ne yapar?",
+      "options": [
+        {"index": 0, "text": "Son commit'e yeni bir commit ekler ve mesaj olarak 'yeni mesaj' kullanır."},
+        {"index": 1, "text": "Son commit'i siler ve yeni bir commit oluşturur."},
+        {"index": 2, "text": "Son commit'in mesajını değiştirir ve commit hash'i yeniden üretir."},
+        {"index": 3, "text": "Son commit'i remote'a gönderir ve mesajı günceller."}
+      ],
+      "correct_index": 2,
+      "explanation": "`git commit --amend` son commit'i değiştirir: mesajı günceller ve/veya staging area'daki değişiklikler varsa onları da dahil eder; ancak teknik olarak yeni bir hash üretir çünkü commit içeriği değişmiştir. Bu nedenle `--amend` yalnızca henüz push edilmemiş commit'lerde güvenlidir; push edildikten sonra kullanmak uzak geçmişle uyumsuzluk yaratır."
+    },
+    {
+      "order_index": 10,
+      "is_active": true,
+      "text": "Bir ekip `main` branch'inde 'Require a pull request before merging' koruma kuralını etkinleştirdi. Bu kuralın pratik etkisi nedir?",
+      "options": [
+        {"index": 0, "text": "Yalnızca proje sahibi main'e doğrudan commit gönderebilir, diğerleri göremez."},
+        {"index": 1, "text": "main branch'ine doğrudan git push yapılamaz; değişiklikler yalnızca onaylı PR aracılığıyla merge edilebilir."},
+        {"index": 2, "text": "Pull request açmak için en az iki geliştirici gerekli, tek kişi açamaz."},
+        {"index": 3, "text": "Tüm commit'ler otomatik test pipeline'ından geçmek zorundadır."}
+      ],
+      "correct_index": 1,
+      "explanation": "'Require a pull request before merging' kuralı, `main` branch'ine doğrudan push işlemini engeller; tüm değişikliklerin bir PR üzerinden inceleme sürecine girmesini zorunlu kılar. Bu sayede kod kalitesi korunur, istenmeyen değişiklikler önlenir ve ekip içi kod incelemeleri (code review) standart hale gelir."
+    },
+    {
+      "order_index": 11,
+      "is_active": true,
+      "text": "Bir geliştirici 5 commit içeren bir feature branch'ini `git rebase -i HEAD~5` ile interaktif rebase açtı ve tüm commit'leri `squash` olarak işaretledi. Ne olur?",
+      "options": [
+        {"index": 0, "text": "5 commit birleştirilerek tek bir commit oluşturulur ve yeni bir mesaj girilmesi beklenir."},
+        {"index": 1, "text": "Tüm commit'ler silinir ve working directory temizlenir."},
+        {"index": 2, "text": "5 commit main branch'ine doğrudan merge edilir."},
+        {"index": 3, "text": "Komut hata verir; en az bir commit 'pick' olarak bırakılmalıdır."}
+      ],
+      "correct_index": 3,
+      "explanation": "Interactive rebase'de `squash`, ilgili commit'i bir önceki commit'e birleştirir; bu nedenle en üstteki commit mutlaka `pick` olarak kalmalıdır, aksi hâlde 'squash' etmek için üstüne alınacak bir commit kalmaz ve rebase hata verir. Doğru kullanım: ilk commit `pick`, kalanlar `squash`; sonuçta tek ve temiz bir commit oluşur."
+    },
+    {
+      "order_index": 12,
+      "is_active": true,
+      "text": "Bir geliştirici `git push --force` yerine `git push --force-with-lease` kullanıyor. Bu tercih neden daha güvenlidir?",
+      "options": [
+        {"index": 0, "text": "--force-with-lease daha hızlıdır çünkü delta sıkıştırma kullanır."},
+        {"index": 1, "text": "--force-with-lease yalnızca kendi bilgisayarında oluşturulan commit'leri zorla gönderir."},
+        {"index": 2, "text": "--force-with-lease, remote'da başkasının yeni commit'i olup olmadığını kontrol eder; varsa push'u reddeder."},
+        {"index": 3, "text": "--force-with-lease protected branch'leri atlamasına izin verir."}
+      ],
+      "correct_index": 2,
+      "explanation": "`--force-with-lease`, push etmeden önce remote'un beklediğiniz commit'te olup olmadığını doğrular; eğer başka biri o arada yeni commit eklemişse işlemi reddeder. Böylece başkasının commit'lerinin üstüne yazma riski ortadan kalkar. `--force` ise bu kontrolü yapmadan doğrudan üstüne yazar ve ekip geçmişine zarar verebilir."
+    },
+    {
+      "order_index": 13,
+      "is_active": true,
+      "text": "Bir ekip, 3 ay önce production'a çıkmış bir feature branch'ini `git rebase main` ile güncellemek istiyor. Bu karar neden risklidir?",
+      "options": [
+        {"index": 0, "text": "Rebase yalnızca local branch'lerde çalışır, remote branch'lerde komut hata verir."},
+        {"index": 1, "text": "Rebase, 3 ay önceki commit'lerin hash'lerini yeniden üretir; bu branch'i baz alan diğer geliştiricilerin geçmişi uyumsuz hale gelir."},
+        {"index": 2, "text": "3 aylık bir branch'te rebase yapmak dosya izinlerini bozar."},
+        {"index": 3, "text": "Rebase yalnızca son 30 güne ait commit'leri işleyebilir."}
+      ],
+      "correct_index": 1,
+      "explanation": "Git'in altın kuralı: paylaşılan (push edilmiş ve başkaları tarafından kullanılan) geçmişi asla rebase etme. Rebase her commit için yeni bir SHA-1 hash üretir; bu branch'i baz alan diğer geliştiricilerin yerel kopyaları artık uyumsuz commit'lere sahiptir ve ciddi conflict'lerle karşılaşırlar. Uzun ömürlü paylaşılan branch'ler için merge tercih edilmelidir."
+    },
+    {
+      "order_index": 14,
+      "is_active": true,
+      "text": "Bir geliştirici `.env` dosyasını yanlışlıkla commit edip GitHub'a push etti. `.gitignore`'a ekleyip yeni commit yaptı. Bu yeterli midir?",
+      "options": [
+        {"index": 0, "text": "Evet, .gitignore'a eklendikten sonra dosya Git tarafından tamamen yoksayılır ve geçmişten silinir."},
+        {"index": 1, "text": "Evet, push edilen commit üzerine yeni commit yapıldığında GitHub eski commit'i otomatik gizler."},
+        {"index": 2, "text": "Hayır; dosya hâlâ geçmişte mevcuttur, git rm --cached ile takipten çıkarılmalı ve hassas bilgiler değiştirilmelidir."},
+        {"index": 3, "text": "Hayır; ancak git reset --soft ile yeterli, şifrelerin değiştirilmesi gerekmez."}
+      ],
+      "correct_index": 2,
+      "explanation": ".gitignore yalnızca gelecekteki takibi durdurur; bir kez commit edilen dosya Git geçmişinde sonsuza dek kalır ve `git log` veya `git checkout <eski-hash>` ile erişilebilir. Doğru müdahale: `git rm --cached .env` ile dosya takipten çıkarılır, `git filter-branch` veya `git filter-repo` ile geçmişten temizlenir ve en önemlisi tüm sızdırılmış kimlik bilgileri (şifreler, API anahtarları) derhal değiştirilir."
+    },
+    {
+      "order_index": 15,
+      "is_active": true,
+      "text": "Conventional Commits standardına göre aşağıdaki mesajlardan hangisi 'kullanıcı kimlik doğrulama modülündeki kritik bir güvenlik açığını kapatan acil düzeltmeyi' en doğru şekilde tanımlar?",
+      "options": [
+        {"index": 0, "text": "update: security fix for auth"},
+        {"index": 1, "text": "hotfix: authentication bypass vulnerability patched"},
+        {"index": 2, "text": "fix(auth): kritik kimlik doğrulama bypass açığı kapatıldı"},
+        {"index": 3, "text": "feat(security): authentication module updated"}
+      ],
+      "correct_index": 2,
+      "explanation": "Conventional Commits formatı `<tip>(<kapsam>): <açıklama>` şeklindedir. `fix` tipi hata düzeltmelerini, `(auth)` ise değişikliğin kapsamını belirtir; açıklama neyin değiştiğini özetler. `feat` yeni özellik eklemek içindir, `hotfix` ve `update` standart tipler değildir. Tutarlı commit tipleri otomatik changelog üretimi ve semantik versiyonlamayı mümkün kılar."
+    }
+  ]
+}
