@@ -32,6 +32,18 @@ export interface UpcomingExam {
 
 export type CourseProgressTone = "emerald" | "blue" | "indigo";
 
+export interface CourseCardItem {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  completedLessons: number;
+  totalLessons: number;
+  level: string;
+  progressTone: CourseProgressTone;
+  icon: LucideIcon;
+}
+
 export interface DashboardSuggestion {
   title: string;
   level: string;
