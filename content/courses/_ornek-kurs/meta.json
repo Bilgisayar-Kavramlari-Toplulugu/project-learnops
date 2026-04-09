@@ -1,0 +1,9 @@
+{
+  "slug": "_ornek-kurs",
+  "title": "Örnek Kurs Şablonu",
+  "description": "Bu dizin içerik ekibi için referans şablondur. Yeni kurs açarken bu yapıyı kopyalayın.",
+  "category": "devops",
+  "difficulty": "beginner",
+  "duration_minutes": 30,
+  "is_published": false
+}
