@@ -2,13 +2,9 @@
   "slug": "git-versiyon-kontrolu",
   "title": "Git ve Versiyon Kontrolü",
   "description": "Git'in temel kavramlarından branch stratejilerine, remote depolardan GitHub Flow'a kadar versiyon kontrolünün eksiksiz temeli.",
-  "level": "beginner",
-  "order": 20,
+  "difficulty": "beginner",
   "is_published": false,
-  "cnt": "CNT-03",
-  "assignee": "P1",
-  "wave": 1,
-  "section_count": 8,
-  "question_count": 15,
-  "tags": ["git", "versiyon-kontrolü", "github", "terminal"]
+  "description": "Git'in temel kavramlarından branch stratejilerine, remote depolardan GitHub Flow'a kadar versiyon kontrolünün eksiksiz temeli.",
+  "category": "devops",
+  "duration_minutes": 90
 }
