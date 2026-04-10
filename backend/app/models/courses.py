@@ -53,17 +53,21 @@ class Course(BaseModel):
     )
     difficulty: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    display_order: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     display_order: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Relationships
-    sections: Mapped[list] = relationship(
-        "Section", back_populates="course", cascade="all, delete-orphan"
+    sections: Mapped[list["Section"]] = relationship(
+        "Section",
+        back_populates="course",
+        order_by="Section.order_index",
+        cascade="all, delete-orphan",
     )
     quiz: Mapped[Optional["Quiz"]] = relationship(
         "Quiz", back_populates="course", uselist=False, cascade="all, delete-orphan"
     )
-    enrollments: Mapped[list] = relationship(
+    enrollments: Mapped[list["Enrollment"]] = relationship(
         "Enrollment", back_populates="course", cascade="all, delete-orphan"
     )
 
