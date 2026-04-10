@@ -3,8 +3,30 @@
 import { Clock, Signal, Tag, CheckCircle2, ChevronLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { CourseDetail } from "@/types";
+import { useAuth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import { routes } from "@/lib/routes";
 
 export default function CourseDetailClient({ course }: { course: CourseDetail }) {
+  const { refreshSession } = useAuth();
+  const router = useRouter();
+
+  const ensureAuth = async () => {
+    try {
+      await refreshSession();
+      return true;
+    } catch {
+      router.replace(routes.login);
+      return false;
+    }
+  };
+
+  // TODO [Alper-Suleyman] Enrollement logic will be implemented here
+  const handleEnroll = async () => {
+    const isAuth = await ensureAuth();
+    if (!isAuth) return;
+  };
+
   const difficultyColors: Record<string, string> = {
     Beginner: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     Intermediate: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
@@ -14,7 +36,6 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
     difficultyColors[course.difficulty] ||
     "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
 
-  // Sort sections by order_index
   const sortedSections = [...(course.sections || [])].sort((a, b) => a.order_index - b.order_index);
 
   return (
@@ -29,7 +50,6 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="col-span-1 lg:col-span-2 space-y-8">
-          {/* Header section */}
           <div className="bg-white dark:bg-zinc-900/50 rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden backdrop-blur-xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
 
@@ -58,7 +78,6 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
             </p>
           </div>
 
-          {/* Sections List */}
           <div className="bg-white dark:bg-zinc-900/50 rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm backdrop-blur-xl">
             <div className="flex items-center gap-4 mb-8 pb-6 border-b border-zinc-100 dark:border-zinc-800">
               <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl shadow-inner">
@@ -108,7 +127,6 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
           </div>
         </div>
 
-        {/* Sidebar / Enrollment Sticky Card */}
         <div className="col-span-1 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 rounded-3xl p-6 lg:p-8 shadow-xl shadow-zinc-200/40 dark:shadow-none lg:sticky lg:top-24 h-fit backdrop-blur-xl">
           <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 mb-3">
             Kursa Katıl
@@ -117,7 +135,10 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
             Bu eğitime katılıp yeteneklerinizi hemen bir üst seviyeye taşıyın.
           </p>
 
-          <button className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg py-4 px-4 rounded-2xl transition-all shadow-xl shadow-indigo-600/20 hover:shadow-indigo-600/40 active:scale-[0.98]">
+          <button
+            onClick={handleEnroll}
+            className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg py-4 px-4 rounded-2xl transition-all shadow-xl shadow-indigo-600/20 hover:shadow-indigo-600/40 active:scale-[0.98]"
+          >
             <CheckCircle2 className="w-6 h-6" />
             Hemen Kaydol
           </button>
