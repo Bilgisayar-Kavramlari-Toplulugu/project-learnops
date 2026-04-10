@@ -1,6 +1,6 @@
 const course_list = [
   {
-    id: 1,
+    id: "1",
     slug: "aws-certified-solutions-architect",
     title: "AWS Certified Solutions Architect Associate",
     description:
@@ -12,7 +12,7 @@ const course_list = [
     created_at: "2026-03-15T10:30:00Z",
   },
   {
-    id: 2,
+    id: "2",
     slug: "docker-for-beginners",
     title: "Docker ile Konteyner Temelleri",
     description:
@@ -24,7 +24,7 @@ const course_list = [
     created_at: "2026-02-10T08:00:00Z",
   },
   {
-    id: 3,
+    id: "3",
     slug: "advanced-nodejs",
     title: "İleri Seviye Node.js",
     description:
@@ -36,7 +36,7 @@ const course_list = [
     created_at: "2026-01-25T14:45:00Z",
   },
   {
-    id: 4,
+    id: "4",
     slug: "react-with-nextjs-app-router",
     title: "React ve Next.js App Router",
     description:
@@ -48,7 +48,7 @@ const course_list = [
     created_at: "2026-03-28T12:15:00Z",
   },
   {
-    id: 5,
+    id: "5",
     slug: "postgresql-complete-guide",
     title: "PostgreSQL Uçtan Uca Rehber",
     description:
@@ -60,7 +60,7 @@ const course_list = [
     created_at: "2026-02-05T09:20:00Z",
   },
   {
-    id: 6,
+    id: "6",
     slug: "kubernetes-fundamentals",
     title: "Kubernetes Temelleri ve Uygulama Dağıtımı",
     description:

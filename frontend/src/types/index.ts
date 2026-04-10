@@ -53,7 +53,7 @@ export interface DashboardSuggestion {
 // ─── Course Listing Types ─────────────────────────────────────────────────────
 
 export interface Course {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   description: string;
@@ -65,8 +65,8 @@ export interface Course {
 }
 
 export interface CourseSection {
-  id: number; // or string based on uuid, but kept matching current
-  course_id: number;
+  id: string;
+  course_id: string;
   title: string;
   section_id_str: string;
   description: string | null;

@@ -1,8 +1,7 @@
 const section_list = [
-  // AWS Certified Solutions Architect Associate (Course ID: 1)
   {
-    id: 101,
-    course_id: 1,
+    id: "101",
+    course_id: "1",
     section_id_str: "aws-bulut-ve-global-infrastructure",
     title: "AWS Bulut Mantığı ve Global Infrastructure",
     order_index: 1,
@@ -13,8 +12,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 102,
-    course_id: 1,
+    id: "102",
+    course_id: "1",
     section_id_str: "iam-ve-erisim-yonetimi",
     title: "IAM ve Erişim Yönetimi",
     order_index: 2,
@@ -25,8 +24,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 103,
-    course_id: 1,
+    id: "103",
+    course_id: "1",
     section_id_str: "vpc-subnet-routing",
     title: "VPC, Subnet ve Routing Yapısı",
     order_index: 3,
@@ -37,8 +36,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 104,
-    course_id: 1,
+    id: "104",
+    course_id: "1",
     section_id_str: "ec2-elb-auto-scaling",
     title: "EC2, Load Balancer ve Auto Scaling",
     order_index: 4,
@@ -49,8 +48,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 105,
-    course_id: 1,
+    id: "105",
+    course_id: "1",
     section_id_str: "s3-rds-ve-storage-secimleri",
     title: "S3, RDS ve Doğru Storage Seçimleri",
     order_index: 5,
@@ -61,10 +60,10 @@ const section_list = [
     is_published: true,
   },
 
-  // Docker ile Konteyner Temelleri (Course ID: 2)
+  // Docker ile Konteyner Temelleri (Course ID: "2")
   {
-    id: 201,
-    course_id: 2,
+    id: "201",
+    course_id: "2",
     section_id_str: "konteyner-mantigi-ve-docker-giris",
     title: "Konteyner Mantığı ve Docker’a Giriş",
     order_index: 1,
@@ -75,8 +74,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 202,
-    course_id: 2,
+    id: "202",
+    course_id: "2",
     section_id_str: "docker-image-container-lifecycle",
     title: "Image ve Container Yaşam Döngüsü",
     order_index: 2,
@@ -86,8 +85,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 203,
-    course_id: 2,
+    id: "203",
+    course_id: "2",
     section_id_str: "dockerfile-yazimi-best-practice",
     title: "Dockerfile Yazımı ve Best Practice",
     order_index: 3,
@@ -98,8 +97,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 204,
-    course_id: 2,
+    id: "204",
+    course_id: "2",
     section_id_str: "volume-network-compose",
     title: "Volume, Network ve Docker Compose",
     order_index: 4,
@@ -110,10 +109,10 @@ const section_list = [
     is_published: true,
   },
 
-  // İleri Seviye Node.js (Course ID: 3)
+  // İleri Seviye Node.js (Course ID: "3")
   {
-    id: 301,
-    course_id: 3,
+    id: "301",
+    course_id: "3",
     section_id_str: "event-loop-ve-async-mimari",
     title: "Event Loop ve Async Mimari",
     order_index: 1,
@@ -124,8 +123,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 302,
-    course_id: 3,
+    id: "302",
+    course_id: "3",
     section_id_str: "stream-buffer-performans",
     title: "Stream, Buffer ve Performans",
     order_index: 2,
@@ -135,8 +134,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 303,
-    course_id: 3,
+    id: "303",
+    course_id: "3",
     section_id_str: "memory-management-ve-profiling",
     title: "Memory Management ve Profiling",
     order_index: 3,
@@ -147,8 +146,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 304,
-    course_id: 3,
+    id: "304",
+    course_id: "3",
     section_id_str: "production-nodejs-best-practice",
     title: "Production Node.js Best Practice",
     order_index: 4,
@@ -159,10 +158,10 @@ const section_list = [
     is_published: true,
   },
 
-  // React ve Next.js App Router (Course ID: 4)
+  // React ve Next.js App Router (Course ID: "4")
   {
-    id: 401,
-    course_id: 4,
+    id: "401",
+    course_id: "4",
     section_id_str: "app-router-mimarisine-giris",
     title: "App Router Mimarisine Giriş",
     order_index: 1,
@@ -173,8 +172,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 402,
-    course_id: 4,
+    id: "402",
+    course_id: "4",
     section_id_str: "server-ve-client-component-farklari",
     title: "Server Component ve Client Component Farkları",
     order_index: 2,
@@ -185,8 +184,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 403,
-    course_id: 4,
+    id: "403",
+    course_id: "4",
     section_id_str: "fetch-cache-ve-revalidation",
     title: "Fetch, Cache ve Revalidation",
     order_index: 3,
@@ -197,8 +196,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 404,
-    course_id: 4,
+    id: "404",
+    course_id: "4",
     section_id_str: "deployment-ve-production-notlari",
     title: "Deployment ve Production Notları",
     order_index: 4,
@@ -208,10 +207,10 @@ const section_list = [
     is_published: true,
   },
 
-  // PostgreSQL Uçtan Uca Rehber (Course ID: 5)
+  // PostgreSQL Uçtan Uca Rehber (Course ID: "5")
   {
-    id: 501,
-    course_id: 5,
+    id: "501",
+    course_id: "5",
     section_id_str: "postgresql-temelleri-ve-veri-modelleri",
     title: "PostgreSQL Temelleri ve Veri Modelleri",
     order_index: 1,
@@ -222,8 +221,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 502,
-    course_id: 5,
+    id: "502",
+    course_id: "5",
     section_id_str: "index-stratejileri",
     title: "Index Stratejileri",
     order_index: 2,
@@ -233,8 +232,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 503,
-    course_id: 5,
+    id: "503",
+    course_id: "5",
     section_id_str: "query-plan-ve-optimizasyon",
     title: "Query Plan Analizi ve Optimizasyon",
     order_index: 3,
@@ -244,8 +243,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 504,
-    course_id: 5,
+    id: "504",
+    course_id: "5",
     section_id_str: "transaction-locking-ve-concurrency",
     title: "Transaction, Locking ve Concurrency",
     order_index: 4,
@@ -255,10 +254,10 @@ const section_list = [
     is_published: true,
   },
 
-  // Kubernetes Temelleri ve Uygulama Dağıtımı (Course ID: 6)
+  // Kubernetes Temelleri ve Uygulama Dağıtımı (Course ID: "6")
   {
-    id: 601,
-    course_id: 6,
+    id: "601",
+    course_id: "6",
     section_id_str: "kubernetes-temel-kavramlar",
     title: "Kubernetes Temel Kavramlar",
     order_index: 1,
@@ -269,8 +268,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 602,
-    course_id: 6,
+    id: "602",
+    course_id: "6",
     section_id_str: "pod-deployment-replicaset",
     title: "Pod, Deployment ve ReplicaSet",
     order_index: 2,
@@ -281,8 +280,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 603,
-    course_id: 6,
+    id: "603",
+    course_id: "6",
     section_id_str: "service-configmap-secret",
     title: "Service, ConfigMap ve Secret",
     order_index: 3,
@@ -293,8 +292,8 @@ const section_list = [
     is_published: true,
   },
   {
-    id: 604,
-    course_id: 6,
+    id: "604",
+    course_id: "6",
     section_id_str: "ingress-scaling-ve-rollout",
     title: "Ingress, Scaling ve Rollout Süreçleri",
     order_index: 4,
