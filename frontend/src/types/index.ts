@@ -48,8 +48,4 @@ export interface DashboardSuggestion {
   title: string;
   level: string;
   icon: LucideIcon;
-<<<<<<< Updated upstream
 }
-=======
-}
->>>>>>> Stashed changes
