@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import jwt
 import pytest
-from jose import JWTError, jwt
+from jwt.exceptions import PyJWTError as JWTError
 
 from app.config import settings
 from app.services.jwt_service import (
