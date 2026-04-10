@@ -35,6 +35,7 @@ RECIPIENTS=(
     ismailaricioglu
     replakcan
     svenes25
+    anenthusiastic
 )
 # ─────────────────────────────────────────────────────────────────────────────
 
