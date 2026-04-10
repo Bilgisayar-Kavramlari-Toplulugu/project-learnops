@@ -1,16 +1,10 @@
 "use client";
 
 import { Course } from "@/types";
-import { useRouter } from "next/navigation";
 import { Clock, Signal, Tag, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function CourseItem({ course }: { course: Course }) {
-  const router = useRouter();
-
-  const handleClick = () => {
-    router.push(`/courses/${course.slug}`);
-  };
-
   const difficultyColors: Record<string, string> = {
     Beginner: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
     Intermediate: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
@@ -21,8 +15,8 @@ export default function CourseItem({ course }: { course: Course }) {
     "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
 
   return (
-    <div
-      onClick={handleClick}
+    <Link
+      href={`/courses/${course.slug}`}
       className="group relative flex flex-col justify-between p-6 rounded-3xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-sm"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -58,6 +52,6 @@ export default function CourseItem({ course }: { course: Course }) {
           <ArrowRight className="w-4 h-4" />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
