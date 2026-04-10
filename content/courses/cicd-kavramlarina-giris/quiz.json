@@ -1,0 +1,373 @@
+{
+  "_note": "CI/CD Kavramlarına Giriş Quiz.",
+  "course_slug": "cicd-kavramlarına-giriş",
+  "pass_threshold": 0.70,
+  "duration_seconds": 1500,
+  "questions": [
+    {
+      "order_index": 1,
+      "is_active": true,
+      "text": "Bir yazılım ekibi, kodlarını günde birkaç kez ana dallarıyla birleştiriyor ve her birleşmede otomatik testler çalışıyor. Bu süreç CI/CD'nin hangi bacağını temsil eder?",
+      "options": [
+        { "index": 0, "text": "Continuous Integration (Sürekli Entegrasyon)" },
+        { "index": 1, "text": "Continuous Delivery (Sürekli Teslimat)" },
+        { "index": 2, "text": "Continuous Deployment (Sürekli Dağıtım)" },
+        { "index": 3, "text": "Manual Code Review" }
+      ],
+      "correct_index": 0,
+      "explanation": "Kodun sık sık merkezi bir depoda birleştirilmesi ve her seferinde test edilmesi Sürekli Entegrasyon'un temelidir. Bu sayede çakışmalar ve hatalar erkenden tespit edilir."
+    },
+    {
+      "order_index": 2,
+      "is_active": true,
+      "text": "Continuous Delivery ve Continuous Deployment arasındaki temel fark nedir?",
+      "options": [
+        { "index": 0, "text": "Delivery'de testler manueldir, Deployment'ta otomatiktir." },
+        { "index": 1, "text": "Delivery'de canlıya çıkış için manuel bir onay gerekir, Deployment'ta süreç tamamen otomatiktir." },
+        { "index": 2, "text": "Deployment sadece mobil uygulamalar için kullanılır." },
+        { "index": 3, "text": "Aralarında teknik bir fark yoktur, sadece isimlendirme farklıdır." }
+      ],
+      "correct_index": 1,
+      "explanation": "Sürekli Teslimat'ta (Delivery) kod her an yayınlanmaya hazır tutulur ancak son adım bir insan onayına tabidir. Sürekli Dağıtım'da (Deployment) ise testleri geçen kod otomatik olarak son kullanıcıya ulaşır."
+    },
+    {
+      "order_index": 3,
+      "is_active": true,
+      "text": "Eski usul 'Dağıtım Geceleri' yerine CI/CD kullanılmasının sağladığı en büyük operasyonel avantaj hangisidir?",
+      "options": [
+        { "index": 0, "text": "Yazılımcıların daha fazla kod yazmasını sağlaması." },
+        { "index": 1, "text": "Hataların canlı ortamda daha geç fark edilmesini sağlaması." },
+        { "index": 2, "text": "Sürümlerin daha küçük parçalarla, daha hızlı ve düşük riskle yayınlanabilmesi." },
+        { "index": 3, "text": "Sunucu maliyetlerini %100 oranında sıfırlaması." }
+      ],
+      "correct_index": 2,
+      "explanation": "CI/CD sayesinde büyük paketler yerine küçük ve doğrulanmış değişiklikler canlıya alınır. Bu da hata riskini azaltır ve bir sorun oluştuğunda geri dönüşü (rollback) kolaylaştırır."
+    },
+    {
+      "order_index": 4,
+      "is_active": true,
+      "text": "CI/CD mutfak analojisine göre, 'yemeğin tuzunun fazla kaçtığının yemek masaya gitmeden fark edilmesi' hangi kavramı karşılar?",
+      "options": [
+        { "index": 0, "text": "Yemeğin (kodun) müşteriye sunulması." },
+        { "index": 1, "text": "Mutfaktaki şeflerin sayısının artırılması." },
+        { "index": 2, "text": "Adisyon fişinin kesilmesi." },
+        { "index": 3, "text": "Hataların otomatik testlerle CI aşamasında yakalanması." }
+        
+    ],
+      "correct_index": 3,
+      "explanation": "CI süreci, kod henüz geliştirme aşamasındayken testleri çalıştırarak hatayı bulur. Bu sayede hatalı ürünün (yemeğin) kullanıcıya (masaya) ulaşması engellenir."
+    },
+    {
+      "order_index": 5,
+      "is_active": true,
+      "text": "Bir Pipeline yapısında 'Test' işi başarısız olursa, bir sonraki adım olan 'Deploy' işinin durumu ne olur?",
+      "options": [
+        { "index": 0, "text": "Sistem hatayı görmezden gelir ve yayına devam eder." },
+        { "index": 1, "text": "Pipeline durdurulur ve Deploy adımı gerçekleştirilmez." },
+        { "index": 2, "text": "Deploy adımı çalışır ama kullanıcıya uyarı mesajı gider." },
+        { "index": 3, "text": "Sistem otomatik olarak tüm kodları siler." }
+      ],
+      "correct_index": 1,
+      "explanation": "Pipeline'lar bağımlılık (dependency) mantığıyla çalışır. 'Fail-Fast' prensibi gereği bir önceki iş başarısız olursa, bozuk kodu yayına almamak için süreç kesilir."
+    },
+    {
+      "order_index": 6,
+      "is_active": true,
+      "text": "CI/CD komutlarının üzerinde fiilen çalıştırıldığı sanal makine veya konteynır yapısına ne ad verilir?",
+      "options": [
+        { "index": 0, "text": "Artifact" },
+        { "index": 1, "text": "Runner (Yürütücü)" },
+        { "index": 2, "text": "Pipeline" },
+        { "index": 3, "text": "Trigger" }
+      ],
+      "correct_index": 1,
+      "explanation": "Runner, kodun derlendiği, test edildiği ve paketlendiği fiziksel veya sanal motor/sunucudur. GitHub Actions'ta bu görevleri 'Ubuntu-latest' gibi runner'lar üstlenir."
+    },
+    {
+      "order_index": 7,
+      "is_active": true,
+      "text": "Bir Job (İş) içerisindeki 'npm install' veya 'flutter test' gibi en küçük, tekil komut birimine ne denir?",
+      "options": [
+        { "index": 0, "text": "Workflow" },
+        { "index": 1, "text": "Job" },
+        { "index": 2, "text": "Step (Adım)" },
+        { "index": 3, "text": "Artifact" }
+      ],
+      "correct_index": 2,
+      "explanation": "Step'ler bir Job'ın içindeki atomik birimlerdir. Bir Job, bir veya birden fazla Step'in sırayla çalışmasıyla tamamlanır."
+    },
+    {
+      "order_index": 8,
+      "is_active": true,
+      "text": "Build aşamasında üretilen ve Deploy aşamasında kullanılacak olan derlenmiş .apk veya Docker imajına ne ad verilir?",
+      "options": [
+        { "index": 0, "text": "Artifact" },
+        { "index": 1, "text": "Pipeline" },
+        { "index": 2, "text": "YAML" },
+        { "index": 3, "text": "Repository" }
+      ],
+      "correct_index": 0,
+      "explanation": "Artifact, bir pipeline aşamasının çıktısı olan ve genellikle bir sonraki aşamada girdi olarak kullanılan değerli veri paketidir. Örneğin derlenmiş kod veya paketlenmiş uygulamalar birer artifact'tir."
+    },
+    {
+      "order_index": 9,
+      "is_active": true,
+      "text": "GitHub Actions workflow dosyaları projenin hangi dizininde bulunmak zorundadır?",
+      "options": [
+        { "index": 0, "text": ".github/workflows/" },
+        { "index": 1, "text": "actions/yml/" },
+        { "index": 2, "text": "src/main/resources/" },
+        { "index": 3, "text": ".config/github/" }
+      ],
+      "correct_index": 0,
+      "explanation": "GitHub, otomasyon dosyalarını tanımak için standart bir yol izler. Tüm YAML iş akışları kök dizindeki .github/workflows/ klasörü altında olmalıdır."
+    },
+    {
+      "order_index": 10,
+      "is_active": true,
+      "text": "Bir YAML dosyasında 'uses: actions/checkout@v4' ifadesi ne anlama gelir?",
+      "options": [
+        { "index": 0, "text": "Kullanıcının projeden çıkış yapmasını sağlar." },
+        { "index": 1, "text": "Daha önceden yazılmış, hazır bir aksiyonu (kodları runner'a çekme) çağırır." },
+        { "index": 2, "text": "Kodu sunucudan kalıcı olarak siler." },
+        { "index": 3, "text": "Yeni bir GitHub hesabı oluşturur." }
+      ],
+      "correct_index": 1,
+      "explanation": "'uses' anahtar kelimesi, topluluk veya GitHub tarafından hazırlanan şablonları kullanmamızı sağlar. 'checkout' aksiyonu, runner'ın projedeki kodlara erişebilmesi için kodları klonlar."
+    },
+    {
+      "order_index": 11,
+      "is_active": true,
+      "text": "YAML formatında girintileme (indentation) ile ilgili hangisi doğrudur?",
+      "options": [
+        { "index": 0, "text": "Girintileme sadece görsellik içindir, kodun çalışmasını etkilemez." },
+        { "index": 1, "text": "Sadece Tab tuşu kullanılmalıdır, boşluk kabul edilmez." },
+        { "index": 2, "text": "Hiyerarşiyi belirler ve genellikle 2 boşluk kullanılır; yanlış girinti hata sebebidir." },
+        { "index": 3, "text": "Hiyerarşi için parantez kullanıldığı için girintiye gerek yoktur." }
+      ],
+      "correct_index": 2,
+      "explanation": "YAML 'space-sensitive' bir formattır. Doğru hiyerarşi kurmak için boşluklarla yapılan girintileme hayati önem taşır; aksi takdirde workflow dosyası parse edilemez."
+    },
+    {
+      "order_index": 12,
+      "is_active": true,
+      "text": "Bir job altında 'runs-on: windows-latest' tanımlanmışsa bu neyi ifade eder?",
+      "options": [
+        { "index": 0, "text": "Yazılımcının Windows kullandığını." },
+        { "index": 1, "text": "İş akışının Windows tabanlı bir sanal makinede (Runner) koşacağını." },
+        { "index": 2, "text": "Kodun sadece Windows bilgisayarlarda çalışabileceğini." },
+        { "index": 3, "text": "Windows lisansının satın alınması gerektiğini." }
+      ],
+      "correct_index": 1,
+      "explanation": "'runs-on' parametresi, o işin (job) hangi işletim sistemi üzerinde yürütüleceğini belirler. Windows-specific bir derleme yapılacaksa bu runner seçilir."
+    },
+    {
+      "order_index": 13,
+      "is_active": true,
+      "text": "Geliştirici ekibi, ana projeye (main) gönderilen her pull request'te testlerin çalışmasını istiyor. Hangi tetikleyici kullanılmalıdır?",
+      "options": [
+        { "index": 0, "text": "on: push" },
+        { "index": 1, "text": "on: schedule" },
+        { "index": 2, "text": "on: create" },
+        { "index": 3, "text": "on: pull_request" } 
+    ],
+      "correct_index": 3,
+      "explanation": "'pull_request' tetikleyicisi, bir dalın başka bir dulla birleştirilme isteği açıldığında devreye girer. Bu, kod inceleme sürecinde otomatik kontroller için idealdir."
+    },
+    {
+      "order_index": 14,
+      "is_active": true,
+      "text": "Bir IoT projesinde her gece saat 03:00'te veri tabanı yedeği alınmak isteniyor. Bu durum için hangi yapı uygundur?",
+      "options": [
+        { "index": 0, "text": "on: push (belirli saat kuralı ile)" },
+        { "index": 1, "text": "on: pull_request" },
+        { "index": 2, "text": "on: schedule (cron syntax ile)" },
+        { "index": 3, "text": "on: watch" }
+      ],
+      "correct_index": 2,
+      "explanation": "Zamana bağlı işlemler 'schedule' tetikleyicisi ve Cron ifadesi ile yönetilir. Bu sayede insan müdahalesi olmadan periyodik görevler otomatize edilir."
+    },
+    {
+      "order_index": 15,
+      "is_active": true,
+      "text": "Cron ifadesi olan '0 0 * * *' ne zaman bir tetikleme yapar?",
+      "options": [
+        { "index": 0, "text": "Her gün gece yarısı (00:00)." },
+        { "index": 1, "text": "Her saat başında." },
+        { "index": 2, "text": "Sadece Pazartesi günleri." },
+        { "index": 3, "text": "Yılda bir kez." }
+      ],
+      "correct_index": 0,
+      "explanation": "Cron diziliminde ilk iki sıfır dakikayı ve saati temsil eder. '0 0' ifadesi günün başlangıcı olan gece yarısını işaret eder."
+    },
+    {
+      "order_index": 16,
+      "is_active": true,
+      "text": "Sadece dökümantasyon (docs/ klasörü) değiştiğinde testlerin çalışmasını ENGELLemek için hangi filtre kullanılır?",
+      "options": [
+        { "index": 0, "text": "branches-ignore" },
+        { "index": 1, "text": "paths-ignore" },
+        { "index": 2, "text": "on: manual" },
+        { "index": 3, "text": "types: [deleted]" }
+      ],
+      "correct_index": 1,
+      "explanation": "'paths-ignore' filtresi, belirli dosya veya klasörlerdeki değişikliklerin workflow'u tetiklemesini önler. Bu, gereksiz runner kullanımını ve zaman kaybını engeller."
+    },
+    {
+      "order_index": 17,
+      "is_active": true,
+      "text": "Test piramidine göre, bir projenin en büyük kısmını (tabanını) hangi testler oluşturmalıdır?",
+      "options": [
+        { "index": 0, "text": "Uçtan Uca Testler (E2E Tests)" },
+        { "index": 1, "text": "Manuel Testler" },
+        { "index": 2, "text": "Birim Testleri (Unit Tests)" },
+        { "index": 3, "text": "Entegrasyon Testleri" }
+      ],
+      "correct_index": 2,
+      "explanation": "Birim testleri hızlıdır, ucuzdur ve kodun en küçük parçalarını doğrular. Sağlıklı bir projede binlerce birim testi bulunurken, yavaş olan E2E testleri daha az sayıdadır."
+    },
+    {
+      "order_index": 18,
+      "is_active": true,
+      "text": "Pipeline'da birim testleri (unit tests) başarısız olduğunda sürecin durması hangi prensibi açıklar?",
+      "options": [
+        { "index": 0, "text": "Continuous Feedback" },
+        { "index": 1, "text": "Fail-Fast (Hızlı Hata)" },
+        { "index": 2, "text": "Slow Build" },
+        { "index": 3, "text": "Manual Gate" }
+      ],
+      "correct_index": 1,
+      "explanation": "Fail-Fast prensibi, hatanın en erken aşamada tespit edilip sürecin kesilmesidir. Böylece bozuk bir kodun derlenmesi veya yayına alınması gibi daha uzun sürecek ve maliyetli işlemler engellenmiş olur."
+    },
+    {
+      "order_index": 19,
+      "is_active": true,
+      "text": "Farklı servislerin (örn: Veri tabanı ve API) birbiriyle uyumlu çalışıp çalışmadığını denetleyen test türü hangisidir?",
+      "options": [
+        { "index": 0, "text": "Unit Test" },
+        { "index": 1, "text": "CSS Linting" },
+        { "index": 2, "text": "Manual Testing" },
+        { "index": 3, "text": "Integration Test (Entegrasyon Testi)" }
+    ],
+      "correct_index": 3,
+      "explanation": "Entegrasyon testleri, birimlerin (unit) bir araya geldiğinde doğru sonuç verip vermediğini denetler. Servisler arası iletişimin doğruluğunu bu aşamada ölçeriz."
+    },
+    {
+      "order_index": 20,
+      "is_active": true,
+      "text": "Bir CI/CD pipeline'ında test aşaması genellikle hangi iki adımın arasında yer alır?",
+      "options": [
+        { "index": 0, "text": "Deploy ve Rollback" },
+        { "index": 1, "text": "Bağımlılıkların yüklenmesi ve Build (Derleme)" },
+        { "index": 2, "text": "Repo silme ve Repo oluşturma" },
+        { "index": 3, "text": "Planlama ve Kod yazımı" }
+      ],
+      "correct_index": 1,
+      "explanation": "Testler, kodun çalışması için gereken kütüphaneler yüklendikten hemen sonra ve zaman alan derleme (build) işleminden önce yapılmalıdır. Böylece hatalı kod derlenmek için vakit kaybettirmez."
+    },
+    {
+      "order_index": 21,
+      "is_active": true,
+      "text": "Veri tabanı şifresini GitHub'daki YAML dosyasının içine doğrudan yazmak neden risklidir?",
+      "options": [
+        { "index": 0, "text": "Projeye erişimi olan herkesin bu hassas şifreyi açık bir şekilde görebilmesine neden olur." },
+        { "index": 1, "text": "Kodun çalışmasını yavaşlatır." },
+        { "index": 2, "text": "Sadece Windows sunucularda hata verir." },
+        { "index": 3, "text": "YAML dosyası çok büyük hale gelir." }
+      ],
+      "correct_index": 0,
+      "explanation": "Hassas verilerin kodun içine gömülmesine 'hardcoding' denir ve büyük bir güvenlik açığıdır. Bu veriler 'Secrets' bölümünde saklanmalı ve şifrelenmelidir."
+    },
+    {
+      "order_index": 22,
+      "is_active": true,
+      "text": "GitHub Actions'ta kaydedilen bir Secret (Sır) ile ilgili hangisi doğrudur?",
+      "options": [
+        { "index": 0, "text": "Yöneticiler tarafından her zaman okunabilir." },
+        { "index": 1, "text": "Kaydedildikten sonra kimse tarafından (yazılımcı dahil) tekrar görüntülenemez, sadece silinebilir veya güncellenebilir." },
+        { "index": 2, "text": "E-posta ile herkese gönderilir." },
+        { "index": 3, "text": "Sadece .txt dosyalarında saklanabilir." }
+      ],
+      "correct_index": 1,
+      "explanation": "GitHub Secrets tek yönlü bir güvenlik sağlar. Bir kez kaydedildikten sonra arayüz üzerinden değeri tekrar görmek imkansızdır; bu da sızmaları engeller."
+    },
+    {
+      "order_index": 23,
+      "is_active": true,
+      "text": "Pipeline loglarında bir Secret'ın yanlışlıkla ekrana yazdırılması durumunda GitHub'ın uyguladığı koruma nedir?",
+      "options": [
+        { "index": 0, "text": "Hesabı kalıcı olarak kapatır." },
+        { "index": 1, "text": "Logları tamamen siler." },
+        { "index": 2, "text": "Hiçbir şey yapmaz, sorumluluk kullanıcıdadır." },
+        { "index": 3, "text": "Maskeleme (Masking): Değeri otomatik olarak algılar ve '***' şeklinde gizler." }
+    ],
+      "correct_index": 3,
+      "explanation": "GitHub, loglarda tanımlı secret değerlerini yakalarsa onları maskeler. Bu sayede hata ayıklama sırasında yanlışlıkla ekrana basılan şifreler korunmuş olur."
+    },
+    {
+      "order_index": 24,
+      "is_active": true,
+      "text": "YAML dosyasında bir secret'a erişmek için kullanılan doğru sözdizimi hangisidir?",
+      "options": [
+        { "index": 0, "text": "get_secret('API_KEY')" },
+        { "index": 1, "text": "${{ secrets.API_KEY }}" },
+        { "index": 2, "text": "$API_KEY" },
+        { "index": 3, "text": "read from vault: API_KEY" }
+      ],
+      "correct_index": 1,
+      "explanation": "GitHub Actions'ta bağlamsal verilere erişmek için '${{ }}' yapısı kullanılır. Secrets objesi üzerinden tanımlı anahtara ulaşılır."
+    },
+    {
+      "order_index": 25,
+      "is_active": true,
+      "text": "Mevcut sistemi kapatmadan (Blue), yeni sistemi yan tarafta kurup (Green) trafiği bir anda ona yönlendiren strateji hangisidir?",
+      "options": [
+        { "index": 0, "text": "Rolling Deployment" },
+        { "index": 1, "text": "Blue/Green Deployment" },
+        { "index": 2, "text": "Canary Deployment" },
+        { "index": 3, "text": "Manual Deployment" }
+      ],
+      "correct_index": 1,
+      "explanation": "Blue/Green stratejisi, iki özdeş ortam kullanarak riskleri sıfıra indirir. Bir sorun olduğunda trafik saniyeler içinde eski ortama (Blue) geri çekilebilir."
+    },
+    {
+      "order_index": 26,
+      "is_active": true,
+      "text": "Yeni bir sürümü tüm kullanıcılara değil, önce sadece %5'lik bir gruba açıp izlemeye dayalı strateji hangisidir?",
+      "options": [
+        { "index": 0, "text": "Rolling Deployment" },
+        { "index": 1, "text": "Blue/Green Deployment" },
+        { "index": 2, "text": "Canary Deployment" },
+        { "index": 3, "text": "All-at-once Deployment" }
+      ],
+      "correct_index": 2,
+      "explanation": "Canary (Kanarya) dağıtımı, büyük hataların tüm kullanıcıları etkilemesini önlemek için kademeli bir yayılım izler. Önce 'kanarya' grup (küçük kitle) üzerinde test edilir."
+    },
+    {
+      "order_index": 27,
+      "is_active": true,
+      "text": "Rolling Deployment (Kademeli Dağıtım) stratejisinin temel özelliği nedir?",
+      "options": [
+        { "index": 0, "text": "Sunucuları tek tek veya küçük gruplar halinde sırayla günceller." },
+        { "index": 1, "text": "Tüm sunucuları aynı anda kapatıp günceller." },
+        { "index": 2, "text": "Sadece hafta sonları çalışır." },
+        { "index": 3, "text": "Yeni sürümü sadece yöneticilere açar." }
+      ],
+      "correct_index": 0,
+      "explanation": "Rolling deployment, sunucu grubunu parça parça güncelleyerek sistemin genelinin her zaman ayakta kalmasını (Zero Downtime) sağlar."
+    },
+    {
+      "order_index": 28,
+      "is_active": true,
+      "text": "Deployment stratejileri arasında en yüksek maliyetli (çünkü iki katı sunucu kaynağı gerektirir) olan hangisidir?",
+      "options": [
+        { "index": 0, "text": "Rolling Deployment" },
+        { "index": 1, "text": "Blue/Green Deployment" },
+        { "index": 2, "text": "Canary Deployment" },
+        { "index": 3, "text": "Recreate Deployment" }
+      ],
+      "correct_index": 1,
+      "explanation": "Blue/Green stratejisi, iki tam sürümün aynı anda farklı sunucu gruplarında çalışmasını gerektirdiği için altyapı maliyetini ikiye katlar."
+    }
+  ]
+}
