@@ -1,0 +1,60 @@
+---
+id: "linux-001-nedir"
+title: "Linux Nedir ve Neden Önemlidir?"
+order: 10
+order_index: 10
+---
+
+# Linux Nedir ve Neden Önemlidir?
+
+Linux, dünyadaki sunucuların, süper bilgisayarların ve bulut altyapısının büyük çoğunluğuna güç veren açık kaynaklı işletim sistemi çekirdeğidir (Kernel). Bir DevOps mühendisi için Linux sadece bir işletim sistemi değil; otomasyon, konteynerizasyon ve orkestrasyon için evrensel bir çalışma ortamıdır.
+
+## DevOps İçin Neden Önemli?
+
+Linux'u öğrenmek bir DevOps mühendisi için zorunluluktur çünkü modern altyapının neredeyse tamamı Linux üzerine kuruludur:
+
+- **Infrastructure as Code (IaC):** Terraform ve Ansible gibi araçlar ile CI/CD süreçleri genellikle Linux ajanları üzerinde çalışır.
+- **Konteynerizasyon:** Docker ve Kubernetes, Linux'a özgüdür. Cgroups ve namespace mantığını anlamak, konteynerleri hata ayıklamak (debug) için şarttır.
+- **Sunucu Kararlılığı:** Üstün çalışma süresi (uptime) ve güvenli kaynak yönetimi sunar.
+- **Bulut Hakimiyeti:** AWS, Azure ve GCP ortamları ağırlıklı olarak Linux tabanlıdır.
+
+## Temel Mimari
+
+Linux mimarisi iki ana bölüme ayrılır:
+
+**Kernel (Çekirdek):** Donanım ve yazılım arasındaki temel arayüzdür. CPU, bellek ve aygıtları yönetir.
+- **Kernel Space:** Temel işletim sistemi fonksiyonlarının tam yetkiyle çalıştığı yerdir.
+
+**User Space:** Uygulamaların ve kullanıcı süreçlerinin çalıştığı güvenli alandır. Uygulamalar burada sınırlandırılmış yetkilerle çalışır.
+
+## Shell (Kabuk) Kavramı
+
+Shell, kullanıcı komutlarını yorumlayan komut satırı arayüzüdür (CLI). En yaygın shell türleri şunlardır:
+
+- **Bash (Bourne Again SHell):** Çoğu Linux dağıtımı için standarttır.
+- **Zsh:** Etkileşimli kullanım için popülerdir (macOS varsayılanı).
+
+Her shell üç standart akış (Standard Stream) üzerinden çalışır:
+
+| Numara | İsim   | Açıklama           |
+|--------|--------|--------------------|
+| 0      | Stdin  | Standart giriş     |
+| 1      | Stdout | Standart çıkış     |
+| 2      | Stderr | Standart hata çıkışı |
+
+## En İyi Uygulamalar
+
+- **En Az Yetki (Least Privilege):** Uygulamaları asla `root` olarak çalıştırmayın.
+- **Her Şeyi Scriptleyin:** Bir komutu birden fazla kez kullanacaksanız script yazın.
+- **SSH Anahtarları:** Şifre ile girişi kapatın ve anahtar tabanlı erişim kullanın.
+- **Değişmez Altyapı:** Canlı sunucuları yamalamak yerine yeni imajlarla değiştirin.
+
+> 💡 **İpucu:** Linux'ta "her şey bir dosyadır" felsefesi temeldir. Donanımlar, süreçler ve konfigürasyonlar dahil her şey dosya sistemi üzerinden yönetilir.
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- Linux'un DevOps ekosistemindeki kritik rolünü
+- Kernel Space ile User Space arasındaki farkı
+- Shell kavramını ve standart akışları
+- Güvenli Linux kullanımı için temel prensipleri
