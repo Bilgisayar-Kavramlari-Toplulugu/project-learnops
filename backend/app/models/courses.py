@@ -55,7 +55,6 @@ class Course(BaseModel):
     duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     display_order: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    display_order: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Relationships
     sections: Mapped[list["Section"]] = relationship(
