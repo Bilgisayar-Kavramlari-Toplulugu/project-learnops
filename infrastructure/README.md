@@ -156,9 +156,22 @@ terraform destroy
 - **Automatic**: Push to `release` branch
 - **Manual**: GitHub Actions → Run workflow
 
-## 📊 Monitoring
+## 📊 Monitoring & Alerting
+
+Staging monitoring is managed via Terraform (`staging/monitoring.tf`):
+
+| Resource | Purpose |
+|---|---|
+| Uptime Check (Frontend) | HTTPS probe every 5 min → `frontend_domain` |
+| Uptime Check (Backend) | HTTPS probe every 5 min → `/v1/health` |
+| Alert: Uptime < 99% | Email notification when uptime drops |
+| Alert: Error Rate > 1% | Email notification on backend 5xx spike |
+| Dashboard | Request count, latency (p50/p99), error rate, instance count |
 
 View resources in GCP Console:
+- [Cloud Monitoring Dashboard](https://console.cloud.google.com/monitoring/dashboards)
+- [Uptime Checks](https://console.cloud.google.com/monitoring/uptime)
+- [Alerting Policies](https://console.cloud.google.com/monitoring/alerting)
 - [Cloud Run](https://console.cloud.google.com/run)
 - [Cloud SQL](https://console.cloud.google.com/sql)
 - [VPC Networks](https://console.cloud.google.com/networking/)
@@ -268,7 +281,7 @@ terraform apply
 - [ ] Add production environment
 - [ ] Implement remote state in GCS
 - [ ] Add Terraform modules
-- [ ] Set up Cloud Monitoring alerts
+- [x] Set up Cloud Monitoring alerts
 - [ ] Implement automatic backups
 - [ ] Add custom domain configuration
 - [ ] Implement blue-green deployments
