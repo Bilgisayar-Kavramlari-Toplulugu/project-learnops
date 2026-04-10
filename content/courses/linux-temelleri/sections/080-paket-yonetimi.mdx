@@ -1,0 +1,115 @@
+---
+id: "linux-008-paket"
+title: "Paket Yönetimi: apt, yum, dnf"
+order: 80
+order_index: 80
+---
+
+# Paket Yönetimi: apt, yum, dnf
+
+Linux dünyasında yazılım kurmak, kaldırmak ve güncellemek için paket yöneticileri kullanılır. Hangi yöneticiyi kullanacağınız, çalıştığınız Linux dağıtımına bağlıdır.
+
+## Dağıtım Aileleri ve Paket Yöneticileri
+
+| Dağıtım Ailesi | Paket Yöneticisi | Yaygın Dağıtımlar                  |
+|----------------|------------------|------------------------------------|
+| Debian         | `apt`            | Ubuntu, Debian, Kali               |
+| RHEL           | `dnf` / `yum`   | RHEL, CentOS, Rocky Linux, Fedora  |
+| Alpine         | `apk`            | Alpine Linux (konteynerlar için)   |
+
+## Temel Komut Karşılaştırması
+
+### Paket Listesini Güncelleme
+
+```bash
+# Debian/Ubuntu
+sudo apt update
+
+# RHEL/CentOS/Fedora
+sudo dnf check-update
+
+# Alpine
+apk update
+```
+
+### Paket Yükleme
+
+```bash
+# Debian/Ubuntu
+sudo apt install nginx
+
+# RHEL/CentOS/Fedora
+sudo dnf install nginx
+
+# Alpine
+apk add nginx
+```
+
+### Paket Kaldırma
+
+```bash
+# Debian/Ubuntu
+sudo apt remove nginx
+
+# RHEL/CentOS/Fedora
+sudo dnf remove nginx
+
+# Alpine
+apk del nginx
+```
+
+### Sistem Güncellemesi
+
+```bash
+# Debian/Ubuntu — tüm paketleri güncelle
+sudo apt update && sudo apt upgrade -y
+
+# RHEL/CentOS/Fedora
+sudo dnf upgrade -y
+```
+
+## DevOps'ta Paket Yönetimi
+
+Konteyner dünyasında paket yöneticileri sık kullanılır. Alpine Linux, inanılmaz hafif yapısı (~5MB) ve güvenliği nedeniyle Docker imajlarında standart tercih haline gelmiştir.
+
+```dockerfile
+# Debian tabanlı imaj
+FROM ubuntu:22.04
+RUN apt update && apt install -y curl wget
+
+# Alpine tabanlı imaj (çok daha küçük)
+FROM alpine:3.18
+RUN apk add --no-cache curl wget
+```
+
+> 💡 **İpucu:** Alpine imajlarında `--no-cache` parametresini kullanın. Bu, paket indirme önbelleğini imaj içinde saklamaz ve dosya boyutunu küçük tutar.
+
+## İşlemci Mimarisi Uyarısı
+
+M1 Mac (ARM64) üzerinde build edilen bir Docker imajını Intel tabanlı (AMD64) bir sunucuda çalıştırmaya çalıştığınızda şu hatayı alırsınız:
+
+```
+exec /usr/local/bin/app: exec format error
+```
+
+Bu, iki farklı işlemci dilinin uyumsuzluğundan kaynaklanır. Çözüm için `docker buildx` ile çoklu mimari desteği sağlanmalıdır:
+
+```bash
+# Her iki mimari için aynı anda build al
+docker buildx build --platform linux/amd64,linux/arm64 -t uygulamam:latest .
+```
+
+## Sonraki Adımlar
+
+Bu kursu tamamladıktan sonra şu konulara geçebilirsiniz:
+- **SSH ve Uzak Sunucu Yönetimi:** Anahtarlar, SCP, port yönlendirme
+- **Cron Jobs:** Zamanlanmış görevler ve otomasyon
+- **Docker Temelleri:** Konteyner oluşturma ve yönetimi
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- Dağıtım ailelerine göre doğru paket yöneticisini seçmeyi
+- `apt`, `dnf` ve `apk` için temel paket yönetimi komutlarını
+- Docker imajlarında neden Alpine'ın tercih edildiğini
+- ARM64 ve AMD64 mimari uyumsuzluğunu ve çözümünü

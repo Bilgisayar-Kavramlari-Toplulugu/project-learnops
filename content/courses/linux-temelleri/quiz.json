@@ -1,0 +1,383 @@
+{
+  "_note": "Eğitim amaçlı. Cevaplar kasıtlı açıktır. v2.0'da private repo'ya taşınır.",
+  "course_slug": "linux-temelleri",
+  "pass_threshold": 0.7,
+  "duration_seconds": 1500,
+  "questions": [
+    {
+      "order_index": 1,
+      "is_active": true,
+      "text": "Linux dosya sistemi hiyerarşisinde sistem yapılandırma dosyaları (config) hangi dizinde tutulur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "/bin"
+        },
+        {
+          "index": 1,
+          "text": "/var"
+        },
+        {
+          "index": 2,
+          "text": "/etc"
+        },
+        {
+          "index": 3,
+          "text": "/home"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "/etc dizini sistemin genel yapılandırma dosyalarını barındırır. Uygulamaların nasıl davranacağını belirleyen ayarlar burada bulunur."
+    },
+    {
+      "order_index": 2,
+      "is_active": true,
+      "text": "Sayısal (Octal) izin modunda '755' değerinin anlamı nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Sahip: rwx, Grup: r-x, Diğer: r-x"
+        },
+        {
+          "index": 1,
+          "text": "Sahip: rw-, Grup: rw-, Diğer: rw-"
+        },
+        {
+          "index": 2,
+          "text": "Sahip: r-x, Grup: r-x, Diğer: r-x"
+        },
+        {
+          "index": 3,
+          "text": "Sahip: rwx, Grup: r--, Diğer: r--"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "7 (4+2+1) rwx, 5 (4+1) r-x anlamına gelir. Bu izin seviyesi genellikle scriptlerin ve dizinlerin herkese okunabilir ve çalıştırılabilir olması için kullanılır."
+    },
+    {
+      "order_index": 3,
+      "is_active": true,
+      "text": "Bir DevOps mühendisi olarak yeni yazdığınız bir Bash script'ine çalıştırma yetkisi vermek için hangi komutu kullanırsınız?",
+      "options": [
+        {
+          "index": 0,
+          "text": "chown +x script.sh"
+        },
+        {
+          "index": 1,
+          "text": "chmod +x script.sh"
+        },
+        {
+          "index": 2,
+          "text": "ls -la script.sh"
+        },
+        {
+          "index": 3,
+          "text": "touch script.sh"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "chmod komutu dosya izinlerini değiştirmek için kullanılır. '+x' parametresi dosyaya yürütme/çalıştırma (execute) yetkisi ekler."
+    },
+    {
+      "order_index": 4,
+      "is_active": true,
+      "text": "M1 Mac (ARM64) üzerinde build ettiğiniz bir Docker imajını Intel tabanlı (AMD64) bir sunucuda çalıştırmaya çalıştığınızda 'Exec format error' hatası alıyorsunuz. Bunun temel nedeni nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "İşlemci mimarilerinin (Architectures) uyumsuz olması"
+        },
+        {
+          "index": 1,
+          "text": "Dosya izinlerinin yanlış olması"
+        },
+        {
+          "index": 2,
+          "text": "Docker versiyonunun eski olması"
+        },
+        {
+          "index": 3,
+          "text": "Sunucuda yeterli RAM olmaması"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "ARM64 ve AMD64 farklı işlemci dilleridir. Bir mimari için derlenen kod, diğerinde doğrudan çalışmaz; cross-platform build gereklidir."
+    },
+    {
+      "order_index": 5,
+      "is_active": true,
+      "text": "Sunucuda logların dolduğunu ve sistemin yavaşladığını fark ettiniz. Log dosyasının son satırlarını canlı olarak izlemek için hangi komutu kullanırsınız?",
+      "options": [
+        {
+          "index": 0,
+          "text": "cat /var/log/syslog"
+        },
+        {
+          "index": 1,
+          "text": "head -n 20 /var/log/syslog"
+        },
+        {
+          "index": 2,
+          "text": "tail -f /var/log/syslog"
+        },
+        {
+          "index": 3,
+          "text": "rm -rf /var/log/syslog"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "tail -f komutu dosyanın sonuna eklenen yeni satırları gerçek zamanlı olarak ekrana basar. Log analizi için en temel araçtır."
+    },
+    {
+      "order_index": 6,
+      "is_active": true,
+      "text": "Linux çekirdeği (Kernel) ile kullanıcı uygulamaları arasındaki ilişki hakkında hangisi doğrudur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Uygulamalar Kernel Space'te tam yetkiyle çalışır."
+        },
+        {
+          "index": 1,
+          "text": "Kernel, donanım kaynaklarını yöneten bir arayüzdür."
+        },
+        {
+          "index": 2,
+          "text": "User Space, donanıma doğrudan erişim sağlar."
+        },
+        {
+          "index": 3,
+          "text": "Shell, Kernel'ın kendisidir."
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Kernel, donanım ve yazılım arasındaki temel katmandır. CPU ve bellek gibi kaynakları yöneterek uygulamaların güvenli bir şekilde çalışmasını sağlar."
+    },
+    {
+      "order_index": 7,
+      "is_active": true,
+      "text": "Bir süreci (process) PID numarasını kullanarak kesin olarak sonlandırmak (force kill) için hangi sinyal ve komut kullanılır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "kill -1 [PID]"
+        },
+        {
+          "index": 1,
+          "text": "stop [PID]"
+        },
+        {
+          "index": 2,
+          "text": "exit [PID]"
+        },
+        {
+          "index": 3,
+          "text": "kill -9 [PID]"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "-9 sinyali (SIGKILL), süreci hemen ve zorla sonlandırmak için kullanılır. Süreç bu sinyali görmezden gelemez."
+    },
+    {
+      "order_index": 8,
+      "is_active": true,
+      "text": "Konteyner dünyasında çok küçük boyutu (~5MB) nedeniyle tercih edilen Linux dağıtımı hangisidir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Alpine"
+        },
+        {
+          "index": 1,
+          "text": "Ubuntu"
+        },
+        {
+          "index": 2,
+          "text": "Red Hat"
+        },
+        {
+          "index": 3,
+          "text": "Debian"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Alpine Linux, inanılmaz hafif yapısı ve güvenliği ile bilinir. Docker imajlarını küçültmek için standart tercihtir."
+    },
+    {
+      "order_index": 9,
+      "is_active": true,
+      "text": "Bash script'lerinde ilk satırda yer alan '#!/bin/bash' ifadesinin görevi nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Dosyayı silmek"
+        },
+        {
+          "index": 1,
+          "text": "Script'in hangi yorumlayıcı ile çalışacağını sisteme bildirmek"
+        },
+        {
+          "index": 2,
+          "text": "Yorum satırı olarak açıklama eklemek"
+        },
+        {
+          "index": 3,
+          "text": "Değişken tanımlamak"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Bu ifadeye 'Shebang' denir. Sisteme bu script dosyasını çalıştırmak için /bin/bash yolundaki programı kullanması talimatını verir."
+    },
+    {
+      "order_index": 10,
+      "is_active": true,
+      "text": "Aşağıdaki paket yöneticisi ve dağıtım eşleşmelerinden hangisi yanlıştır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Ubuntu - apt"
+        },
+        {
+          "index": 1,
+          "text": "CentOS - yum"
+        },
+        {
+          "index": 2,
+          "text": "RHEL - dnf"
+        },
+        {
+          "index": 3,
+          "text": "Alpine - apt"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Alpine Linux, 'apk' paket yöneticisini kullanır. 'apt' ise Debian tabanlı (Ubuntu gibi) sistemlere özgüdür."
+    },
+    {
+      "order_index": 11,
+      "is_active": true,
+      "text": "Bulunduğunuz dizindeki tüm dosyaları (gizliler dahil) detaylı şekilde listelemek için hangi komutu kullanırsınız?",
+      "options": [
+        {
+          "index": 0,
+          "text": "ls -l"
+        },
+        {
+          "index": 1,
+          "text": "ls -a"
+        },
+        {
+          "index": 2,
+          "text": "ls -la"
+        },
+        {
+          "index": 3,
+          "text": "list all"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "'-l' detaylı listeleme yaparken, '-a' gizli dosyaları (nokta ile başlayanlar) gösterir. İkisi birleştiğinde tam görünüm sağlar."
+    },
+    {
+      "order_index": 12,
+      "is_active": true,
+      "text": "Modern Linux sistemlerinde ağ soketlerini ve bağlantılarını 'netstat' yerine daha hızlı izlemek için hangi komut önerilir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "ss"
+        },
+        {
+          "index": 1,
+          "text": "curl"
+        },
+        {
+          "index": 2,
+          "text": "wget"
+        },
+        {
+          "index": 3,
+          "text": "ping"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "'ss' (socket statistics) komutu, modern Linux dağıtımlarında ağ istatistiklerini netlink üzerinden doğrudan çekirdekten aldığı için daha performanslı bir araçtır."
+    },
+    {
+      "order_index": 13,
+      "is_active": true,
+      "text": "Bir dizini ve içindeki tüm dosyaları tek bir komutla silmek için 'rm' komutuna hangi parametre eklenmelidir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "-f"
+        },
+        {
+          "index": 1,
+          "text": "-r"
+        },
+        {
+          "index": 2,
+          "text": "-d"
+        },
+        {
+          "index": 3,
+          "text": "-v"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "'-r' (recursive) parametresi, komutun dizin hiyerarşisi boyunca alt dizinlere ve dosyalara inmesini sağlar."
+    },
+    {
+      "order_index": 14,
+      "is_active": true,
+      "text": "Çalışan ancak ebeveyni tarafından durumu okunmadığı için sistem tablosunda yer kaplamaya devam eden ölü sürece ne ad verilir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Daemon"
+        },
+        {
+          "index": 1,
+          "text": "Root"
+        },
+        {
+          "index": 2,
+          "text": "Bash"
+        },
+        {
+          "index": 3,
+          "text": "Zombie"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Zombie süreçler, işini bitirmiş ancak çıkış kodu ebeveyn süreç tarafından alınana kadar listede kalan 'hayalet' süreçlerdir."
+    },
+    {
+      "order_index": 15,
+      "is_active": true,
+      "text": "Linux dosya izinlerinde 'Others' (Diğerleri) grubu için sadece okuma izni vermek istiyorsanız sembolik modda hangisini kullanırsınız?",
+      "options": [
+        {
+          "index": 0,
+          "text": "chmod u=r"
+        },
+        {
+          "index": 1,
+          "text": "chmod g+r"
+        },
+        {
+          "index": 2,
+          "text": "chmod o=r"
+        },
+        {
+          "index": 3,
+          "text": "chmod a+x"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "'o' (others) karakteri Diğerleri grubunu temsil eder. '=r' ise bu grubun izinlerini sadece 'read' (okuma) olarak set eder."
+    }
+  ]
+}

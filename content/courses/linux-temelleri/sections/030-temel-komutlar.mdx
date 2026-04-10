@@ -1,0 +1,98 @@
+---
+id: "linux-003-temel-komutlar"
+title: "Temel Komutlar: ls, cd, cp, mv, rm"
+order: 30
+order_index: 30
+---
+
+# Temel Komutlar: ls, cd, cp, mv, rm
+
+Linux komut satırında verimli çalışabilmek için günlük kullanımda sürekli karşılaşacağınız bu temel komutları iyi bilmek şarttır.
+
+## Dizin İşlemleri
+
+```bash
+# Bulunduğunuz mevcut dizini gösterir
+pwd
+
+# Dizin içeriğini listeler
+ls
+
+# Gizli dosyalar dahil tüm detayları gösterir
+ls -la
+
+# Bir üst dizine çık
+cd ..
+
+# Kullanıcının ev dizinine dön
+cd ~
+
+# Yeni dizin oluştur
+mkdir proje
+
+# İç içe dizin yapısı oluştur (ara dizinler yoksa da çalışır)
+mkdir -p proje/src/utils
+```
+
+## Dosya İşlemleri
+
+```bash
+# Boş dosya oluştur veya zaman damgasını güncelle
+touch uygulama.log
+
+# Dosya kopyala
+cp kaynak.txt hedef.txt
+
+# Dizin içeriğiyle birlikte kopyala (recursive)
+cp -r /kaynak-dizin /hedef-dizin
+
+# Dosyayı taşı veya yeniden adlandır
+mv eski-isim.txt yeni-isim.txt
+
+# Dosya sil
+rm dosya.txt
+```
+
+> ⚠️ **DİKKAT:** Linux'ta geri dönüşüm kutusu yoktur. `rm -rf` komutu, dizinleri ve içeriklerini **zorla ve sormadan** siler. Bu komutu yanlış bir yerde çalıştırmak ciddi veri kaybına yol açabilir!
+
+```bash
+# Dizini ve tüm içeriğini sil (GERİ ALINAMAZ!)
+rm -rf /silinecek-dizin
+```
+
+## Dosya Okuma
+
+```bash
+# Dosya içeriğini ekrana bas
+cat uygulama.log
+
+# Uzun dosyaları sayfa sayfa oku (q ile çık)
+less /var/log/syslog
+
+# Dosyanın ilk 5 satırını göster
+head -n 5 uygulama.log
+
+# Dosyanın sonunu canlı olarak takip et (log takibi için ideal)
+tail -f /var/log/syslog
+```
+
+## Yardım Almak
+
+Herhangi bir komut hakkında detaylı bilgiye ulaşmak için `man` (manual) komutunu kullanın:
+
+```bash
+# ls komutunun kullanım kılavuzu
+man ls
+
+# Kılavuzdan çıkmak için q tuşuna basın
+```
+
+> 💡 **İpucu:** `tail -f` komutu, bir log dosyasına yeni satır eklendiğinde bunu anlık olarak ekrana yansıtır. Sunucu sorunlarını ayıklarken vazgeçilmezdir.
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- Dizin gezinme ve oluşturma komutlarını (`pwd`, `cd`, `mkdir`)
+- Dosya kopyalama, taşıma ve silme işlemlerini (`cp`, `mv`, `rm`)
+- Dosya içeriğini okuma yöntemlerini (`cat`, `less`, `head`, `tail`)
+- `rm -rf`'nin neden çok dikkatli kullanılması gerektiğini
