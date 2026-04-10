@@ -327,7 +327,7 @@
         }
       ],
       "correct_index": 1,
-      "explanation": "'-r' (recursive) parametresi, komutun dizin hiyerarşisi boyunca alt dizinlere ve dosyalara inmesini sağlar."
+      "explanation": "'-r' (recursive) parametresi, rm komutunun dizin hiyerarşisi boyunca tüm alt dizinlere ve dosyalara inmesini sağlar. Bu parametre olmadan rm yalnızca tek dosyalarda çalışır; bir dizini silmeye çalışırken hata verir."
     },
     {
       "order_index": 14,

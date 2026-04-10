@@ -76,6 +76,23 @@ sudo chown ahmet:yazilim dosya.txt
 sudo chown -R ahmet:yazilim /proje
 ```
 
+## chgrp — Grup Sahipliğini Değiştirme
+
+`chgrp`, bir dosyanın veya dizinin yalnızca grup sahipliğini değiştirmek için kullanılır. `chown user:group` sözdiziminin grup kısmıyla işlevsel olarak eşdeğerdir.
+
+```bash
+# Sadece grup sahipliğini değiştir
+sudo chgrp yazilim dosya.txt
+
+# Dizin ve tüm içeriğinin grubunu değiştir (recursive)
+sudo chgrp -R yazilim /proje
+
+# chown ile alternatif — ikisi eşdeğer
+sudo chown :yazilim dosya.txt
+```
+
+> 💡 **İpucu:** Yalnızca grup değiştirmeniz gerekiyorsa `chgrp` daha açıklayıcıdır; hem sahibi hem grubu değiştirmeniz gerekiyorsa tek komutla `chown user:group` kullanmak yeterlidir.
+
 ## sudo — Yüksek Yetkiyle Çalıştırma
 
 `sudo`, bir komutu en yetkili kullanıcı (`root`) hakları ile çalıştırmanızı sağlar. Sistem dosyalarını değiştirmek, paket yüklemek veya başka kullanıcılara ait dosyaları yönetmek için gereklidir.
@@ -96,5 +113,6 @@ Bu bölümde şunları öğrendik:
 - `r`, `w`, `x` izinlerinin ne anlama geldiğini ve sayısal karşılıklarını
 - User, Group ve Others gruplarına göre izin sisteminin nasıl çalıştığını
 - `chmod` ile sembolik ve sayısal modda izin değiştirmeyi
-- `chown` ile dosya sahipliğini yönetmeyi
+- `chown` ile dosya sahibini ve grubunu yönetmeyi
+- `chgrp` ile yalnızca grup sahipliğini değiştirmeyi
 - `sudo` komutunun ne işe yaradığını ve ne zaman kullanılacağını
