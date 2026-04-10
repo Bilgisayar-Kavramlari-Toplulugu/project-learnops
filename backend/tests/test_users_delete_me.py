@@ -8,7 +8,18 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.users import User
-from app.services.jwt_service import create_access_token
+from app.services.jwt_service import (
+    _blacklisted_tokens,
+    create_access_token,
+    create_refresh_token,
+)
+
+
+@pytest.fixture(autouse=True)
+def clear_blacklist():
+    _blacklisted_tokens.clear()
+    yield
+    _blacklisted_tokens.clear()
 
 
 async def _seed_user_related_data(db_session: AsyncSession, user: User):
@@ -69,7 +80,9 @@ async def _seed_user_related_data(db_session: AsyncSession, user: User):
     await db_session.execute(
         text(
             """
-            INSERT INTO user_progress (id, user_id, section_id, completed, completed_at)
+            INSERT INTO user_progress (
+                id, user_id, section_id, completed, completed_at
+            )
             VALUES (:id, :user_id, :section_id, true, NOW())
             """
         ),
@@ -219,3 +232,25 @@ async def test_delete_me_success_hard_deletes_and_audit_logs(
     assert attempts_count == 0
     assert answers_count == 0
     assert audit_count == 1
+
+
+@pytest.mark.asyncio
+async def test_delete_me_blacklists_refresh_token(client: AsyncClient, test_user: User):
+    access_token = create_access_token(sub=str(test_user.id))
+    refresh_token = create_refresh_token(sub=str(test_user.id), jti=str(uuid.uuid4()))
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    delete_response = await client.request(
+        "DELETE",
+        "/v1/users/me",
+        json={"confirmation": "HESABIMI SİL"},
+        headers=headers,
+        cookies={"refresh_token": refresh_token},
+    )
+    assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+
+    refresh_response = await client.post(
+        "/v1/auth/refresh",
+        cookies={"refresh_token": refresh_token},
+    )
+    assert refresh_response.status_code == status.HTTP_401_UNAUTHORIZED

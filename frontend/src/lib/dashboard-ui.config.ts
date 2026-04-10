@@ -9,9 +9,7 @@ import {
 } from "lucide-react";
 
 import { routes } from "@/lib/routes";
-import type { SidebarItem } from "@/types";
-
-type CourseProgressTone = "emerald" | "blue" | "indigo";
+import type { CourseProgressTone, SidebarItem } from "@/types";
 
 interface CourseUiMeta {
   icon: LucideIcon;
@@ -53,6 +51,7 @@ export const dashboardSidebarItems: SidebarItem[] = [
     label: "Profil",
     href: routes.profile,
     icon: UserRound,
+    pinBottom: true,
   },
 ];
 
