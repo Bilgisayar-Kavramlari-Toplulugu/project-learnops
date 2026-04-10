@@ -1,0 +1,445 @@
+---
+id: "k8s-003-pod"
+title: "Pod: En Küçük Deploy Birimi"
+order: 30
+order_index: 30
+---
+
+# Pod: En Küçük Deploy Birimi
+
+Kubernetes'te her şey Pod etrafında döner. Container'ları doğrudan değil, Pod soyutlaması üzerinden yönetirsiniz. Bu bölümde Pod'un ne olduğunu, neden gerekli olduğunu ve nasıl yönetildiğini öğreneceğiz.
+
+## Pod Nedir?
+
+Pod, Kubernetes'te **deploy edilebilen en küçük birim**dir. Bir veya daha fazla container'ı bir arada barındırır ve bu container'lar:
+
+- **Aynı ağı** paylaşır (birbirlerine `localhost` üzerinden erişirler)
+- **Aynı storage volume'larını** paylaşabilir
+- **Aynı lifecycle'a** sahiptir (birlikte başlar, birlikte durur)
+
+```
+┌─────────────────────────────────────┐
+│               Pod                   │
+│  ┌────────────┐  ┌────────────┐    │
+│  │ Container  │  │ Container  │    │
+│  │  (main)    │  │ (sidecar)  │    │
+│  └────────────┘  └────────────┘    │
+│                                     │
+│  Shared Network: localhost          │
+│  Shared Volume: /data               │
+│  IP: 10.244.0.5  ← Pod IP          │
+└─────────────────────────────────────┘
+         Çalıştığı Node
+```
+
+> 💡 **Neden Container'ı Doğrudan Deploy Etmiyoruz?**  
+> Pod soyutlaması; multi-container pattern'leri (sidecar, ambassador, adapter), paylaşımlı ağ ve storage, ve lifecycle yönetimini çok daha temiz hale getirir.
+
+---
+
+## İlk Pod YAML'ı
+
+Kubernetes kaynakları genellikle YAML formatında tanımlanır:
+
+```yaml
+# my-pod.yaml
+apiVersion: v1          # API versiyonu
+kind: Pod               # Kaynak türü
+metadata:
+  name: my-nginx        # Pod'un adı
+  labels:               # Etiketler (gruplama ve seçim için)
+    app: nginx
+    environment: dev
+spec:
+  containers:
+  - name: nginx         # Container adı
+    image: nginx:1.25   # Kullanılacak Docker image
+    ports:
+    - containerPort: 80 # Container'ın dinlediği port
+    resources:
+      requests:         # Garantilenen kaynaklar
+        memory: "64Mi"
+        cpu: "250m"     # 250 milli-core = 0.25 CPU
+      limits:           # Maksimum kullanabilecekleri
+        memory: "128Mi"
+        cpu: "500m"
+```
+
+```bash
+# Pod'u oluştur
+kubectl apply -f my-pod.yaml
+
+# Pod listesi
+kubectl get pods
+# NAME       READY   STATUS    RESTARTS   AGE
+# my-nginx   1/1     Running   0          30s
+
+# Pod detayları
+kubectl describe pod my-nginx
+```
+
+---
+
+## YAML Alanlarını Anlayalım
+
+### apiVersion ve kind
+
+```yaml
+apiVersion: v1    # Core API group
+kind: Pod
+```
+
+Her Kubernetes kaynağı bir `apiVersion` ve `kind` ikilisine sahiptir:
+
+| Kind | apiVersion |
+|------|-----------|
+| Pod | v1 |
+| Deployment | apps/v1 |
+| Service | v1 |
+| Ingress | networking.k8s.io/v1 |
+
+### metadata.labels
+
+Label'lar, kaynakları gruplamak ve seçmek için kullanılan anahtar-değer çiftleridir:
+
+```yaml
+labels:
+  app: my-app
+  version: "2.0"
+  tier: frontend
+  environment: production
+```
+
+Service'ler ve Deployment'lar, pod'ları **label selector** ile seçer:
+
+```yaml
+# Service bu label'ı taşıyan pod'lara trafik gönderir
+selector:
+  app: my-app
+  tier: frontend
+```
+
+### resources.requests ve limits
+
+```
+CPU Birimi: millicore (m)
+  250m = 0.25 CPU core
+  1000m = 1 CPU core
+  2000m = 2 CPU core
+
+Memory Birimi:
+  Mi = Mebibyte (1024 * 1024 bytes)
+  Gi = Gibibyte
+  M  = Megabyte
+  G  = Gigabyte
+```
+
+**Requests:** Scheduler'ın pod'u yerleştirirken dikkate aldığı minimum kaynak miktarı.  
+**Limits:** Container'ın aşamayacağı maksimum kaynak miktarı. CPU throttle edilir, Memory aşılırsa OOMKilled olur.
+
+---
+
+## Pod Lifecycle (Yaşam Döngüsü)
+
+```
+┌──────────┐
+│ Pending  │ ← Pod kabul edildi, container başlamadı
+└────┬─────┘
+     │ Container image indirildi, başlatıldı
+     ▼
+┌──────────┐
+│ Running  │ ← En az bir container çalışıyor
+└────┬─────┘
+     │
+  ┌──┴──────────┐
+  ▼             ▼
+┌───────┐  ┌──────────┐
+│Succeed│  │  Failed  │ ← Container exit code != 0
+└───────┘  └──────────┘
+```
+
+Pod'un `phase` değerleri:
+
+| Phase | Anlamı |
+|-------|--------|
+| **Pending** | Pod kabul edildi, container henüz başlamadı (image çekiliyor olabilir) |
+| **Running** | Pod bir Node'a bağlandı, en az bir container çalışıyor |
+| **Succeeded** | Tüm container'lar başarıyla tamamlandı (exit 0) |
+| **Failed** | Tüm container'lar tamamlandı ve en az biri hata verdi |
+| **Unknown** | Pod durumu alınamıyor (ağ sorunu olabilir) |
+
+---
+
+## Container Status ve Restart Policy
+
+```bash
+kubectl get pod my-nginx -o wide
+# NAME       READY   STATUS    RESTARTS   AGE   IP           NODE
+# my-nginx   1/1     Running   0          5m    10.244.0.5   node1
+```
+
+**READY sütunu:** `çalışan_container/toplam_container` formatındadır. `1/1` → 1 container var, 1'i running.
+
+**Restart Policy:**
+
+```yaml
+spec:
+  restartPolicy: Always   # Varsayılan - Her durumda restart et
+  # restartPolicy: OnFailure  # Sadece hata durumunda restart et
+  # restartPolicy: Never      # Hiç restart etme
+```
+
+---
+
+## Probe'lar: Sağlık Kontrolü
+
+Kubernetes, container'ın sağlıklı olup olmadığını **probe** mekanizmasıyla kontrol eder.
+
+### Liveness Probe
+
+"Container hâlâ hayatta mı?" sorusunu cevaplar. Başarısız olursa container yeniden başlatılır.
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 15   # İlk kontrolden önce bekle
+  periodSeconds: 20          # Her 20 saniyede bir kontrol et
+  failureThreshold: 3        # 3 başarısız sonra restart
+```
+
+### Readiness Probe
+
+"Container trafik almaya hazır mı?" sorusunu cevaplar. Başarısız olursa pod Service'ten çıkarılır ama restart edilmez.
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+```
+
+### Probe Tipleri
+
+```yaml
+# HTTP GET
+httpGet:
+  path: /health
+  port: 8080
+
+# TCP Socket bağlantısı
+tcpSocket:
+  port: 3306
+
+# Komut çalıştırma (exit 0 = başarılı)
+exec:
+  command:
+  - cat
+  - /tmp/healthy
+```
+
+---
+
+## Multi-Container Pod Pattern'leri
+
+### Sidecar Pattern
+
+Ana container'ı destekleyen yardımcı container:
+
+```yaml
+spec:
+  containers:
+  - name: app
+    image: my-app:1.0
+    volumeMounts:
+    - name: logs
+      mountPath: /var/log/app
+
+  - name: log-shipper        # Sidecar: logları topla ve gönder
+    image: fluent-bit:2.0
+    volumeMounts:
+    - name: logs
+      mountPath: /var/log/app   # Aynı volume!
+
+  volumes:
+  - name: logs
+    emptyDir: {}
+```
+
+### Init Container Pattern
+
+Ana container başlamadan önce çalışan hazırlık container'ları:
+
+```yaml
+spec:
+  initContainers:
+  - name: wait-for-db
+    image: busybox
+    command: ['sh', '-c', 'until nc -z db-service 5432; do sleep 2; done']
+
+  containers:
+  - name: app
+    image: my-app:1.0
+    # app, DB hazır olmadan başlamaz
+```
+
+---
+
+## Pod'u Yönetmek: Temel Komutlar
+
+```bash
+# Pod oluştur
+kubectl apply -f my-pod.yaml
+
+# Pod içindeki container'a bağlan (bash/sh)
+kubectl exec -it my-nginx -- /bin/bash
+kubectl exec -it my-nginx -- /bin/sh  # bash yoksa
+
+# Pod loglarını görüntüle
+kubectl logs my-nginx
+kubectl logs my-nginx -f          # Canlı takip (follow)
+kubectl logs my-nginx --tail=50   # Son 50 satır
+kubectl logs my-nginx --previous  # Önceki (çökmüş) container logu
+
+# Multi-container pod'da belirli container'ın logu
+kubectl logs my-pod -c sidecar-container
+
+# Pod'u sil
+kubectl delete pod my-nginx
+kubectl delete -f my-pod.yaml
+
+# Pod IP ve Node bilgisi
+kubectl get pod my-nginx -o wide
+
+# Pod detayları (Events dahil - sorun tespitinde çok değerli)
+kubectl describe pod my-nginx
+
+# Pod YAML çıktısı al
+kubectl get pod my-nginx -o yaml
+```
+
+---
+
+## Pod'a Port Forwarding
+
+Servis oluşturmadan pod'a yerel makinenizden erişmek için:
+
+```bash
+# Local 8080 → Pod 80
+kubectl port-forward pod/my-nginx 8080:80
+
+# Tarayıcıda: http://localhost:8080
+```
+
+---
+
+## Ephemeral Container'lar (Debug için)
+
+Çalışan bir pod'a geçici container eklemek için (K8s 1.23+):
+
+```bash
+# Debug container ekle (distroless image'larda çok kullanışlı)
+kubectl debug -it my-nginx --image=busybox --target=nginx
+```
+
+---
+
+## 🛠️ Hands-on: İlk Pod'unuzu Deploy Edin
+
+**Adım 1:** Basit bir NGINX pod'u oluşturun:
+
+```bash
+cat > nginx-pod.yaml << 'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-test
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.25-alpine
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "100m"
+      limits:
+        memory: "64Mi"
+        cpu: "200m"
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 3
+      periodSeconds: 5
+EOF
+
+kubectl apply -f nginx-pod.yaml
+```
+
+**Adım 2:** Pod durumunu izleyin:
+
+```bash
+kubectl get pod nginx-test -w
+# -w flag'i değişiklikleri canlı gösterir
+```
+
+**Adım 3:** Pod'a erişin:
+
+```bash
+kubectl port-forward pod/nginx-test 8080:80 &
+curl http://localhost:8080
+# Welcome to nginx!
+```
+
+**Adım 4:** Logları inceleyin:
+
+```bash
+kubectl logs nginx-test
+```
+
+**Adım 5:** Pod içine girin:
+
+```bash
+kubectl exec -it nginx-test -- sh
+ls /etc/nginx/
+cat /etc/nginx/nginx.conf
+exit
+```
+
+**Adım 6:** Pod'u silin ve ne olduğunu gözlemleyin:
+
+```bash
+kubectl delete pod nginx-test
+kubectl get pods  # Pod gitti ve geri gelmiyor - neden?
+# Çünkü Pod'u yöneten bir Deployment yok!
+# Bir sonraki bölümde bunu öğreneceğiz.
+```
+
+---
+
+## Özet
+
+Bu bölümde Pod'u derinlemesine öğrendik:
+
+- Pod, Kubernetes'in en küçük deploy birimidir; bir veya daha fazla container barındırır
+- Container'lar Pod içinde ağ ve volume paylaşır
+- YAML tanımının temel alanları: `apiVersion`, `kind`, `metadata`, `spec`
+- Resource requests ve limits ile kaynak yönetimi yapılır
+- Liveness ve Readiness probe'ları container sağlığını izler
+- Multi-container pattern'leri: Sidecar, Init Container
+- Temel kubectl komutları: `apply`, `get`, `describe`, `logs`, `exec`, `delete`
+
+> ⚠️ **Önemli:** Tek başına Pod oluşturmak production'da kullanılmaz! Pod çökerse geri gelmez. Bir sonraki bölümde Pod'ları yöneten **Deployment** ve **ReplicaSet** kavramlarını öğreneceğiz.
