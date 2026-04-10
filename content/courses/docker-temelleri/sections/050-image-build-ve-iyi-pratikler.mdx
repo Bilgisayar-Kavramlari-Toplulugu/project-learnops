@@ -1,60 +1,86 @@
 ---
-id: "docker-005-build-iyi-pratikler"
-title: "Image Build Sureci ve Iyi Pratikler"
+id: "docker-005-image"
+title: "Image Build, Tag ve Push Akışı"
 order: 50
 order_index: 50
 ---
 
-# Image Build Sureci ve Iyi Pratikler
+# Image Build, Tag ve Push Akışı
 
-Dockerfile yazmak tek basina yeterli degildir; iyi bir image uretmek de onemlidir. Yavas build sureleri, buyuk image boyutlari ve gereksiz dosyalar zamanla sorun yaratir. Bu nedenle image build surecini mantikli tasarlamak gerekir.
+Docker kullanırken image üretmek tek başına yeterli değildir. Gerçek hayatta image'i oluşturur, ona anlamlı bir etiket vererek sürümlendirir ve gerektiğinde bir registry'ye göndeririz. Bu bölümde Docker image yaşam döngüsünün build, tag ve push adımlarını birlikte ele alacağız.
 
-## Build sureci nasil calisir?
+## `docker build` ne yapar?
 
-`docker build` komutu calistiginda Docker, Dockerfile'daki adimlari sirasiyla uygular. Her adim belirli bir katman olusturabilir. Degismeyen katmanlar tekrar kullanilabildigi icin sonraki build'ler daha hizli olur.
+`docker build`, bulunduğunuz klasördeki Dockerfile'i okuyarak bir image üretir. En temel kullanım şu şekildedir:
 
-Bu nedenle direktiflerin sirasi onemlidir. Siklikla degisen dosyalari sona yakin kopyalamak, cache kullaniminin daha verimli olmasini saglar.
+```bash
+docker build -t benim-uygulamam:1.0 .
+```
 
-## Neden image boyutu onemlidir?
+Bu komutta:
 
-Buyuk image'larin birkac olumsuz etkisi vardir:
+- `-t` image'e isim ve tag verir
+- `benim-uygulamam` image adıdır
+- `1.0` sürüm etiketidir
+- `.` mevcut klasörün build context olduğunu belirtir
 
-- Indirme ve yukleme sureleri uzar
-- CI/CD pipeline'lari yavaslar
-- Depolama maliyeti artabilir
-- Gereksiz paketlerle saldiri yuzeyi genisleyebilir
+Build işlemi tamamlandığında image artık lokal makinede kullanılabilir hale gelir.
 
-Bu nedenle image boyutunu azaltmak sadece performans degil, ayni zamanda operasyonel kalite konusudur.
+## Tag neden gereklidir?
 
-## Siklikla kullanilan iyi pratikler
+Tag, image'in hangi sürümü veya hangi varyasyonu olduğunu anlamayı kolaylaştırır. Eğer tag kullanmazsanız Docker çoğu zaman varsayılan olarak `latest` etiketini kullanır. Ancak gerçek projelerde yalnızca `latest` kullanmak çoğu zaman yeterli değildir.
 
-- Daha kucuk ve amaca uygun base image secmek
-- Gereksiz dosyalari image'a dahil etmemek
-- Paket dosyalarini once kopyalayip bagimliliklari erken yuklemek
-- Uygulama kodunu daha sonra ekleyerek cache avantajindan yararlanmak
-- Tek container'a gereksiz sayida sorumluluk yuklememek
+Örneğin şu tag'ler daha anlamlı olabilir:
 
-## Katman mantigini bilmenin faydasi
+- `frontend:1.0.0`
+- `frontend:staging`
+- `frontend:2026-04-10`
 
-Docker'da her adim potansiyel olarak bir katman urettigi icin, Dockerfile'in yapisi image davranisini etkiler. Ornegin surekli degisen uygulama dosyalarini en basa koyarsaniz, kucuk bir degisiklikte bile sonraki adimlarin tekrar calismasi gerekebilir.
+Tag kullanmak ekip içinde şu soruların cevabını netleştirir:
 
-Bu yuzden katman mantigini derin teknik ayrintisiyla bilmek zorunlu degil ama su sonucu anlamak onemlidir: Dockerfile sirasi, build suresi ve verimlilik uzerinde etkili olur.
+- Hangi image deploy edildi?
+- Hangi sürüm test edildi?
+- Hangi image geri alınmalı?
 
-## Tek sorumluluk fikri
+## Registry nedir?
 
-Baslangic seviyesinde faydali bir ilke sudur: bir container genellikle tek bir ana goreve odaklanmalidir. Web uygulamasi ayri, veritabani ayri, arka plan isleyici ayri dusunulebilir. Bu yaklasim:
+Registry, image'lerin saklandığı merkezi depodur. Docker Hub en bilinen örnektir. Bunun dışında GitHub Container Registry veya şirket içi özel registry çözümleri de kullanılabilir.
 
-- Bakimi kolaylastirir
-- Hata ayiklamayi sadeleştirir
-- Compose gibi araclardaki servis tasarimini daha okunabilir hale getirir
+Registry mantığı önemlidir çünkü image sadece lokal makinede kaldığında başka biri onu kullanamaz. Bir ekip ortamında veya CI/CD sürecinde image'in paylaşılması gerekir. İşte bu paylaşım genellikle registry üzerinden yapılır.
 
-Bu ilke her durumda birebir ayni uygulanmak zorunda olmasa da, ogrenme asamasinda saglikli bir referans noktasi sunar.
+## `docker push` ne yapar?
 
-## Ozet
+Lokal makinede hazır olan image'i registry'ye göndermek için `docker push` kullanılır. Tipik akış şöyledir:
 
-Bu bolumde image build surecini kalite acisindan ele aldik.
+```bash
+docker tag benim-uygulamam:1.0 kullaniciadi/benim-uygulamam:1.0
+docker push kullaniciadi/benim-uygulamam:1.0
+```
 
-- Build sirasi ve cache kullanimi onemlidir
-- Kucuk image'lar operasyonel avantaj saglar
-- Gereksiz dosyalari disarida birakmak iyi pratiktir
-- Tek sorumluluk dusuncesi bakimi kolaylastirir
+Buradaki mantık şudur:
+
+- Önce image uygun registry formatına göre etiketlenir
+- Sonra o etiketle registry'ye gönderilir
+
+Docker Hub kullanıyorsanız image adı çoğu zaman kullanıcı adı veya organizasyon adı ile birlikte yazılır.
+
+## Tipik Docker Hub akışı
+
+Başlangıç seviyesinde basit bir akış şu şekilde düşünülebilir:
+
+1. Dockerfile yaz
+2. `docker build` ile image üret
+3. `docker tag` ile anlamlı bir isim/sürüm ver
+4. Gerekirse `docker login` ile giriş yap
+5. `docker push` ile registry'ye gönder
+
+Bu akış, bir image'in yalnızca lokalde denenmesini değil, paylaşılmasını ve dağıtılmasını da mümkün kılar.
+
+## Özet
+
+Bu bölümde image'in üretildikten sonra nasıl yönetildiğini gördük.
+
+- `docker build` image üretir
+- `docker tag` image'e anlamlı bir isim ve sürüm verir
+- Registry, image'lerin paylaşıldığı merkezi depodur
+- `docker push`, image'i Docker Hub gibi bir registry'ye gönderir

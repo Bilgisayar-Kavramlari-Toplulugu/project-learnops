@@ -7,19 +7,19 @@ order_index: 80
 
 # Docker Compose Temelleri
 
-Birden fazla container ile calisirken her servisi ayri ayri komutlarla ayaga kaldirmak zamanla yorucu hale gelir. Docker Compose bu problemi azaltir. Coklu servis yapilarini tek bir YAML dosyasinda tanimlayip birlikte yonetmeyi saglar.
+Birden fazla container ile çalışırken her servisi ayrı ayrı komutlarla ayağa kaldırmak zamanla yorucu hale gelir. Docker Compose bu problemi azaltır. Çoklu servis yapılarını tek bir YAML dosyasında tanımlayıp birlikte yönetmeyi sağlar.
 
-## Docker Compose ne saglar?
+## Docker Compose ne sağlar?
 
-- Birden fazla servisi tek dosyada tanimlamayi
-- Port, volume ve network ayarlarini merkezi olarak yonetmeyi
-- Tum ortami tek komutla baslatip durdurmayi
+- Birden fazla servisi tek dosyada tanımlamayı
+- Port, volume ve network ayarlarını merkezi olarak yönetmeyi
+- Tüm ortamı tek komutla başlatıp durdurmayı
 
-Bu ozellik, ozellikle birden fazla bagimliligi olan projelerde cok degerlidir. Tek tek uzun `docker run` komutlari yazmak yerine, servislerin iliskisini okunabilir bir dosyada toplarsiniz. Boylece proje kurulumu hem daha kolay anlatilir hem de ekip ici daha tutarli hale gelir.
+Bu özellik, özellikle birden fazla bağımlılığı olan projelerde çok değerlidir. Tek tek uzun `docker run` komutları yazmak yerine, servislerin ilişkisini okunabilir bir dosyada toplarsınız. Böylece proje kurulumu hem daha kolay anlatılır hem de ekip içi daha tutarlı hale gelir.
 
-## Compose dosyasinda neler bulunur?
+## Compose dosyasında neler bulunur?
 
-Basit bir `compose.yaml` dosyasinda genellikle su yapilar gorulur:
+Basit bir `compose.yaml` dosyasında genellikle şu yapılar görülür:
 
 - `services`
 - `ports`
@@ -27,11 +27,11 @@ Basit bir `compose.yaml` dosyasinda genellikle su yapilar gorulur:
 - `networks`
 - `environment`
 
-Bu alanlar sayesinde bir uygulamanin etrafindaki calisma ortami da tarif edilmis olur.
+Bu alanlar sayesinde bir uygulamanın etrafındaki çalışma ortamı da tarif edilmiş olur.
 
-Bu cok onemlidir cunku Docker Compose yalnizca container baslatma araci degildir; ayni zamanda projenin calisma sekline dair okunabilir bir tanim sunar. Yeni biri projeye geldiginde hangi servislerin oldugunu tek dosyadan gorebilir.
+Bu çok önemlidir çünkü Docker Compose yalnızca container başlatma aracı değildir; aynı zamanda projenin çalışma şekline dair okunabilir bir tanım sunar. Yeni biri projeye geldiğinde hangi servislerin olduğunu tek dosyadan görebilir.
 
-## Sik kullanilan komutlar
+## Sık kullanılan komutlar
 
 ```bash
 docker compose up
@@ -39,33 +39,33 @@ docker compose up -d
 docker compose down
 ```
 
-Bu komutlarin mantigini bilmek baslangic icin yeterlidir:
+Bu komutların mantığını bilmek başlangıç için yeterlidir:
 
-- `docker compose up`: Servisleri baslatir
-- `docker compose up -d`: Servisleri arka planda baslatir
-- `docker compose down`: Servisleri durdurur ve ortami kapatir
+- `docker compose up`: Servisleri başlatır
+- `docker compose up -d`: Servisleri arka planda başlatır
+- `docker compose down`: Servisleri durdurur ve ortamı kapatır
 
-Bir projede web uygulamasi, API ve veritabani birlikte calisiyorsa bu komutlar tum yapinin tek noktadan yonetilmesini saglar.
+Bir projede web uygulaması, API ve veritabanı birlikte çalışıyorsa bu komutlar tüm yapının tek noktadan yönetilmesini sağlar.
 
-Bu da ekip icinde su avantajlari getirir:
+Bu da ekip içinde şu avantajları getirir:
 
-- Ortam kurulumunu kisaltir
-- Dokumantasyon ihtiyacini azaltir
-- Lokal gelistirme akislarini standartlastirir
+- Ortam kurulumunu kısaltır
+- Dokümantasyon ihtiyacını azaltır
+- Lokal geliştirme akışlarını standartlaştırır
 
-## Dockerfile ile iliskisi
+## Dockerfile ile ilişkisi
 
-Dockerfile tek bir image'in nasil build edilecegini tanimlar. Compose ise birden fazla servisin nasil birlikte calisacagini tanimlar. Yani birbirlerinin yerine gecmezler; birbirlerini tamamlarlar.
+Dockerfile tek bir image'in nasıl build edileceğini tanımlar. Compose ise birden fazla servisin nasıl birlikte çalışacağını tanımlar. Yani birbirlerinin yerine geçmezler; birbirlerini tamamlarlar.
 
-Ornegin bir `web` servisi Dockerfile ile build edilirken, ayni anda `db` servisi hazir bir image kullanabilir. Compose ise bu iki servisi ayni ortamda bulusturur.
+Örneğin bir `web` servisi Dockerfile ile build edilirken, aynı anda `db` servisi hazır bir image kullanabilir. Compose ise bu iki servisi aynı ortamda buluşturur.
 
-Bu nedenle Compose'u, Docker'in ogrendigimiz onceki parcalarini bir araya getiren katman olarak dusunebilirsiniz.
+Bu nedenle Compose'u, Docker'in öğrendiğimiz önceki parçalarını bir araya getiren katman olarak düşünebilirsiniz.
 
-## Ozet
+## Özet
 
-Bu bolumde Docker Compose'un neden gerekli oldugunu gorduk.
+Bu bölümde Docker Compose'un neden gerekli olduğunu gördük.
 
-- Compose, coklu servis ortamini tek dosyada toplar
-- Volume ve network gibi yapilarla birlikte calisir
-- `up` ve `down` komutlariyla tum ortam yonetilebilir
-- Dockerfile'in yerine gecmez, onu tamamlar
+- Compose, çoklu servis ortamını tek dosyada toplar
+- Volume ve network gibi yapılarla birlikte çalışır
+- `up` ve `down` komutlarıyla tüm ortam yönetilebilir
+- Dockerfile'in yerine geçmez, onu tamamlar

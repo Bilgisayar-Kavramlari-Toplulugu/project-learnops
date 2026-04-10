@@ -1,61 +1,61 @@
 ---
-id: "docker-006-volumes"
-title: "Volumes ve Veri Kaliciligi"
+id: "docker-006-volume"
+title: "Volume ve Veri Kalıcılığı"
 order: 60
 order_index: 60
 ---
 
-# Volumes ve Veri Kaliciligi
+# Volume ve Veri Kalıcılığı
 
-Container'lar hafif ve gecici yapilar oldugu icin veri yonetimi konusu ozel dikkat ister. Bir container silindiginde onun icindeki gecici dosyalar da kaybolabilir. Bu nedenle kalici veri ihtiyaci olan servislerde volume mantigi kritik oneme sahiptir.
+Container'lar hafif ve geçici yapılar olduğu için veri yönetimi konusu özel dikkat ister. Bir container silindiğinde onun içindeki geçici dosyalar da kaybolabilir. Bu nedenle kalıcı veri ihtiyacı olan servislerde volume mantığı kritik öneme sahiptir.
 
 ## Volume neden gereklidir?
 
-Bir veritabani container'i kullandiginizi dusunun. Eger veri sadece container dosya sistemi icinde tutuluyorsa, container silinince veriler de kaybolabilir. Bu risk gercek uygulamalarda kabul edilebilir degildir.
+Bir veritabanı container'i kullandığınızı düşünün. Eğer veri sadece container dosya sistemi içinde tutuluyorsa, container silinince veriler de kaybolabilir. Bu risk gerçek uygulamalarda kabul edilebilir değildir.
 
-Volume kullanildiginda veri container omrunden ayrilir. Yani container dursa veya yeniden olusturulsa bile veri korunabilir.
+Volume kullanıldığında veri container ömründen ayrılır. Yani container dursa veya yeniden oluşturulsa bile veri korunabilir.
 
-Bu durum ozellikle asagidaki senaryolarda onemlidir:
+Bu durum özellikle aşağıdaki senaryolarda önemlidir:
 
-- PostgreSQL, MySQL veya MongoDB gibi veritabani servisleri
-- Kullanici tarafindan yuklenen dosyalar
-- Uygulamanin olusturdugu kalici raporlar
-- Gelistirme sirasinda degisen yerel kaynak dosyalari
+- PostgreSQL, MySQL veya MongoDB gibi veritabanı servisleri
+- Kullanıcı tarafından yüklenen dosyalar
+- Uygulamanın oluşturduğu kalıcı raporlar
+- Geliştirme sırasında değişen yerel kaynak dosyaları
 
 ## Bind mount ve named volume
 
 ### Bind mount
 
-Host makinedeki belirli bir klasor dogrudan container icine baglanir. Gelistirme ortaminda kullanisli olabilir. Ozellikle kaynak kod degisikliklerini hizli gormek istedigimizde sik kullanilir.
+Host makinedeki belirli bir klasör doğrudan container içine bağlanır. Geliştirme ortamında kullanışlı olabilir. Özellikle kaynak kod değişikliklerini hızlı görmek istediğimizde sık kullanılır.
 
 ### Named volume
 
-Docker tarafindan yonetilen, ad verilmis kalici depolama alanidir. Veritabani gibi servislerde sikca tercih edilir. Daha duzenli ve daha Docker-merkezli bir veri yonetimi sunar.
+Docker tarafından yönetilen, ad verilmiş kalıcı depolama alanıdır. Veritabanı gibi servislerde sıkça tercih edilir. Daha düzenli ve daha Docker-merkezli bir veri yönetimi sunar.
 
 ## Hangisi ne zaman daha uygun?
 
-Genel dusunce su sekildedir:
+Genel düşünce şu şekildedir:
 
-- Gelistirme sirasinda kaynak kod takibi gerekiyorsa bind mount faydalidir
-- Kalici servis verisi gerekiyorsa named volume daha uygun olabilir
+- Geliştirme sırasında kaynak kod takibi gerekiyorsa bind mount faydalıdır
+- Kalıcı servis verisi gerekiyorsa named volume daha uygun olabilir
 
-Bu kural kesin degildir ama baslangic seviyesinde dogru bir zihinsel model sunar.
+Bu kural kesin değildir ama başlangıç seviyesinde doğru bir zihinsel model sunar.
 
-Pratikte secim yaparken su soruyu sormak faydalidir: "Ben burada gelistirme kolayligi mi istiyorum, yoksa kalici veri mi korumak istiyorum?" Bu soru cogu durumda dogru yone gitmeyi kolaylastirir.
+Pratikte seçim yaparken şu soruyu sormak faydalıdır: "Ben burada geliştirme kolaylığı mı istiyorum, yoksa kalıcı veri mi korumak istiyorum?" Bu soru çoğu durumda doğru yöne gitmeyi kolaylaştırır.
 
-## Kisa bir ornek dusunce
+## Kısa bir örnek düşünce
 
-Bir `db` container'i calistirdiginizi dusunun. Eger veritabani dosyalari volume ile baglanmadiysa, container yeniden olusturuldugunda onceki tablolarin ve verilerin kaybolma riski vardir. Ama ayni servis bir volume ile calisiyorsa, yeni container eski veriyi tekrar kullanabilir.
+Bir `db` container'i çalıştırdığınızı düşünün. Eğer veritabanı dosyaları volume ile bağlanmadıysa, container yeniden oluşturulduğunda önceki tabloların ve verilerin kaybolma riski vardır. Ama aynı servis bir volume ile çalışıyorsa, yeni container eski veriyi tekrar kullanabilir.
 
-Bu fark, Docker'da "uygulama calisiyor" demek ile "uygulama guvenli sekilde veri tutuyor" demek arasindaki farklardan biridir.
+Bu fark, Docker'da "uygulama çalışıyor" demek ile "uygulama güvenli şekilde veri tutuyor" demek arasındaki farklardan biridir.
 
-Yeni baslayanlar bazen container'i yeniden baslatmanin zararsiz oldugunu dusunur. Oysa veri volume disinda tutuluyorsa, yeniden olusturma islemi beklenmeyen veri kaybina neden olabilir. Bu nedenle volume konusu sadece ek bir ozellik degil, bazen sistemin saglamligi icin temel gereksinimdir.
+Yeni başlayanlar bazen container'i yeniden başlatmanın zararsız olduğunu düşünür. Oysa veri volume dışında tutuluyorsa, yeniden oluşturma işlemi beklenmeyen veri kaybına neden olabilir. Bu nedenle volume konusu sadece ek bir özellik değil, bazen sistemin sağlamlığı için temel gereksinimdir.
 
-## Ozet
+## Özet
 
-Bu bolumde volume mantiginin neden gerekli oldugunu gorduk.
+Bu bölümde volume mantığının neden gerekli olduğunu gördük.
 
-- Container gecici olabilir, veri ise kalici olmak isteyebilir
-- Bind mount ve named volume farkli ihtiyaclara cevap verir
-- Veri kaliciligi dusunulmeden saglam Docker kullanimi olmaz
-- Ozellikle veritabani servislerinde volume mantigi kritik onemdedir
+- Container geçici olabilir, veri ise kalıcı olmak isteyebilir
+- Bind mount ve named volume farklı ihtiyaçlara cevap verir
+- Veri kalıcılığı düşünülmeden sağlam Docker kullanımı olmaz
+- Özellikle veritabanı servislerinde volume mantığı kritik önemdedir

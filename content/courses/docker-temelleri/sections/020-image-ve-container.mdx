@@ -1,80 +1,80 @@
 ---
-id: "docker-002-image-container"
-title: "Image ve Container Mantigi"
+id: "docker-002-mimari"
+title: "Image ve Container Mimarisi"
 order: 20
 order_index: 20
 ---
 
-# Image ve Container Mantigi
+# Image ve Container Mimarisi
 
-Docker ogrenirken en kritik noktalardan biri image ile container arasindaki farki net anlamaktir. Bu iki kavram karistirildiginda komutlar ezberlenir ama mantik eksik kalir. Oysa Docker'in neredeyse tum temel akislarinda bu ikili merkezde yer alir.
+Docker öğrenirken en kritik noktalardan biri image ile container arasındaki farkı net anlamaktır. Bu iki kavram karıştırıldığında komutlar ezberlenir ama mimari mantık eksik kalır. Oysa Docker'in neredeyse tüm temel akışlarında bu ikili merkezde yer alır.
 
 ## Image nedir?
 
-Image, bir uygulamanin calismasi icin gereken her seyin paketlenmis sablonudur. Icinde uygulama kodu, kutuphaneler, sistem paketleri ve calisma talimatlari bulunabilir. Tek basina calisan bir surec degildir; daha cok tasinabilir bir kalip gibidir.
+Image, bir uygulamanın çalışması için gereken her şeyin paketlenmiş şablonudur. İçinde uygulama kodu, kütüphaneler, sistem paketleri ve çalışma talimatları bulunabilir. Tek başına çalışan bir süreç değildir; daha çok taşınabilir bir kalıp gibidir.
 
-Image'lari "tasinabilir uygulama paketi" gibi dusunmek faydalidir. Bir image olusturuldugunda, bu image farkli bilgisayarlarda ayni mantikla kullanilabilir. Bu nedenle image kavrami Docker'in tasinabilirlik vaadinin merkezindedir.
+Image'ları "taşınabilir uygulama paketi" gibi düşünmek faydalıdır. Bir image oluşturulduğunda, bu image farklı bilgisayarlarda aynı mantıkla kullanılabilir. Bu nedenle image kavramı Docker'in taşınabilirlik vaadinin merkezindedir.
 
-Bir image dolayli olarak su bilgileri tasiyabilir:
+Bir image dolaylı olarak şu bilgileri taşıyabilir:
 
-- Hangi temel ortam uzerine kuruldugu
-- Hangi paketlerin yuklendigi
-- Uygulama dosyalarinin nereye yerlestirildigi
-- Container basladiginda hangi komutun calisacagi
+- Hangi temel ortam üzerine kurulduğu
+- Hangi paketlerin yüklendiği
+- Uygulama dosyalarının nereye yerleştirildiği
+- Container başladığında hangi komutun çalışacağı
 
 ## Container nedir?
 
-Container, bir image'in calisan ornegidir. Ayni image'dan birden fazla container olusturabilirsiniz. Yani image sablon, container ise calisan kopyadir.
+Container, bir image'ın çalışan örneğidir. Aynı image'dan birden fazla container oluşturabilirsiniz. Yani image şablon, container ise çalışan kopyadır.
 
-Bunu basit bir benzetmeyle dusunebiliriz:
+Bunu basit bir benzetmeyle düşünebiliriz:
 
 - Image = tarif
-- Container = o tariften uretilmis calisan sonuc
+- Container = o tariften üretilmiş çalışan sonuç
 
-Tarif ayni kalsa bile ayni tariften birden fazla sonuc uretebilirsiniz. Docker'da da ayni image'dan ihtiyaca gore birden fazla container baslatabilirsiniz.
+Tarif aynı kalsa bile aynı tariften birden fazla sonuç üretebilirsiniz. Docker'da da aynı image'dan ihtiyaca göre birden fazla container başlatabilirsiniz.
 
-## Neden bu ayrim onemli?
+## Mimari açıdan neden önemlidir?
 
-Bu ayrim Docker komutlarini dogru anlamanizi saglar. Ornegin:
+Bu ayrım Docker komutlarını doğru anlamanızı sağlar. Örneğin:
 
 - `docker pull` image indirir
-- `docker build` image uretir
-- `docker run` image'dan container baslatir
-- `docker stop` calisan container'i durdurur
+- `docker build` image üretir
+- `docker run` image'dan container başlatır
+- `docker stop` çalışan container'i durdurur
 - `docker rm` container'i siler
 
-Bu akista image daha kalici ve tekrar kullanilabilir bir yapiyi temsil ederken, container daha operasyonel bir varliktir. Baslatilir, durur, log uretir, silinir ve gerekirse yeniden olusturulur.
+Bu akışta image daha kalıcı ve tekrar kullanılabilir bir yapıyı temsil ederken, container daha operasyonel bir varlıktır. Başlatılır, durur, log üretir, silinir ve gerekirse yeniden oluşturulur.
 
-## Ayni image'dan birden fazla container
+## Aynı image'dan birden fazla container
 
-Docker'in guclu yanlarindan biri ayni image'i tekrar tekrar kullanabilmesidir. Bu sayede:
+Docker'in güçlü yanlarından biri aynı image'i tekrar tekrar kullanabilmesidir. Bu sayede:
 
-- Ayni uygulamanin birden fazla kopyasi calistirilabilir
-- Test senaryolari daha kolay olusturulabilir
-- Farkli ortamlarda ayni paket kullanilabilir
-- Yatay olcekleme mantigi daha kolay anlasilir
+- Aynı uygulamanın birden fazla kopyası çalıştırılabilir
+- Test senaryoları daha kolay oluşturulabilir
+- Farklı ortamlarda aynı paket kullanılabilir
+- Yatay ölçekleme mantığı daha kolay anlaşılır
 
-Bu fikir ileride orkestrasyon araclarinda daha da onem kazanir. Ancak baslangic seviyesinde bilinmesi gereken sey sudur: image tek olabilir, ama o image'dan birden fazla calisan container uretilebilir.
+Bu fikir ileride orkestrasyon araçlarında daha da önem kazanır. Ancak başlangıç seviyesinde bilinmesi gereken şey şudur: image tek olabilir, ama o image'dan birden fazla çalışan container üretilebilir.
 
-## Siklikla yapilan hata
+## Sıklıkla yapılan hata
 
-Yeni baslayanlar bazen image'i "kurulu uygulama", container'i ise "dosya" gibi dusunebilir. Bu kafa karisikligi daha sonra komutlarin amacini da bulandirir. Bu nedenle her zaman su ikiliyi akilda tutmak faydalidir:
+Yeni başlayanlar bazen image'i "kurulu uygulama", container'i ise "dosya" gibi düşünebilir. Bu kafa karışıklığı daha sonra komutların amacını da bulandırır. Bu nedenle her zaman şu ikiliyi akılda tutmak faydalıdır:
 
-- Image = sablon
-- Container = calisan ornek
+- Image = şablon
+- Container = çalışan örnek
 
-Bu mantik oturdugunda Dockerfile, volume ve Compose gibi konular da daha kolay yerine oturur.
+Bu mantık oturduğunda Dockerfile, volume ve Compose gibi konular da daha kolay yerine oturur.
 
-| Kavram | Kisa Anlam |
+| Kavram | Kısa Anlam |
 |--------|------------|
-| Image | Paketlenmis sablon |
-| Container | Calisan ornek |
+| Image | Paketlenmiş şablon |
+| Container | Çalışan örnek |
 
-## Ozet
+## Özet
 
-Bu bolumde image ve container farkini netlestirdik.
+Bu bölümde image ve container farkını netleştirdik.
 
-- Image, uygulamanin paketlenmis sablonudur
-- Container, bu sablonun calisan ornegidir
-- Docker komutlarinin buyuk kismi bu ikili etrafinda sekillenir
-- Bu ayrim anlasildiginda sonraki konular daha kolay ogrenilir
+- Image, uygulamanın paketlenmiş şablonudur
+- Container, bu şablonun çalışan örneğidir
+- Docker komutlarının büyük kısmı bu ikili etrafında şekillenir
+- Bu ayrım anlaşıldığında sonraki konular daha kolay öğrenilir

@@ -1,68 +1,73 @@
 ---
-id: "docker-009-genel-ozet"
-title: "Uctan Uca Ornek ve Genel Ozet"
+id: "docker-009-best"
+title: "Production Dockerfile İyi Pratikleri"
 order: 90
 order_index: 90
 ---
 
-# Uctan Uca Ornek ve Genel Ozet
+# Production Dockerfile İyi Pratikleri
 
-Bu bolume kadar Docker'in temel kavramlarini parcali sekilde ele aldik. Simdi bu parcalarin nasil bir butun olusturduguna bakalim. Asil hedef, her kavramin tek tek ne oldugunu bilmekten ziyade bunlarin birlikte nasil calistigini gorebilmektir.
+Bir Dockerfile'in çalışıyor olması tek başına yeterli değildir. Production ortamında çalışan Dockerfile'lar daha güvenli, daha küçük, daha hızlı build olan ve bakımı daha kolay yapılar olmalıdır. Bu bölümde production odaklı Dockerfile best practice'lerini ele alacağız.
 
-## Ornek senaryo
+## Neden production yaklaşımı farklıdır?
 
-Kucuk bir web uygulamasi gelistirdiginizi dusunun. Bu durumda:
+Lokal geliştirme sırasında amaç çoğu zaman hızlı deneme yapmaktır. Production ortamında ise öncelikler değişir:
 
-- Uygulama icin bir Dockerfile yazilir
-- Bu Dockerfile ile image build edilir
-- Uygulama image'inden bir `web` container'i calistirilir
-- Veritabani icin ayri bir `db` container'i calistirilir
-- Veritabani verisi volume ile kalici hale getirilir
-- Her iki servis ayni network icinde haberlesir
-- Tum yapi Docker Compose ile birlikte yonetilir
+- Daha küçük image boyutu
+- Daha az güvenlik riski
+- Daha öngörülebilir build süreci
+- Daha net sürüm ve bağımlılık yönetimi
 
-Bu senaryo, kursta gordugumuz konularin neden birbirinden kopuk olmadigini gosterir. Her kavram farkli bir ihtiyaca cevap verir.
+Bu nedenle production Dockerfile yazarken yalnızca "çalışıyor mu?" sorusu yetmez. "Güvenli mi, verimli mi, bakımı kolay mı?" sorularını da sormak gerekir.
 
-Aslinda Docker'i kullanirken yapilan en iyi zihinsel gecis de budur: kavramlari tek tek ezberlemek yerine, bir uygulamanin yasam dongusu icinde nereye oturduklarini gormek.
+## Multi-stage build neden önemlidir?
 
-## Kavramlar nasil baglanir?
+Multi-stage build, build için gereken araçlarla çalışacak final image'i birbirinden ayırmaya yarar. Örneğin uygulamayı derlemek için daha geniş bir ortam kullanıp, final aşamada yalnızca çalıştırmak için gerekli dosyaları daha küçük bir image içine alabilirsiniz.
 
-- Dockerfile, uygulamanin nasil paketlenecegini anlatir
-- Image, bu paketin tekrar kullanilabilir halidir
-- Container, bu paketin calisan ornegidir
-- Volume, veriyi korur
-- Network, servisler arasi baglantiyi kurar
-- Compose, tum ortami birlikte yonetir
+Bu yaklaşım şu faydaları sağlar:
 
-Bu baglantiyi anladiginizda Docker daha az "komut ezberi", daha cok "sistem dusuncesi" haline gelir.
+- Final image küçülür
+- Gereksiz build araçları production image'ine girmez
+- Güvenlik ve bakım açısından daha temiz sonuç elde edilir
 
-Bu bakis acisi, ileride Kubernetes, CI/CD ve cloud-native konulari ogrenirken de size avantaj saglar. Cunku daha buyuk sistemler de benzer prensipleri farkli duzeylerde kullanir.
+## Minimal base image seçimi
 
-## Bu noktadan sonra ne yapilmali?
+Production tarafında mümkün olduğunca amaca uygun ve küçük base image seçmek iyi bir pratiktir. Çünkü büyük image'ler:
 
-Baslangic seviyesinde en iyi pekistirme yontemi kucuk bir uygulamayi uygulamali sekilde containerize etmektir. Ornegin basit bir web uygulamasi icin:
+- Daha yavaş taşınır
+- Daha fazla depolama kullanır
+- Daha geniş saldırı yüzeyi oluşturabilir
 
-1. Bir Dockerfile yazmak
-2. Image build etmek
-3. Container calistirmak
-4. Gerekirse volume eklemek
-5. Web ve veritabani servislerini Compose ile birlikte calistirmak
+Ancak çok küçük image seçmek her durumda otomatik olarak en iyi çözüm değildir. Önemli olan, ihtiyaca uygun ve dengeli seçim yapmaktır.
 
-Bu adimlar, teorik olarak ogrendiginiz kavramlari pratikte birbirine baglamanizi saglar.
+## `COPY` ve `ADD` farkı
 
-Kucuk bir ornek bile cok sey ogretir. Yalnizca bir web servisi ve bir veritabani servisini birlikte calistirmak bile image, container, volume, network ve Compose arasindaki iliskiyi netlestirir.
+Genel kural olarak ihtiyaç yoksa `ADD` yerine `COPY` tercih edilir. Çünkü `COPY` daha açık ve daha öngörülebilir davranır. Production Dockerfile'larda bu tür açıklık önemlidir. Sürpriz davranışlar yerine daha kontrollü adımlar tercih edilmelidir.
 
-## Son soz
+## `.dockerignore` neden gereklidir?
 
-Docker'i iyi ogrenmenin yolu sadece komut ezberlemek degil, her parcayi dogru yere oturtmaktir. Bu kurstaki hedef de tam olarak buydu: image, container, Dockerfile, volume, network ve Compose arasindaki iliskiyi netlestirmek. Bu temel oturdugunda daha ileri Docker ve container konularina gecmek cok daha kolay olur.
+Build context içine gereksiz dosyalar girdiğinde image boyutu ve build süresi olumsuz etkilenebilir. Bu nedenle `.git`, log dosyaları, yerel çıktı klasörleri veya gereksiz dokümantasyon dosyaları gibi içerikleri `.dockerignore` ile dışarıda bırakmak iyi bir pratiktir.
 
-## Ozet
+Bu yaklaşım:
 
-Bu kurs boyunca su temel fikri kurduk:
+- Build süresini azaltır
+- Gereksiz dosyaların image'e girmesini önler
+- Daha temiz bir paketleme süreci sağlar
 
-- Docker, tutarli ortam kurmaya yardim eder
-- Image ve container farki temel mantigi olusturur
-- Dockerfile image'i uretir
-- Volume veri kaliciligini saglar
-- Network servisleri birbirine baglar
-- Compose tum yapinin birlikte yonetilmesini kolaylastirir
+## Non-root user kullanımı
+
+Production ortamında container'ın root kullanıcı ile çalışması güvenlik açısından riskli olabilir. Mümkün olduğunda uygulamayı non-root user ile çalıştırmak daha güvenli bir yaklaşımdır. Bu, "en az yetki" prensibine daha uygundur.
+
+## Katman ve cache düşüncesi
+
+Production Dockerfile yazarken katman sırası da önemlidir. Nadiren değişen adımları daha yukarıda, sık değişen adımları daha aşağıda tutmak cache verimliliğini artırabilir. Bu da hem geliştirme hem de CI tarafında zaman kazandırır.
+
+## Özet
+
+Bu bölümde production odaklı Dockerfile pratiklerini gördük.
+
+- Multi-stage build final image'i küçültür
+- Minimal base image seçimi önemlidir
+- `COPY` çoğu durumda `ADD`'den daha açık bir tercihtir
+- `.dockerignore` build sürecini temizler
+- Non-root user güvenlik açısından daha sağlıklı bir yaklaşımdır

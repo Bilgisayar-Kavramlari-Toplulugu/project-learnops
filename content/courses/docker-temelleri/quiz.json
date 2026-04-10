@@ -1,4 +1,5 @@
 {
+  "_note": "Eğitim amaçlı. Cevaplar kasıtlı açıktır. v2.0'da private repo'ya taşınır.",
   "course_slug": "docker-temelleri",
   "pass_threshold": 0.7,
   "duration_seconds": 1500,
@@ -6,197 +7,197 @@
     {
       "order_index": 1,
       "is_active": true,
-      "text": "Docker'in temel amaci asagidakilerden hangisidir?",
+      "text": "Docker'in temel amacı aşağıdakilerden hangisidir?",
       "options": [
-        { "index": 0, "text": "Uygulamalari yalnizca sanal makine icinde calistirmak" },
-        { "index": 1, "text": "Uygulama ve bagimliliklarini tasinabilir bir paket halinde calistirmak" },
-        { "index": 2, "text": "Sadece veritabani yedeklemek" },
-        { "index": 3, "text": "Kod editoru olarak kullanilmak" }
+        { "index": 0, "text": "Yalnızca sanal makine oluşturmak" },
+        { "index": 1, "text": "Sadece veritabanı yedeklemek" },
+        { "index": 2, "text": "Uygulama ve bağımlılıklarını taşınabilir şekilde paketlemek" },
+        { "index": 3, "text": "Kod editörü olarak kullanılmak" }
       ],
-      "correct_index": 1,
-      "explanation": "Docker, uygulamayi calismasi icin gereken bagimliliklarla birlikte paketleyip farkli ortamlarda tutarli sekilde calistirmayi kolaylastirir."
+      "correct_index": 2,
+      "explanation": "Docker'in ana amacı uygulamayı çalışması için gereken bağımlılıklarla birlikte paketlemek ve farklı ortamlarda daha tutarlı biçimde çalıştırmaktır. Bu yaklaşım ortam farklarından kaynaklanan sorunları azaltır."
     },
     {
       "order_index": 2,
       "is_active": true,
-      "text": "Image ile container arasindaki iliskiyi en dogru anlatan secenek hangisidir?",
+      "text": "Image ve container ilişkisini en doğru anlatan seçenek hangisidir?",
       "options": [
-        { "index": 0, "text": "Image calisan surectir, container ise sablon dosyadir" },
-        { "index": 1, "text": "Image ve container ayni kavramdir" },
-        { "index": 2, "text": "Image sablondur, container bu sablonun calisan ornegidir" },
-        { "index": 3, "text": "Container sadece Dockerfile icinde bulunur" }
+        { "index": 0, "text": "Image çalışan süreçtir, container ise sadece klasördür" },
+        { "index": 1, "text": "Image ve container tamamen aynı kavramdır" },
+        { "index": 2, "text": "Container yalnızca Dockerfile içinde bulunur" },
+        { "index": 3, "text": "Image şablondur, container bu şablonun çalışan örneğidir" }
       ],
-      "correct_index": 2,
-      "explanation": "Image, uygulamanin paketlenmis sablonudur. Container ise bu image'dan uretilecek calisan ornektir."
+      "correct_index": 3,
+      "explanation": "Image paketlenmiş şablondur, container ise bu şablondan üretilen çalışan örnektir. Docker mantığını doğru anlamak için bu ayrım çok önemlidir."
     },
     {
       "order_index": 3,
       "is_active": true,
-      "text": "Calisan containerlari listelemek icin hangi komut kullanilir?",
+      "text": "Çalışan container'ları listelemek istiyorsan hangi komutu kullanırsın?",
       "options": [
         { "index": 0, "text": "docker build" },
         { "index": 1, "text": "docker ps" },
         { "index": 2, "text": "docker pull" },
-        { "index": 3, "text": "docker exec" }
+        { "index": 3, "text": "docker volume ls" }
       ],
       "correct_index": 1,
-      "explanation": "`docker ps` komutu calisan containerlari listeler. Tum containerlari gormek icin genellikle `docker ps -a` kullanilir."
+      "explanation": "`docker ps` çalışan container'ları gösterir. Tüm container'ları görmek istersen genellikle `docker ps -a` kullanılır."
     },
     {
       "order_index": 4,
       "is_active": true,
-      "text": "Dockerfile icinde temel image'i belirtmek icin hangi direktif kullanilir?",
+      "text": "Dockerfile içinde temel image'i belirtmek için hangi direktif kullanılır?",
       "options": [
-        { "index": 0, "text": "CMD" },
-        { "index": 1, "text": "COPY" },
-        { "index": 2, "text": "FROM" },
+        { "index": 0, "text": "FROM" },
+        { "index": 1, "text": "CMD" },
+        { "index": 2, "text": "COPY" },
         { "index": 3, "text": "RUN" }
       ],
-      "correct_index": 2,
-      "explanation": "`FROM` direktifi, image'in hangi temel image uzerine kurulacagini belirtir."
+      "correct_index": 0,
+      "explanation": "`FROM` direktifi image'in hangi temel image üzerine kurulacağını belirtir. Dockerfile genellikle bu satırla başlar."
     },
     {
       "order_index": 5,
       "is_active": true,
-      "text": "Dockerfile icindeki `COPY . .` satirinin temel gorevi nedir?",
+      "text": "Dockerfile içindeki `COPY . .` satırının temel görevi nedir?",
       "options": [
         { "index": 0, "text": "Container'i durdurmak" },
-        { "index": 1, "text": "Yerel projedeki dosyalari image icine kopyalamak" },
-        { "index": 2, "text": "Port yonlendirmesi yapmak" },
-        { "index": 3, "text": "Yeni bir network olusturmak" }
+        { "index": 1, "text": "Port yönlendirmesi yapmak" },
+        { "index": 2, "text": "Yerel projedeki dosyaları image içine kopyalamak" },
+        { "index": 3, "text": "Yeni bir network oluşturmak" }
       ],
-      "correct_index": 1,
-      "explanation": "`COPY`, build context icindeki dosyalari image dosya sistemine kopyalamak icin kullanilir."
+      "correct_index": 2,
+      "explanation": "`COPY`, build context içindeki dosyaları image dosya sistemine taşımak için kullanılır. Uygulama kodunu image'e dahil etmenin temel yollarından biridir."
     },
     {
       "order_index": 6,
       "is_active": true,
-      "text": "Asagidakilerden hangisi Docker image boyutunu kucultmeye yardimci bir yaklasimdir?",
+      "text": "Hazırladığın image'i Docker Hub'a göndermeden önce kullanıcı adıyla etiketlemek istiyorsun. Aşağıdakilerden hangisi en uygun adımdır?",
       "options": [
-        { "index": 0, "text": "Gereksiz tum dosyalari image icine kopyalamak" },
-        { "index": 1, "text": "Daha kucuk base image secmek ve gereksiz dosyalari disarida birakmak" },
-        { "index": 2, "text": "Her komutu ayri ayri tekrar calistirmak" },
-        { "index": 3, "text": "Tum log dosyalarini image icinde saklamak" }
+        { "index": 0, "text": "docker stop benim-uygulamam:1.0" },
+        { "index": 1, "text": "docker logs benim-uygulamam:1.0" },
+        { "index": 2, "text": "docker exec benim-uygulamam:1.0 sh" },
+        { "index": 3, "text": "docker tag benim-uygulamam:1.0 kullaniciadi/benim-uygulamam:1.0" }
       ],
-      "correct_index": 1,
-      "explanation": "Kucuk bir base image secmek ve gereksiz dosyalari image'a dahil etmemek hem boyutu azaltir hem de build suresini iyilestirir."
+      "correct_index": 3,
+      "explanation": "`docker push` öncesinde image'in registry formatına uygun etiketlenmesi gerekir. `docker tag` bu iş için kullanılır ve Docker Hub akışının temel parçasıdır."
     },
     {
       "order_index": 7,
       "is_active": true,
-      "text": "Docker volume kullaniminin temel faydasi nedir?",
+      "text": "Docker volume kullanımının temel faydası nedir?",
       "options": [
-        { "index": 0, "text": "Container icindeki veriyi gecici tutmak" },
-        { "index": 1, "text": "Veriyi container omrunden bagimsiz olarak kalici hale getirmek" },
-        { "index": 2, "text": "Sadece loglari silmek" },
-        { "index": 3, "text": "CPU kullanimini otomatik dusurmek" }
+        { "index": 0, "text": "Container içindeki veriyi geçici tutmak" },
+        { "index": 1, "text": "Veriyi container ömründen bağımsız olarak kalıcı hale getirmek" },
+        { "index": 2, "text": "Sadece logları silmek" },
+        { "index": 3, "text": "CPU kullanımını otomatik düşürmek" }
       ],
       "correct_index": 1,
-      "explanation": "Volume, veriyi container silinse bile korumaya yardim eder. Bu ozellikle veritabani gibi servislerde kritiktir."
+      "explanation": "Volume, veri kalıcılığı sağlamak için kullanılır. Container silinse bile veri volume içinde korunabilir; bu özellikle veritabanı servislerinde kritik önemdedir."
     },
     {
       "order_index": 8,
       "is_active": true,
-      "text": "Bind mount ile named volume arasindaki farklardan biri hangisidir?",
+      "text": "Bind mount ile named volume arasındaki farklardan biri hangisidir?",
       "options": [
-        { "index": 0, "text": "Bind mount hosttaki belirli bir klasore baglanir" },
-        { "index": 1, "text": "Named volume sadece Dockerfile icinde tanimlanir" },
-        { "index": 2, "text": "Bind mount kalici veri icin kullanilamaz" },
-        { "index": 3, "text": "Named volume host uzerinde hic yer kaplamaz" }
+        { "index": 0, "text": "Bind mount hosttaki belirli bir klasöre bağlanır" },
+        { "index": 1, "text": "Named volume sadece Dockerfile içinde tanımlanır" },
+        { "index": 2, "text": "Bind mount kalıcı veri için kullanılamaz" },
+        { "index": 3, "text": "Named volume host üzerinde hiç yer kaplamaz" }
       ],
       "correct_index": 0,
-      "explanation": "Bind mount, host makinedeki belirli bir dosya veya klasoru container icine baglar. Named volume ise Docker tarafindan yonetilir."
+      "explanation": "Bind mount, host makinedeki belirli bir dosya veya klasörü container içine bağlar. Named volume ise Docker tarafından yönetilen daha soyut bir kalıcı depolama alanıdır."
     },
     {
       "order_index": 9,
       "is_active": true,
-      "text": "Ayni Docker network'u icindeki iki container icin hangisi genellikle dogrudur?",
+      "text": "Aynı Docker network'ü içindeki iki container için hangisi genellikle doğrudur?",
       "options": [
-        { "index": 0, "text": "Birbirleriyle sadece IP adresi biliniyorsa haberlesebilirler" },
-        { "index": 1, "text": "Birbirleriyle service veya container adi kullanarak haberlesebilirler" },
-        { "index": 2, "text": "Kesinlikle haberlesemezler" },
-        { "index": 3, "text": "Sadece ayni portu kullaniyorlarsa haberlesirler" }
+        { "index": 0, "text": "Birbirleriyle sadece IP adresi biliniyorsa haberleşebilirler" },
+        { "index": 1, "text": "Kesinlikle haberleşemezler" },
+        { "index": 2, "text": "Birbirleriyle service veya container adı kullanarak haberleşebilirler" },
+        { "index": 3, "text": "Sadece aynı portu kullanıyorlarsa haberleşirler" }
       ],
-      "correct_index": 1,
-      "explanation": "Docker network icinde isim tabanli cozumleme saglar. Bu sayede servisler birbirine isimle erisebilir."
+      "correct_index": 2,
+      "explanation": "Docker network içinde isim tabanlı çözümleme sağlanabilir. Bu sayede servisler birbirine IP ezberlemeden isimle erişebilir."
     },
     {
       "order_index": 10,
       "is_active": true,
-      "text": "Port mapleme ile ilgili asagidakilerden hangisi dogrudur?",
+      "text": "Lokal makinedeki 8080 portundan container içindeki 80 portuna erişmek istiyorsun. Hangi ifade doğru port eşlemesini gösterir?",
       "options": [
-        { "index": 0, "text": "`-p 8080:80` ifadesi host 8080 portunu container 80 portuna baglar" },
-        { "index": 1, "text": "Port mapleme sadece volume icin kullanilir" },
-        { "index": 2, "text": "Port mapleme Docker Compose ile kullanilamaz" },
-        { "index": 3, "text": "Port mapleme image build eder" }
+        { "index": 0, "text": "-p 8080:80" },
+        { "index": 1, "text": "-p 80:8080" },
+        { "index": 2, "text": "--volume 8080:80" },
+        { "index": 3, "text": "--network 8080:80" }
       ],
       "correct_index": 0,
-      "explanation": "`-p hostPort:containerPort` seklindeki tanim, disaridan gelen trafigi container icindeki uygulamaya ulastirmak icin kullanilir."
+      "explanation": "`-p hostPort:containerPort` mantığı kullanılır. Bu örnekte hosttaki 8080 portu container içindeki 80 portuna yönlendirilir."
     },
     {
       "order_index": 11,
       "is_active": true,
-      "text": "Docker Compose kullanmanin temel avantaji hangisidir?",
+      "text": "Web ve veritabanı servislerini tek tek komutlarla değil, tek dosyada birlikte yönetmek istiyorsun. Hangi araç bu ihtiyaca doğrudan cevap verir?",
       "options": [
-        { "index": 0, "text": "Birden fazla servisi tek tek manuel komutlarla yonetmeyi zorlastirmasi" },
-        { "index": 1, "text": "Birden fazla servisi tek bir YAML dosyasinda tanimlayip birlikte yonetebilmek" },
-        { "index": 2, "text": "Sadece Windows'ta calismasi" },
-        { "index": 3, "text": "Dockerfile yerine zorunlu olarak kullanilmasi" }
+        { "index": 0, "text": "docker cp" },
+        { "index": 1, "text": "Docker Compose" },
+        { "index": 2, "text": "docker attach" },
+        { "index": 3, "text": "docker export" }
       ],
       "correct_index": 1,
-      "explanation": "Compose, birden fazla servis, port, volume ve network tanimini tek dosyada yonetmeyi kolaylastirir."
+      "explanation": "Docker Compose birden fazla servisi tek bir YAML dosyasında tanımlayıp birlikte yönetmeyi sağlar. Özellikle web + db gibi çoklu servis yapılarında büyük kolaylık sunar."
     },
     {
       "order_index": 12,
       "is_active": true,
-      "text": "Compose dosyasinda `services` bolumu neyi tanimlar?",
+      "text": "Compose dosyasında `services` bölümü neyi tanımlar?",
       "options": [
-        { "index": 0, "text": "Sadece kullanicilari" },
-        { "index": 1, "text": "Calistirilacak uygulama veya container servislerini" },
-        { "index": 2, "text": "Sadece environment variable'lari" },
-        { "index": 3, "text": "Git branch isimlerini" }
+        { "index": 0, "text": "Sadece kullanıcıları" },
+        { "index": 1, "text": "Sadece environment variable'ları" },
+        { "index": 2, "text": "Git branch isimlerini" },
+        { "index": 3, "text": "Çalıştırılacak uygulama veya container servislerini" }
       ],
-      "correct_index": 1,
-      "explanation": "`services` bolumu, web, api, db gibi calisan servisleri ve bunlarin ayarlarini tanimlar."
+      "correct_index": 3,
+      "explanation": "`services` bölümü, web, api, db gibi çalışacak servisleri ve bunların ayarlarını tanımlar. Compose dosyasının merkezinde bu yapı bulunur."
     },
     {
       "order_index": 13,
       "is_active": true,
-      "text": "Asagidakilerden hangisi Dockerfile icindeki `CMD` direktifinin gorevine en yakin aciklamadir?",
+      "text": "Aşağıdakilerden hangisi production Dockerfile için daha iyi bir pratiktir?",
       "options": [
-        { "index": 0, "text": "Image build ederken varsayilan temel image'i secmek" },
-        { "index": 1, "text": "Container basladiginda calisacak varsayilan komutu belirtmek" },
-        { "index": 2, "text": "Volume olusturmak" },
-        { "index": 3, "text": "Container'i otomatik silmek" }
+        { "index": 0, "text": "Her zaman root kullanıcı ile çalıştırmak" },
+        { "index": 1, "text": "Gereksiz tüm dosyaları image içine kopyalamak" },
+        { "index": 2, "text": "Multi-stage build ve daha küçük final image kullanmak" },
+        { "index": 3, "text": "`COPY` yerine her durumda `ADD` kullanmak" }
       ],
-      "correct_index": 1,
-      "explanation": "`CMD`, container calismaya basladiginda devreye girecek varsayilan komutu tanimlar."
+      "correct_index": 2,
+      "explanation": "Production ortamında multi-stage build kullanmak final image'i küçültür ve gereksiz build araçlarını dışarıda bırakır. Bu hem güvenlik hem de bakım açısından daha sağlıklı bir yaklaşımdır."
     },
     {
       "order_index": 14,
       "is_active": true,
-      "text": "Bir uygulama veritabaniyla birlikte Compose uzerinden calistiriliyorsa, veri kaliciligi icin en uygun ekleme hangisidir?",
+      "text": "Bir uygulama veritabanıyla birlikte Compose üzerinden çalışıyorsa, veri kaybı riskini azaltmak için en uygun adım hangisidir?",
       "options": [
-        { "index": 0, "text": "Veritabani servisine volume tanimlamak" },
-        { "index": 1, "text": "Tum portlari kaldirmak" },
-        { "index": 2, "text": "Dockerfile icinden network silmek" },
+        { "index": 0, "text": "Veritabanı servisine volume tanımlamak" },
+        { "index": 1, "text": "Tüm portları kaldırmak" },
+        { "index": 2, "text": "Dockerfile içinden network silmek" },
         { "index": 3, "text": "Sadece `docker ps` komutunu kullanmak" }
       ],
       "correct_index": 0,
-      "explanation": "Veritabani container'larinda veri kaybini onlemek icin volume tanimlamak temel bir iyi pratiktir."
+      "explanation": "Veritabanı container'larında veri kaybını önlemenin en temel yolu volume tanımlamaktır. Böylece container yeniden oluşturulsa bile veri korunabilir."
     },
     {
       "order_index": 15,
       "is_active": true,
-      "text": "Asagidakilerden hangisi Docker ogrenirken dogru bir genel yaklasimdir?",
+      "text": "Aşağıdakilerden hangisi Docker öğrenirken doğru bir genel yaklaşımdır?",
       "options": [
-        { "index": 0, "text": "Once image ve container kavramlarini anlamadan Compose'a gecmek" },
-        { "index": 1, "text": "Temel kavramlari ogrendikten sonra Dockerfile, volume, network ve Compose'u bir butun olarak dusunmek" },
-        { "index": 2, "text": "Sadece komut ezberlemek, kavramlari onemsememek" },
-        { "index": 3, "text": "Volume ve network'un uygulama gelistirmede yeri olmadigini dusunmek" }
+        { "index": 0, "text": "Önce image ve container kavramlarını anlamadan Compose'a geçmek" },
+        { "index": 1, "text": "Temel kavramları öğrendikten sonra Dockerfile, volume, network ve Compose'u bir bütün olarak düşünmek" },
+        { "index": 2, "text": "Sadece komut ezberlemek, kavramları önemsememek" },
+        { "index": 3, "text": "Volume ve network'ün uygulama geliştirmede yeri olmadığını düşünmek" }
       ],
       "correct_index": 1,
-      "explanation": "Docker'da saglam bir temel icin once image ve container mantigi oturmali; ardindan Dockerfile, veri kaliciligi, iletisim ve servis orkestrasyonu birlikte dusunulmelidir."
+      "explanation": "Docker'da sağlam bir temel için önce image ve container mantığı oturmalıdır. Ardından Dockerfile, veri kalıcılığı, iletişim ve servis orkestrasyonu birlikte düşünülmelidir."
     }
   ]
 }
