@@ -4,8 +4,9 @@ Reads meta.json for course metadata and MDX frontmatter for sections.
 UPSERT logic based on slug (courses) and section_id_str (sections).
 
 Usage:
-    python scripts/seed_content.py
-    python scripts/seed_content.py --dry-run
+    poetry run python scripts/seed_content.py --env development
+    poetry run python scripts/seed_content.py --env production
+    poetry run python scripts/seed_content.py --env development --dry-run
 """
 
 import argparse
@@ -25,8 +26,9 @@ from sqlalchemy.orm import Session
 # Paths
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).resolve().parent
-BACKEND_DIR = SCRIPT_DIR.parent
-CONTENT_DIR = BACKEND_DIR.parent / "content" / "courses"
+PROJECT_ROOT = SCRIPT_DIR.parent
+BACKEND_DIR = PROJECT_ROOT / "backend"
+CONTENT_DIR = PROJECT_ROOT / "content" / "courses"
 
 # Add backend to sys.path so we can import app modules
 sys.path.insert(0, str(BACKEND_DIR))
@@ -263,9 +265,33 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+def load_env_file(env: str) -> None:
+    """Load the appropriate .env file for the given environment."""
+    env_file = BACKEND_DIR / ".env"
+    if env_file.exists():
+        logger.info(f"Loading environment from {env_file}")
+        with open(env_file, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, value = line.partition("=")
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key not in os.environ:
+                    os.environ[key] = value
+    os.environ["ENVIRONMENT"] = env
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Seed courses and sections from content/"
+    )
+    parser.add_argument(
+        "--env",
+        choices=["development", "staging", "production"],
+        default="development",
+        help="Target environment (default: development)",
     )
     parser.add_argument(
         "--dry-run",
@@ -274,7 +300,10 @@ def main():
     )
     args = parser.parse_args()
 
+    load_env_file(args.env)
+
     logger.info(f"Content directory: {CONTENT_DIR}")
+    logger.info(f"Environment: {args.env}")
     logger.info(f"Dry run: {args.dry_run}")
 
     # --- Discover ---
