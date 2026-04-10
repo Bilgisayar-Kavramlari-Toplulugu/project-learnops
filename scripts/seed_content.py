@@ -3,10 +3,10 @@
 Reads meta.json for course metadata and MDX frontmatter for sections.
 UPSERT logic based on slug (courses) and section_id_str (sections).
 
-Usage:
-    poetry run python scripts/seed_content.py --env development
-    poetry run python scripts/seed_content.py --env production
-    poetry run python scripts/seed_content.py --env development --dry-run
+Usage (run from backend/ directory):
+    poetry run python ../scripts/seed_content.py --env development
+    poetry run python ../scripts/seed_content.py --env production
+    poetry run python ../scripts/seed_content.py --env development --dry-run
 """
 
 import argparse
