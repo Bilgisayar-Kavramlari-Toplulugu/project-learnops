@@ -197,7 +197,14 @@ def get_database_url() -> str:
 
 
 def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
-    """UPSERT courses by slug and sections by section_id_str."""
+    """UPSERT courses by slug and sections by section_id_str.
+
+    Sections are handled with delete-then-insert per course to avoid
+    UniqueViolation on the (course_id, order_index) constraint
+    (uq_sections_course_order) that would occur when order values change
+    during one-by-one UPSERTs.  user_progress rows cascade-delete via FK,
+    so this is safe only because the seed script runs before users exist.
+    """
     for course_data in courses:
         meta = course_data["meta"]
 
@@ -238,28 +245,27 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
         ).first()
         course_id = course_row[0]
 
-        # UPSERT sections by section_id_str
+        # Delete existing sections for this course, then re-insert.
+        # This avoids UniqueViolation on uq_sections_course_order when
+        # order_index values are reassigned between sections.
+        session.execute(
+            sa.delete(Section.__table__).where(
+                Section.__table__.c.course_id == course_id
+            )
+        )
+        logger.info(f"  Deleted existing sections for course {meta['slug']}")
+
         for section_data in course_data["sections"]:
             fm = section_data["frontmatter"]
-            section_values = {
-                "course_id": course_id,
-                "section_id_str": fm["id"],
-                "title": fm["title"],
-                "order_index": fm["order"],
-            }
-
-            stmt = pg_insert(Section.__table__).values(**section_values)
-            stmt = stmt.on_conflict_do_update(
-                constraint="uq_sections_section_id_str",
-                set_={
-                    "course_id": stmt.excluded.course_id,
-                    "title": stmt.excluded.title,
-                    "order_index": stmt.excluded.order_index,
-                    "updated_at": sa.func.now(),
-                },
+            session.execute(
+                sa.insert(Section.__table__).values(
+                    course_id=course_id,
+                    section_id_str=fm["id"],
+                    title=fm["title"],
+                    order_index=fm["order"],
+                )
             )
-            session.execute(stmt)
-            logger.info(f"  UPSERT section: {fm['id']}")
+            logger.info(f"  INSERT section: {fm['id']}")
 
 
 # ---------------------------------------------------------------------------
