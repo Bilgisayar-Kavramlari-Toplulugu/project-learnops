@@ -1,0 +1,80 @@
+---
+id: "docker-002-image-container"
+title: "Image ve Container Mantigi"
+order: 20
+order_index: 20
+---
+
+# Image ve Container Mantigi
+
+Docker ogrenirken en kritik noktalardan biri image ile container arasindaki farki net anlamaktir. Bu iki kavram karistirildiginda komutlar ezberlenir ama mantik eksik kalir. Oysa Docker'in neredeyse tum temel akislarinda bu ikili merkezde yer alir.
+
+## Image nedir?
+
+Image, bir uygulamanin calismasi icin gereken her seyin paketlenmis sablonudur. Icinde uygulama kodu, kutuphaneler, sistem paketleri ve calisma talimatlari bulunabilir. Tek basina calisan bir surec degildir; daha cok tasinabilir bir kalip gibidir.
+
+Image'lari "tasinabilir uygulama paketi" gibi dusunmek faydalidir. Bir image olusturuldugunda, bu image farkli bilgisayarlarda ayni mantikla kullanilabilir. Bu nedenle image kavrami Docker'in tasinabilirlik vaadinin merkezindedir.
+
+Bir image dolayli olarak su bilgileri tasiyabilir:
+
+- Hangi temel ortam uzerine kuruldugu
+- Hangi paketlerin yuklendigi
+- Uygulama dosyalarinin nereye yerlestirildigi
+- Container basladiginda hangi komutun calisacagi
+
+## Container nedir?
+
+Container, bir image'in calisan ornegidir. Ayni image'dan birden fazla container olusturabilirsiniz. Yani image sablon, container ise calisan kopyadir.
+
+Bunu basit bir benzetmeyle dusunebiliriz:
+
+- Image = tarif
+- Container = o tariften uretilmis calisan sonuc
+
+Tarif ayni kalsa bile ayni tariften birden fazla sonuc uretebilirsiniz. Docker'da da ayni image'dan ihtiyaca gore birden fazla container baslatabilirsiniz.
+
+## Neden bu ayrim onemli?
+
+Bu ayrim Docker komutlarini dogru anlamanizi saglar. Ornegin:
+
+- `docker pull` image indirir
+- `docker build` image uretir
+- `docker run` image'dan container baslatir
+- `docker stop` calisan container'i durdurur
+- `docker rm` container'i siler
+
+Bu akista image daha kalici ve tekrar kullanilabilir bir yapiyi temsil ederken, container daha operasyonel bir varliktir. Baslatilir, durur, log uretir, silinir ve gerekirse yeniden olusturulur.
+
+## Ayni image'dan birden fazla container
+
+Docker'in guclu yanlarindan biri ayni image'i tekrar tekrar kullanabilmesidir. Bu sayede:
+
+- Ayni uygulamanin birden fazla kopyasi calistirilabilir
+- Test senaryolari daha kolay olusturulabilir
+- Farkli ortamlarda ayni paket kullanilabilir
+- Yatay olcekleme mantigi daha kolay anlasilir
+
+Bu fikir ileride orkestrasyon araclarinda daha da onem kazanir. Ancak baslangic seviyesinde bilinmesi gereken sey sudur: image tek olabilir, ama o image'dan birden fazla calisan container uretilebilir.
+
+## Siklikla yapilan hata
+
+Yeni baslayanlar bazen image'i "kurulu uygulama", container'i ise "dosya" gibi dusunebilir. Bu kafa karisikligi daha sonra komutlarin amacini da bulandirir. Bu nedenle her zaman su ikiliyi akilda tutmak faydalidir:
+
+- Image = sablon
+- Container = calisan ornek
+
+Bu mantik oturdugunda Dockerfile, volume ve Compose gibi konular da daha kolay yerine oturur.
+
+| Kavram | Kisa Anlam |
+|--------|------------|
+| Image | Paketlenmis sablon |
+| Container | Calisan ornek |
+
+## Ozet
+
+Bu bolumde image ve container farkini netlestirdik.
+
+- Image, uygulamanin paketlenmis sablonudur
+- Container, bu sablonun calisan ornegidir
+- Docker komutlarinin buyuk kismi bu ikili etrafinda sekillenir
+- Bu ayrim anlasildiginda sonraki konular daha kolay ogrenilir

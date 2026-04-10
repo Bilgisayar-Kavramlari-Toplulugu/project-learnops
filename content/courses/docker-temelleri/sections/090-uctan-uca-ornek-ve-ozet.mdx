@@ -1,0 +1,68 @@
+---
+id: "docker-009-genel-ozet"
+title: "Uctan Uca Ornek ve Genel Ozet"
+order: 90
+order_index: 90
+---
+
+# Uctan Uca Ornek ve Genel Ozet
+
+Bu bolume kadar Docker'in temel kavramlarini parcali sekilde ele aldik. Simdi bu parcalarin nasil bir butun olusturduguna bakalim. Asil hedef, her kavramin tek tek ne oldugunu bilmekten ziyade bunlarin birlikte nasil calistigini gorebilmektir.
+
+## Ornek senaryo
+
+Kucuk bir web uygulamasi gelistirdiginizi dusunun. Bu durumda:
+
+- Uygulama icin bir Dockerfile yazilir
+- Bu Dockerfile ile image build edilir
+- Uygulama image'inden bir `web` container'i calistirilir
+- Veritabani icin ayri bir `db` container'i calistirilir
+- Veritabani verisi volume ile kalici hale getirilir
+- Her iki servis ayni network icinde haberlesir
+- Tum yapi Docker Compose ile birlikte yonetilir
+
+Bu senaryo, kursta gordugumuz konularin neden birbirinden kopuk olmadigini gosterir. Her kavram farkli bir ihtiyaca cevap verir.
+
+Aslinda Docker'i kullanirken yapilan en iyi zihinsel gecis de budur: kavramlari tek tek ezberlemek yerine, bir uygulamanin yasam dongusu icinde nereye oturduklarini gormek.
+
+## Kavramlar nasil baglanir?
+
+- Dockerfile, uygulamanin nasil paketlenecegini anlatir
+- Image, bu paketin tekrar kullanilabilir halidir
+- Container, bu paketin calisan ornegidir
+- Volume, veriyi korur
+- Network, servisler arasi baglantiyi kurar
+- Compose, tum ortami birlikte yonetir
+
+Bu baglantiyi anladiginizda Docker daha az "komut ezberi", daha cok "sistem dusuncesi" haline gelir.
+
+Bu bakis acisi, ileride Kubernetes, CI/CD ve cloud-native konulari ogrenirken de size avantaj saglar. Cunku daha buyuk sistemler de benzer prensipleri farkli duzeylerde kullanir.
+
+## Bu noktadan sonra ne yapilmali?
+
+Baslangic seviyesinde en iyi pekistirme yontemi kucuk bir uygulamayi uygulamali sekilde containerize etmektir. Ornegin basit bir web uygulamasi icin:
+
+1. Bir Dockerfile yazmak
+2. Image build etmek
+3. Container calistirmak
+4. Gerekirse volume eklemek
+5. Web ve veritabani servislerini Compose ile birlikte calistirmak
+
+Bu adimlar, teorik olarak ogrendiginiz kavramlari pratikte birbirine baglamanizi saglar.
+
+Kucuk bir ornek bile cok sey ogretir. Yalnizca bir web servisi ve bir veritabani servisini birlikte calistirmak bile image, container, volume, network ve Compose arasindaki iliskiyi netlestirir.
+
+## Son soz
+
+Docker'i iyi ogrenmenin yolu sadece komut ezberlemek degil, her parcayi dogru yere oturtmaktir. Bu kurstaki hedef de tam olarak buydu: image, container, Dockerfile, volume, network ve Compose arasindaki iliskiyi netlestirmek. Bu temel oturdugunda daha ileri Docker ve container konularina gecmek cok daha kolay olur.
+
+## Ozet
+
+Bu kurs boyunca su temel fikri kurduk:
+
+- Docker, tutarli ortam kurmaya yardim eder
+- Image ve container farki temel mantigi olusturur
+- Dockerfile image'i uretir
+- Volume veri kaliciligini saglar
+- Network servisleri birbirine baglar
+- Compose tum yapinin birlikte yonetilmesini kolaylastirir

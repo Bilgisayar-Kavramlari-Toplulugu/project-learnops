@@ -1,0 +1,90 @@
+---
+id: "docker-003-temel-komutlar"
+title: "Temel Docker Komutlari"
+order: 30
+order_index: 30
+---
+
+# Temel Docker Komutlari
+
+Docker'da mantigi anladiktan sonra gunluk kullanimda en cok karsilasacaginiz komutlari bilmek gerekir. Bu bolumde amac tum komutlari ezberlemek degil, en sik kullanilan komutlarin ne ise yaradigini anlamaktir. Komutlarin arkasindaki akisi anlamak, yeni komutlari ogrenmeyi de kolaylastirir.
+
+## Sik kullanilan komutlar
+
+```bash
+docker pull nginx
+docker build -t ornek-uygulama .
+docker run -d -p 8080:80 nginx
+docker ps
+docker logs <container_adi>
+docker exec -it <container_adi> sh
+docker stop <container_adi>
+docker rm <container_adi>
+```
+
+## Bu komutlar ne yapar?
+
+- `docker pull`: hazir bir image indirir
+- `docker build`: Dockerfile'dan image uretir
+- `docker run`: image'dan container baslatir
+- `docker ps`: calisan containerlari listeler
+- `docker logs`: container loglarini gosterir
+- `docker exec`: calisan container icinde komut calistirir
+- `docker stop`: container'i durdurur
+- `docker rm`: container'i siler
+
+Bu komutlar Docker kullaniminda temel is akisini temsil eder. Once image hazirlanir ya da indirilir, sonra bu image'dan container calistirilir, ardindan o container gozlemlenir ve yonetilir.
+
+## `docker run` neden onemlidir?
+
+`docker run`, yeni baslayanlarin en cok gorecegi komutlardan biridir cunku image ile container arasindaki kopruyu kurar. Bu komut bir image'i alip calisan bir container haline getirir.
+
+Ornegin:
+
+```bash
+docker run -d -p 8080:80 nginx
+```
+
+Bu komut bize sunu anlatir:
+
+- `nginx` image'i kullaniliyor
+- Container arka planda calisiyor
+- Host makinedeki 8080 portu container icindeki 80 portuna baglaniyor
+
+Bu tek ornek bile image, container ve port mapleme mantigini birlikte gormeyi saglar.
+
+## Gozlemleme komutlari neden degerli?
+
+Docker sadece baslatma komutlarindan ibaret degildir. Bir servis neden ayaga kalkmadi, neden hata verdi ya da gercekten calisiyor mu gibi sorularin cevabi genellikle gozlemleme komutlarinda bulunur.
+
+Bu nedenle:
+
+- `docker ps` mevcut durumu anlamak icin
+- `docker logs` hata veya baslangic ciktilarini gormek icin
+- `docker exec` container icinde inceleme yapmak icin
+
+oldukca faydalidir. Bu komutlar, "calismiyor" gibi genel bir problemi daha somut hale getirir.
+
+## Temiz bir dusunce akisi
+
+Temel bir Docker kullanimini su sira ile dusunebilirsiniz:
+
+1. Image indir veya build et
+2. Image'dan container calistir
+3. Container'in durumunu kontrol et
+4. Gerekirse loglara bak
+5. Container icine baglanip inceleme yap
+6. Is bitince container'i durdur ve temizle
+
+Bu akisi anlamak, komut ezberinden daha degerlidir. Cunku mantik oturdugunda yeni komutlari ogrenmek daha kolay olur.
+
+> **Ipuclari:** Baslangic seviyesinde tum komutlari ezberlemeye calismak yerine hangi komutun hangi amaca hizmet ettigini bilmek daha faydalidir.
+
+## Ozet
+
+Bu bolumde temel Docker komutlarinin ne yaptigini gorduk.
+
+- `pull` ve `build` image tarafini yonetir
+- `run` image'dan container baslatir
+- `ps`, `logs` ve `exec` gozlemleme ve inceleme icin kullanilir
+- `stop` ve `rm` yasam dongusunun kapanis tarafini temsil eder

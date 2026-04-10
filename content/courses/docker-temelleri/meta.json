@@ -1,0 +1,9 @@
+{
+  "slug": "docker-temelleri",
+  "title": "Docker Temelleri",
+  "description": "Docker ile container mantigini, Dockerfile yazimini, volume, network ve Docker Compose kullanimini sifirdan ogrenin.",
+  "category": "containerization",
+  "difficulty": "beginner",
+  "duration_minutes": 120,
+  "is_published": false
+}

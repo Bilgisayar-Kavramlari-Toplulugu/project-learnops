@@ -1,0 +1,52 @@
+---
+id: "docker-007-network"
+title: "Docker Network Temelleri"
+order: 70
+order_index: 70
+---
+
+# Docker Network Temelleri
+
+Gercek hayatta uygulamalar tek bir container'dan olusmaz. Web uygulamasi, API, veritabani ve cache gibi birden fazla servis birlikte calisabilir. Bu servislerin birbiriyle kontrollu sekilde iletisim kurmasi gerekir. Docker network konusu bu noktada devreye girer.
+
+## Docker network ne ise yarar?
+
+Docker network, container'larin birbirleriyle iletisim kurmasini saglar. Ayni network icindeki servisler daha kolay baglanti kurabilir ve birbirini isimle bulabilir.
+
+Bu mantik, bir uygulamanin tek parca olmadigi senaryolarda hemen onem kazanir. Ornegin bir web uygulamasi veritabanina, bazen de bir cache servisine baglanmak isteyebilir. Bu servislerin duzenli sekilde haberlesmesi gerekir.
+
+## Port mapleme ile network farki
+
+Port mapleme, host makine ile container arasindaki ulasimi acar. Network ise container'larin kendi aralarindaki iletisim mantigini duzenler. Bu iki konu birbiriyle ilgilidir ama ayni sey degildir.
+
+Bu farki bilmek yeni baslayanlar icin cok onemlidir. Cunku su iki soru farklidir:
+
+- Disaridan bu container'a nasil ulasirim?
+- Bir container digerine nasil ulasir?
+
+Birinci soru genellikle port mapleme ile ilgilidir. Ikinci soru ise network yapisiyla ilgilidir.
+
+## Isimle erisim neden faydalidir?
+
+Docker network icinde servislerin birbirini isimle bulabilmesi cok kullanislidir. IP adresleri degisebilir ama servis isimleri daha tutarli bir referans sunar. Bu da uygulama ayarlarinin daha okunabilir olmasina yardim eder.
+
+Ornegin bir veritabani servisi `db` diye tanimlandiysa, uygulama tarafinda host olarak `db` kullanmak daha anlasilir olabilir. Bu dusunce Compose tarafinda daha da belirgin hale gelir.
+
+Bu ayni zamanda konfigürasyonun daha okunabilir olmasini saglar. IP adresi ezberlemek veya manuel takip etmek yerine, servis adi uzerinden dusunmek ekip icinde iletisimi de kolaylastirir.
+
+## Neden ogrenilmesi gerekir?
+
+Docker'i sadece tek container denemeleri icin kullanmak kolaydir. Ama gercek projelerde servisler neredeyse her zaman birbiriyle iliskilidir. Bu nedenle network mantigini anlamak, Docker'i gercek hayatta kullanabilmek icin temel bir gerekliliktir.
+
+Ozellikle "uygulama neden veritabanina baglanamiyor?" gibi sorularin cevabi cok sik network dusuncesinde yatar. Bu nedenle Docker network konusu ileri seviye degil, erken asamada oturtulmasi gereken temel bir konudur.
+
+> **Ipuclari:** Network mantigini ogrenirken port maplemeyi ve servisler arasi iletisimi birbirinden ayirmaya dikkat edin. Bu ayrim ileride cok ise yarar.
+
+## Ozet
+
+Bu bolumde Docker network mantiginin temelini gorduk.
+
+- Network, container'lar arasi iletisimi duzenler
+- Port mapleme ile ayni sey degildir
+- Isimle erisim servisleri daha okunabilir hale getirir
+- Coklu servis yapilarinda network dusuncesi zorunludur

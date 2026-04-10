@@ -1,0 +1,66 @@
+---
+id: "docker-001-giris"
+title: "Docker'a Giris ve Neden Kullanilir?"
+order: 10
+order_index: 10
+---
+
+# Docker'a Giris ve Neden Kullanilir?
+
+Modern yazilim gelistirme surecinde en sik duyulan problemlerden biri sudur: "Proje bende calisiyor ama baskasinda calismiyor." Bunun nedeni genellikle kodun kendisinden cok, kodun calistigi ortamin farkli olmasidir. Isletim sistemi surumu, kutuphane paketleri, runtime surumu ve ortam ayarlari degistiginde ayni proje farkli davranabilir. Docker tam da bu noktada devreye girer.
+
+Docker, bir uygulamayi yalnizca kaynak kod olarak degil, ihtiyac duydugu calisma ortami ile birlikte paketlemeyi kolaylastiran bir container platformudur. Boylece uygulama gelistiricinin bilgisayarinda, test ortaminda ve sunucuda daha tutarli sekilde davranir. Bu tutarlilik, hem bireysel calismada hem de ekip calismasinda ciddi avantaj saglar.
+
+## Docker neyi cozer?
+
+Docker'in en buyuk katkisi ortam farklarini azaltmasidir. Ornegin bir projede:
+
+- Belirli bir Node.js, Python veya Java surumu gerekebilir
+- Isletim sistemi paketleri eksik ya da farkli olabilir
+- Her gelistirici projeyi farkli sekilde kurmus olabilir
+- Test ortami ile production ortami birbirinden uzaklasmis olabilir
+
+Docker bu farklari tamamen yok etmese de daha yonetilebilir hale getirir. Uygulama ve bagimliliklar once bir image icinde toplanir, sonra bu image'dan container uretip calistirilir. Bu sayede "kurulum adimlarini tek tek tekrar etme" ihtiyaci azalir.
+
+## Container mantigi neden onemlidir?
+
+Container, uygulamanin izole bir ortamda calisan paketlenmis halidir. Sanal makine ile benzer gibi gorunse de ayni sey degildir. Sanal makine tam bir isletim sistemi ile gelir. Container ise host sistemin cekirdegini kullanir ve bu nedenle daha hafiftir.
+
+Bu fark su avantajlari saglar:
+
+- Daha hizli baslangic
+- Daha az kaynak tuketimi
+- Daha kolay tasima
+- Daha hizli ortam kurulumu
+
+Ozellikle gelistirme ve test asamalarinda bu hafiflik ciddi bir pratiklik kazandirir.
+
+## Docker neden DevOps tarafinda bu kadar populer?
+
+Docker sadece gelistiriciler icin degil, operasyon ve platform ekipleri icin de faydalidir. Cunku uygulamanin nasil paketlenecegi ve nasil calisacagi daha acik hale gelir. CI/CD sureclerinde ayni image tekrar tekrar kullanilabilir. Bu da deployment adimlarini daha standart bir hale getirir.
+
+DevOps bakis acisiyla Docker'in onemi biraz da ortak dil olusturmasindan gelir. Gelistirici, test muhendisi ve operasyon ekibi ayni artifact uzerinden konusabilir. Bu durum "lokalde boyleydi ama sunucuda farkli oldu" turu tartismalari azaltir.
+
+## Docker her seyi cozer mi?
+
+Hayir. Docker cok guclu bir arac olsa da tek basina tum mimari veya operasyon problemlerini cozen sihirli bir teknoloji degildir. Veri kaliciligi, guvenlik, servisler arasi iletisim ve konfigürasyon yonetimi gibi konular yine dikkatli dusunulmelidir. Docker bu sureci duzenler ve kolaylastirir; ama dogru teknik kararlarin yerini tutmaz.
+
+Bu nedenle Docker ogrenirken sadece komutlara degil, su sorulara da odaklanmak faydalidir:
+
+- Uygulamam hangi bagimliliklara ihtiyac duyuyor?
+- Bu uygulamayi ekipte baska biri nasil tekrar calistiracak?
+- Veriler nerede tutulacak?
+- Birden fazla servis birbirine nasil baglanacak?
+
+Bu sorularin cevabi, kursun sonraki bolumlerinde gorecegimiz image, Dockerfile, volume, network ve Compose konularina baglanir.
+
+> **Ipuclari:** Docker'i ilk asamada "tutarlilik araci" olarak dusunmek ogrenmeyi kolaylastirir. Once problemi anlayin, sonra komutlari ogrenin.
+
+## Ozet
+
+Bu bolumde Docker'in neden ortaya ciktigini ve neden bu kadar yaygin kullanildigini gorduk.
+
+- Docker, ortam farklarini azaltir
+- Uygulama ve bagimliliklari birlikte paketlemeyi kolaylastirir
+- DevOps sureclerinde tutarlilik ve tekrar uretilebilirlik saglar
+- Ama veri, network ve guvenlik gibi konular yine ayri dusunulmelidir

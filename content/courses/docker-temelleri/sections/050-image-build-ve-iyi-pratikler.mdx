@@ -1,0 +1,60 @@
+---
+id: "docker-005-build-iyi-pratikler"
+title: "Image Build Sureci ve Iyi Pratikler"
+order: 50
+order_index: 50
+---
+
+# Image Build Sureci ve Iyi Pratikler
+
+Dockerfile yazmak tek basina yeterli degildir; iyi bir image uretmek de onemlidir. Yavas build sureleri, buyuk image boyutlari ve gereksiz dosyalar zamanla sorun yaratir. Bu nedenle image build surecini mantikli tasarlamak gerekir.
+
+## Build sureci nasil calisir?
+
+`docker build` komutu calistiginda Docker, Dockerfile'daki adimlari sirasiyla uygular. Her adim belirli bir katman olusturabilir. Degismeyen katmanlar tekrar kullanilabildigi icin sonraki build'ler daha hizli olur.
+
+Bu nedenle direktiflerin sirasi onemlidir. Siklikla degisen dosyalari sona yakin kopyalamak, cache kullaniminin daha verimli olmasini saglar.
+
+## Neden image boyutu onemlidir?
+
+Buyuk image'larin birkac olumsuz etkisi vardir:
+
+- Indirme ve yukleme sureleri uzar
+- CI/CD pipeline'lari yavaslar
+- Depolama maliyeti artabilir
+- Gereksiz paketlerle saldiri yuzeyi genisleyebilir
+
+Bu nedenle image boyutunu azaltmak sadece performans degil, ayni zamanda operasyonel kalite konusudur.
+
+## Siklikla kullanilan iyi pratikler
+
+- Daha kucuk ve amaca uygun base image secmek
+- Gereksiz dosyalari image'a dahil etmemek
+- Paket dosyalarini once kopyalayip bagimliliklari erken yuklemek
+- Uygulama kodunu daha sonra ekleyerek cache avantajindan yararlanmak
+- Tek container'a gereksiz sayida sorumluluk yuklememek
+
+## Katman mantigini bilmenin faydasi
+
+Docker'da her adim potansiyel olarak bir katman urettigi icin, Dockerfile'in yapisi image davranisini etkiler. Ornegin surekli degisen uygulama dosyalarini en basa koyarsaniz, kucuk bir degisiklikte bile sonraki adimlarin tekrar calismasi gerekebilir.
+
+Bu yuzden katman mantigini derin teknik ayrintisiyla bilmek zorunlu degil ama su sonucu anlamak onemlidir: Dockerfile sirasi, build suresi ve verimlilik uzerinde etkili olur.
+
+## Tek sorumluluk fikri
+
+Baslangic seviyesinde faydali bir ilke sudur: bir container genellikle tek bir ana goreve odaklanmalidir. Web uygulamasi ayri, veritabani ayri, arka plan isleyici ayri dusunulebilir. Bu yaklasim:
+
+- Bakimi kolaylastirir
+- Hata ayiklamayi sadeleştirir
+- Compose gibi araclardaki servis tasarimini daha okunabilir hale getirir
+
+Bu ilke her durumda birebir ayni uygulanmak zorunda olmasa da, ogrenme asamasinda saglikli bir referans noktasi sunar.
+
+## Ozet
+
+Bu bolumde image build surecini kalite acisindan ele aldik.
+
+- Build sirasi ve cache kullanimi onemlidir
+- Kucuk image'lar operasyonel avantaj saglar
+- Gereksiz dosyalari disarida birakmak iyi pratiktir
+- Tek sorumluluk dusuncesi bakimi kolaylastirir
