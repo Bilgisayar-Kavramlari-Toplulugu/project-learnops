@@ -32,6 +32,7 @@ from sqlalchemy.ext.asyncio import (
 from app.config import settings
 from app.database import get_db
 from app.main import app
+from app.models.courses import Course, Section
 from app.models.users import OAuthAccount, User
 
 _db_url: str = settings.DATABASE_URL
@@ -121,3 +122,54 @@ async def test_user(db_session: AsyncSession) -> User:
     await db_session.flush()
 
     return user
+
+
+@pytest_asyncio.fixture
+async def test_course(db_session: AsyncSession) -> Course:
+    """Published course with two sections. Rolled back after test."""
+    course = Course(
+        slug="python-temelleri",
+        title="Python Temelleri",
+        category="programlama",
+        difficulty="beginner",
+        duration_minutes=120,
+        display_order=1,
+        is_published=True,
+    )
+    db_session.add(course)
+    await db_session.flush()
+
+    sections = [
+        Section(
+            course_id=course.id,
+            section_id_str="python-001-giris",
+            title="Giriş",
+            order_index=1,
+        ),
+        Section(
+            course_id=course.id,
+            section_id_str="python-002-degiskenler",
+            title="Değişkenler",
+            order_index=2,
+        ),
+    ]
+    db_session.add_all(sections)
+    await db_session.flush()
+
+    return course
+
+
+@pytest_asyncio.fixture
+async def test_unpublished_course(db_session: AsyncSession) -> Course:
+    """Draft (is_published=False) course — must not appear in public API."""
+    course = Course(
+        slug="gizli-kurs",
+        title="Gizli Kurs",
+        category="programlama",
+        difficulty="beginner",
+        is_published=False,
+    )
+    db_session.add(course)
+    await db_session.flush()
+
+    return course
