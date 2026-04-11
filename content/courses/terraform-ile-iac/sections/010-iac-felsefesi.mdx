@@ -1,0 +1,201 @@
+---
+id: "tf-001-iac"
+title: "Infrastructure as Code Felsefesi"
+order: 10
+order_index: 10
+---
+
+# Infrastructure as Code Felsefesi
+
+Bir sabah uyandığınızda şirketinizin production sunucusunun çöktüğünü öğrendiniz. Yedeği yok, nasıl kurulduğu kimsenin tam aklında değil. Birisi "bi de şunu yüklemiştik" diyor, bir diğeri "hayır yüklemedik" diyor. Bu senaryo, dünya genelinde binlerce ekibin yaşadığı **"works on my machine"** ve **"snowflake server"** probleminin klasik örneğidir. Infrastructure as Code tam da bu felaketi önlemek için doğdu.
+
+---
+
+## Geleneksel Altyapı Yönetiminin Sorunları
+
+Terraform'u anlamadan önce, neden var olduğunu anlamak gerekir. Geleneksel yaklaşımda altyapı şu yollarla yönetilirdi:
+
+### 1. ClickOps (Manuel Tıklama)
+
+Sistem admini, cloud provider'ın web konsoluna giriş yapar, saatler harcayarak sunucuları, ağ kurallarını ve güvenlik gruplarını tek tek oluşturur. Sorun şu: **ikinci bir ortam kurmak istediğinizde baştan başlamak zorundasınız.**
+
+```
+❌ Staging ortamı kur  → 4 saat manuel tıklama
+❌ Production ortamı kur → 4 saat daha manuel tıklama
+❌ İkisi arasında fark var mı? → Kimse bilmiyor.
+```
+
+### 2. Bash Script ile Kurulum
+
+Biraz daha ilerici ekipler shell scriptleri yazar. Ama bu da kendi sorunlarını getirir:
+
+```bash
+# Eski okul yaklaşımı — idempotent değil!
+#!/bin/bash
+apt-get install nginx
+systemctl start nginx
+# Peki nginx zaten kuruluysa? Script patlıyor.
+# Peki sunucu farklı bir dağıtımsa? Yine patlıyor.
+```
+
+**İdempotent olmayan scriptler** her çalışmada farklı sonuç üretir. Bir kez çalışır, ikinci kez patlayabilir.
+
+### 3. Snowflake Sunucular
+
+Zamanla her sunucu kendine has bir kar tanesi gibi olur — benzersiz, tekrarlanamaz. Kim neyi yükledi, hangi config değiştirildi... artık kimse bilmiyor.
+
+> ⚠️ **Gerçek Dünya Acısı:** Bir startup'ta tek sistem admini işten ayrıldığında, şirketin production altyapısının nasıl çalıştığı kimse tarafından bilinmiyordu. 3 ay boyunca altyapı "dokunulmaz" kabul edildi çünkü bozulursa kim düzeltecekti?
+
+---
+
+## Infrastructure as Code Nedir?
+
+**Infrastructure as Code (IaC)**, altyapı kaynaklarının (sunucular, ağlar, veritabanları, güvenlik kuralları) makine tarafından okunabilir yapılandırma dosyaları aracılığıyla yönetilmesidir.
+
+Temel fikir son derece basit:
+
+```
+Uygulama kodunuzu nasıl Git'te yönetiyorsanız,
+altyapı kodunuzu da aynı şekilde yönetin.
+```
+
+Bu felsefeyle birlikte şu imkânlar gelir:
+
+| Geleneksel Yönetim | IaC ile Yönetim |
+|---|---|
+| Manuel, hataya açık | Otomatik, tekrarlanabilir |
+| Belgelenmemiş | Kod = Belge |
+| Test edilemez | CI/CD ile test edilebilir |
+| Geri alınamaz | Git ile versiyonlanır |
+| Ortamlar arası tutarsızlık | Her ortam özdeş |
+
+---
+
+## IaC'ın Temel Prensipleri
+
+### 🔁 İdempotans
+
+IaC araçlarının en kritik özelliği idempotanstır: **aynı kodu kaç kez uygularsanız uygulayın, sonuç aynı olur.**
+
+```hcl
+# Bu blok kaç kez çalıştırılırsa çalıştırılsın,
+# sonuçta tam olarak 1 tane bu bucket oluşur.
+resource "google_storage_bucket" "assets" {
+  name     = "learnops-assets"
+  location = "EU"
+}
+```
+
+### 📋 Deklaratif vs İmperatif
+
+IaC araçları iki paradigmadan birini kullanır:
+
+**İmperatif (Bash, Ansible — bir kısım):**
+> "Şu adımları şu sırayla yap"
+
+```bash
+# Nasıl yapılacağını tarif edersiniz
+mkdir /app
+cd /app
+git clone ...
+npm install
+```
+
+**Deklaratif (Terraform, CloudFormation):**
+> "Son halin şöyle görünmesini istiyorum"
+
+```hcl
+# Ne istediğinizi tarif edersiniz, nasıl olacağını Terraform bilir
+resource "google_compute_instance" "app_server" {
+  name         = "app-server"
+  machine_type = "e2-medium"
+  # ...
+}
+```
+
+Terraform **deklaratif** bir araçtır. Mevcut durumu analiz eder, hedef durumla karşılaştırır ve sadece gereken değişiklikleri yapar.
+
+### 🔍 Self-Documenting Infrastructure
+
+IaC dosyaları aynı zamanda **canlı belgedir.** Altyapınızı anlamak için bir wiki'ye bakmanıza gerek yoktur — `.tf` dosyaları size her şeyi anlatır.
+
+---
+
+## IaC Araçları Ekosistemi
+
+Piyasada birden fazla IaC aracı bulunur. Doğru aracı seçmek için ekosistemi bilmek gerekir:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    IaC Araçları                          │
+├────────────────────┬────────────────────────────────────┤
+│  Cloud-Spesifik    │  Cloud-Agnostic (Çoklu Cloud)      │
+├────────────────────┼────────────────────────────────────┤
+│  AWS CloudFormation│  Terraform (HashiCorp)             │
+│  Azure ARM         │  Pulumi (birden fazla dil)         │
+│  GCP Deployment Mgr│  Crossplane (Kubernetes tabanlı)   │
+└────────────────────┴────────────────────────────────────┘
+```
+
+**Neden Terraform?**
+
+- **Multi-cloud:** AWS, GCP, Azure ve 3000+ provider'ı destekler
+- **Olgunluk:** 2014'ten beri aktif geliştirme, büyük topluluk
+- **HCL:** İnsan okunabilir, öğrenmesi kolay dil
+- **Ekosistem:** Terraform Registry'de binlerce hazır modül
+- **Endüstri standardı:** DevOps iş ilanlarının büyük çoğunluğunda isteniyor
+
+---
+
+## Drift Detection: Gerçek Dünya Farkı
+
+IaC'ın en güçlü özelliklerinden biri **drift detection**'dır. Birisi konsole girerek elle bir değişiklik yaptığında, Terraform bunu fark eder:
+
+```
+$ terraform plan
+
+Note: Objects have changed outside of Terraform
+
+  # google_compute_firewall.allow_http has been changed
+  ~ resource "google_compute_firewall" "allow_http" {
+      ~ source_ranges = [
+          - "0.0.0.0/0",        # Biri elle silmiş!
+          + "10.0.0.0/8",
+        ]
+    }
+
+Plan: 0 to add, 1 to change, 0 to destroy.
+```
+
+Bu özellik sayesinde altyapı kodunuz gerçeğin **tek yetkili kaynağı (single source of truth)** olur.
+
+---
+
+## Hands-on: İlk IaC Düşüncesi
+
+Henüz kod yazmadan önce, IaC zihniyetini pekiştirmek için şu alıştırmayı yapın:
+
+**Senaryo:** Bir web uygulaması için şu kaynakları oluşturmanız gerekiyor:
+- 1 adet sanal makine (2 vCPU, 4GB RAM)
+- 1 adet storage bucket
+- HTTP ve HTTPS'e izin veren bir firewall kuralı
+
+**IaC olmadan:** Bu kaynakları web konsolundan oluşturun ve sonra aynısını staging için tekrarlayın.
+
+**IaC ile:** Bir `.tf` dosyası yazın ve `terraform apply` komutuyla her iki ortamı da — sadece değişken değerlerini farklılaştırarak — saniyeler içinde oluşturun.
+
+> 💡 **Altın Kural:** "Eğer bu sunucu silinirse, altyapımı 1 saat içinde tamamen yeniden kurabilir miyim?" sorusunun cevabı **evet** olmalıdır. IaC bu soruyu evet yapar.
+
+---
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+
+- Geleneksel altyapı yönetiminin neden yetersiz kaldığını (ClickOps, snowflake sunucular)
+- Infrastructure as Code'un temel felsefesini ve prensiplerini
+- Deklaratif ve imperatif yaklaşımlar arasındaki farkı
+- Terraform'un neden tercih edildiğini ve ekosistem içindeki yerini
+- Drift detection kavramını ve "single source of truth" anlayışını
+
+Bir sonraki bölümde Terraform'u kuracak ve ilk gerçek altyapı kodumuzu yazacağız.
