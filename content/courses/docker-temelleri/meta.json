@@ -1,0 +1,9 @@
+{
+  "slug": "docker-temelleri",
+  "title": "Docker Temelleri",
+  "description": "Docker ile container mantığını, Dockerfile yazımını, volume, network ve Docker Compose kullanımını sıfırdan öğrenin.",
+  "category": "containerization",
+  "difficulty": "beginner",
+  "duration_minutes": 120,
+  "is_published": false
+}
