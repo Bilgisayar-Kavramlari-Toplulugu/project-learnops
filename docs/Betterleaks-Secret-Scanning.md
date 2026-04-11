@@ -2,179 +2,174 @@
 <summary><strong>🇹🇷 Türkçe</strong></summary>
 <br>
 
-Bu belge, LearnOps reposuna Betterleaks tabanli secret scanning kontrolunun neden eklendigini, CI/CD icindeki calisma seklini ve ekip icin beklenen incident response akisini aciklar.
+Bu belge, LearnOps reposuna Betterleaks tabanlı secret scanning kontrolünün neden eklendiğini, CI/CD içindeki çalışma şeklini ve ekip için beklenen incident response akışını açıklar.
 
 ---
 
-## Amac
+## Amaç
 
-LearnOps; FastAPI, Next.js ve PostgreSQL ile gelistirilen, topluluk odakli bir DevOps ogrenme platformudur. Topluluga acik bir projede cok sayida contributor, pull request ve hizli iterasyon bulunur. Bu hiz, gelistirme verimini artirirken en sik ve en maliyetli risklerden birini de buyutur: yanlislikla secret expose edilmesi.
+LearnOps; FastAPI, Next.js ve PostgreSQL ile geliştirilen, topluluk odaklı bir DevOps öğrenme platformudur. Topluluğa açık bir projede çok sayıda contributor, pull request ve hızlı iterasyon bulunur. Bu hız, geliştirme verimini artırırken en sık ve en maliyetli risklerden birini de büyütür: yanlışlıkla secret expose edilmesi.
 
-Secret sizintilari gunluk gelistirme akisi icinde beklenmedik sekillerde ortaya cikabilir:
+Secret sızıntıları günlük geliştirme akışı içinde beklenmedik şekillerde ortaya çıkabilir:
 
-- Debug sirasinda `.env` icinden bir satirin kopyalanmasi
-- Test amacli gecici bir API key eklenmesi
-- README, script veya ornek komuta token yapistirilmasi
+- Debug sırasında `.env` içinden bir satırın kopyalanması
+- Test amaçlı geçici bir API key eklenmesi
+- README, script veya örnek komuta token yapıştırılması
 
-LearnOps'ta zaten test ve lint kontrolleri bulunuyordu. Ancak secret tespiti manuel ve tutarsizdi. Bu nedenle PR asamasinda otomatik, hizli, tekrar edilebilir ve zorunlu bir guvenlik kapisi eklemek istedik.
+LearnOps'ta zaten test ve lint kontrolleri bulunuyordu. Ancak secret tespiti manuel ve tutarsızdı. Bu nedenle PR aşamasında otomatik, hızlı, tekrar edilebilir ve zorunlu bir güvenlik kapısı eklemek istedik.
 
 ---
 
 ## Betterleaks Nedir?
 
-Betterleaks, Git repository'leri icin tasarlanmis bir secret scanner'dir. Hem working tree'yi hem de Git history'yi tarayabilir, pattern tabanli tespit yapar ve pull request pipeline'larinda calisabilecek kadar hafiftir.
+Betterleaks, Git repository'leri için tasarlanmış bir secret scanner'dır. Hem working tree'yi hem de Git history'yi tarayabilir, pattern tabanlı tespit yapar ve pull request pipeline'larında çalışabilecek kadar hafiftir.
 
-LearnOps icin tercih edilme nedenleri:
+LearnOps için tercih edilme nedenleri:
 
-1. PR dostu olmasi
+1. PR dostu olması
 2. Git history tarayabilmesi
-3. GitHub Actions ile kolay entegre olmasi
-4. Basit ama etkili bir ilk guvenlik katmani saglamasi
+3. GitHub Actions ile kolay entegre olması
+4. Basit ama etkili bir ilk güvenlik katmanı sağlaması
 
 ---
 
-## LearnOps Icindeki Entegrasyon
+## LearnOps İçindeki Entegrasyon
 
-Mevcut pipeline zaten su kontrolleri calistiriyordu:
+Mevcut pipeline zaten şu kontrolleri çalıştırıyordu:
 
 - Backend testleri
 - Backend linting (`ruff` + `mypy`)
 - Frontend lint ve type checks
 
-Bunlara ek olarak ayri bir `betterleaks` isi eklendi.
+Bunlara ek olarak ayrı bir `betterleaks` işi eklendi.
 
-Temel gereksinimlerimiz sunlardi:
+Temel gereksinimlerimiz şunlardı:
 
-- `develop`, `release` ve `main` hedefli PR'larda calismasi
-- Yalnizca o anki dosyalari degil, tum Git history'yi taramasi
-- Reviewer'lar icin net bir sonuc ozeti uretmesi
-- Leak bulundugunda workflow'u fail etmesi
+- `develop`, `release` ve `main` hedefli PR'larda çalışması
+- Yalnızca o anki dosyaları değil, tüm Git history'yi taraması
+- Reviewer'lar için net bir sonuç özeti üretmesi
+- Leak bulunduğunda workflow'u fail etmesi
 
-Docker tabanli bir action yerine binary dogrudan GitHub runner icinde indirilip calistirildi. Boylece:
+Docker tabanlı bir action yerine binary doğrudan GitHub runner içinde indirilip çalıştırıldı. Böylece:
 
-- Workflow icinde Docker CLI bagimliligi olusmadi
-- Container icindeki `safe.directory` sorunlariyla ugrasmak gerekmedi
+- Workflow içinde Docker CLI bağımlılığı oluşmadı
+- Container içindeki `safe.directory` sorunlarıyla uğraşmak gerekmedi
 
 ![PR Security Gate: Secrets Scan in CI](images/betterleaks-ci-workflow.png)
 
 ---
 
-## CI Akisi
+## CI Akışı
 
-Workflow dosyasi: `.github/workflows/ci-betterleaks.yaml`
+Workflow dosyası: `.github/workflows/ci-betterleaks.yaml`
 
-Yuksek seviyede akisin mantigi su sekildedir:
+Yüksek seviyede akışın mantığı şu şekildedir:
 
-1. `actions/checkout@v4` ile repo tam history ile cekilir.
-2. Betterleaks binary'si GitHub Releases uzerinden pin'lenmis bir versiyonla indirilir.
-3. `./betterleaks git . --report-format json --report-path betterleaks.json --redact=100` komutu calistirilir.
-4. JSON rapordan bulgu sayisi hesaplanir.
-5. GitHub Actions summary icine `## Betterleaks Summary` bolumu yazilir.
-6. Bulgu sayisi `0` degilse job fail edilir.
+1. `actions/checkout@v4` ile repo tam history ile çekilir.
+2. Betterleaks binary'si GitHub Releases üzerinden pin'lenmiş bir versiyonla indirilir.
+3. `./betterleaks git . --report-format json --report-path betterleaks.json --redact=100` komutu çalıştırılır.
+4. JSON rapordan bulgu sayısı hesaplanır.
+5. GitHub Actions summary içine `## Betterleaks Summary` bölümü yazılır.
+6. Bulgu sayısı `0` değilse job fail edilir.
 
-Bu tasarim onemlidir; cunku Betterleaks tek basina merge bloklamaz. Merge'i engelleyen sey, fail olan CI kontrolunun branch protection tarafindan required check olarak tanimlanmis olmasidir.
+Bu tasarım önemlidir; çünkü Betterleaks tek başına merge bloklamaz. Merge'i engelleyen şey, fail olan CI kontrolünün branch protection tarafından required check olarak tanımlanmış olmasıdır.
 
 ![Betterleaks CI Flow (High-Level)](images/betterleaks-ci-flow.png)
 
 ---
 
-## Onemli Guvenlik Notu
+## Önemli Güvenlik Notu
 
-Buradaki en kritik nokta sudur:
+Buradaki en kritik nokta şudur:
 
-Bir kisi secret'i kendi branch'ine push ettigi anda, secret zaten expose olmus sayilir.
+Bir kişi secret'i kendi branch'ine push ettiği anda, secret zaten expose olmuş sayılır.
 
-Yani PR'da Betterleaks'in secret'i tespit etmesi cok degerlidir; ancak bu tespit, exposure gercegini geri almaz. Bu nedenle bir secret tespit edildiginde ilk ve en acil aksiyon secret'in rotate edilmesidir.
+Yani PR'da Betterleaks'in secret'i tespit etmesi çok değerlidir; ancak bu tespit, exposure gerçeğini geri almaz. Bu nedenle bir secret tespit edildiğinde ilk ve en acil aksiyon secret'in rotate edilmesidir.
 
-Onerilen acil aksiyon sirasi:
+Önerilen acil aksiyon sırası:
 
 1. Expose olan secret'i hemen iptal et veya rotate et
-2. Gerekirse ilgili servislerde aktif session / token etkisini degerlendir
-3. Repo gecmisinde veya branch'te kalan izleri temizle
-4. Pull request'i ancak rotation tamamlandiktan sonra duzelt
+2. Gerekirse ilgili servislerde aktif session / token etkisini değerlendir
+3. Repo geçmişinde veya branch'te kalan izleri temizle
+4. Pull request'i ancak rotation tamamlandıktan sonra düzelt
 
-Ozetle: CI detection bir koruma katmanidir, ama incident response'un ilk adimi her zaman secret rotation olmalidir.
-
----
-
-## Neden Sadece PR Asamasinda Yetinmemeliyiz?
-
-PR seviyesindeki tarama merge oncesi koruma saglar, ancak exposure daha erken bir anda, yani push aninda gerceklesebilir. Her push'ta GitHub Actions ile scan calistirmak teorik olarak mumkun olsa da bu yaklasim:
-
-- GitHub Actions kotasini daha hizli tuketir
-- Geri bildirim dongusunu gereksiz sekilde uzatabilir
-- Her kucuk push icin merkezi altyapiya yuk bindirir
-
-Bu nedenle daha pratik yaklasim, CI taramasini korurken lokal tarafta da tarama yapmaktir.
+Özetle: CI detection bir koruma katmanıdır, ama incident response'un ilk adımı her zaman secret rotation olmalıdır.
 
 ---
 
-## Onerilen Yaklasim: Lokal Betterleaks + Pre-Push Kontrolu
+## Neden Sadece PR Aşamasında Yetinmemeliyiz?
 
-En iyi gelistirici deneyimi icin su model onerilir:
+PR seviyesindeki tarama merge öncesi koruma sağlar, ancak exposure daha erken bir anda, yani push anında gerçekleşebilir. Her push'ta GitHub Actions ile scan çalıştırmak teorik olarak mümkün olsa da bu yaklaşım:
 
-- Betterleaks CI icinde zorunlu olarak calismaya devam eder
-- Her gelistirici Betterleaks'i kendi bilgisayarina kurar
-- `git push` oncesinde lokal tarama calistirilir
-- Mumkunse bu adim bir `pre-push` hook ile otomatiklestirilir
+- GitHub Actions kotasını daha hızlı tüketir
+- Geri bildirim döngüsünü gereksiz şekilde uzatabilir
+- Her küçük push için merkezi altyapıya yük bindirir
 
-Bu modelin faydalari:
+Bu nedenle daha pratik yaklaşım, CI taramasını korurken lokal tarafta da tarama yapmaktır.
 
-- Secret'lar merkezi repoya gitmeden once yakalanir
-- Geri bildirim saniyeler icinde gelistiricinin makinesinde gorulur
-- GitHub Actions kotasi gereksiz yere harcanmaz
-- CI yine son savunma hatti olarak kalir
+---
 
-Basit bir ornek akis:
+## Önerilen Yaklaşım: Lokal Betterleaks + Pre-Push Kontrolü
+
+En iyi geliştirici deneyimi için şu model önerilir:
+
+- Betterleaks CI içinde zorunlu olarak çalışmaya devam eder
+- Her geliştirici Betterleaks'i kendi bilgisayarına kurar
+- `git push` öncesinde lokal tarama çalıştırılır
+
+Bu modelin faydaları:
+
+- Secret'lar merkezi repoya gitmeden önce yakalanır
+- Geri bildirim saniyeler içinde geliştiricinin makinesinde görülür
+- GitHub Actions kotası gereksiz yere harcanmaz
+- CI yine son savunma hattı olarak kalır
+
+Basit bir örnek akış:
 
 ```bash
 betterleaks git .
 ```
 
-Eger komut bulgu uretirse push iptal edilir ve developer once secret'i kaldirir, gerekiyorsa rotate eder, sonra tekrar dener.
+Eğer komut bulgu üretirse push iptal edilir ve developer önce secret'i kaldırır, gerekiyorsa rotate eder, sonra tekrar dener.
 
-Bir adim ileri tasimak istersek ekip icin standart bir `pre-push` hook veya ortak bir developer setup script'i de eklenebilir.
+`pre-push` hook standardizasyonu bu dokümanda yapılmış bir uygulama değil, gelecekte değerlendirilebilecek bir iyileştirme önerisidir. Bu adım uygulanacaksa ayrı bir iş kartı açılarak planlanmalı; mevcut durumda bunu `v2.0` kapsamında değerlendirilebilecek bir geliştirme olarak ele alıyoruz.
 
 ---
 
-## PR Sirasinda Beklenen Davranis
+## PR Sırasında Beklenen Davranış
 
-Bir PR acildiginda:
+Bir PR açıldığında:
 
-- Betterleaks diger kalite kontrolleriyle birlikte calisir
-- Leak bulunmazsa job yesil olur ve summary `Findings: 0` gosterir
-- Leak bulunursa job kirmizi olur ve required check ise merge bloklanir
+- Betterleaks diğer kalite kontrolleriyle birlikte çalışır
+- Leak bulunmazsa job yeşil olur ve summary `Findings: 0` gösterir
+- Leak bulunursa job kırmızı olur ve required check ise merge bloklanır
 
-Bu davranis, LearnOps'ta test ve lint kontrollerine benzer sekilde security kontrolunu da birinci sinif CI gereksinimi haline getirir.
+Bu davranış, LearnOps'ta test ve lint kontrollerine benzer şekilde security kontrolünü de birinci sınıf CI gereksinimi haline getirir.
 
 ---
 
 ## Release Safety'ye Katkisi
 
-Bu degisiklik sadece yeni bir job eklemek degildir. Su guvenlik pratiklerini standardize eder:
+Bu değişiklik sadece yeni bir job eklemek değildir. Şu güvenlik pratiklerini standardize eder:
 
-- Tutarlilik: Her PR ayni sekilde taranir
-- Tekrarlanabilirlik: Sonuc kisiye gore degismez
-- Gorunurluk: Summary reviewer icin hizli karar destegi saglar
-- Zorunluluk: Branch protection ile birlikte merge oncesi kontrol haline gelir
+- Tutarlılık: Her PR aynı şekilde taranır
+- Tekrarlanabilirlik: Sonuç kişiye göre değişmez
+- Görünürlük: Summary reviewer için hızlı karar desteği sağlar
+- Zorunluluk: Branch protection ile birlikte merge öncesi kontrol haline gelir
 
-Topluluk odakli bir projede bu, contributor'larin hizli calisirken daha guvenli hareket etmesini saglar.
+Topluluk odaklı bir projede bu, contributor'ların hızlı çalışırken daha güvenli hareket etmesini sağlar.
 
 ---
 
-## Ozet
+## Kısa Sonuç Tablosu
 
-Betterleaks, LearnOps icin pratik bir shift-left security adimidir. Ancak en kritik gercek sunu degistirmez:
-
-- Secret push edildigi anda exposure gerceklesmis olabilir
-- Detection sonrasi ilk aksiyon secret rotation olmalidir
-- CI taramasi korunmali, ama lokal pre-push tarama ile tamamlanmalidir
-
-Bu nedenle tavsiye edilen model:
-
-- CI icinde Betterleaks'i required check olarak tutmak
-- Gelistirici makinelerinde Betterleaks kurulumunu yayginlastirmak
-- Mumkunse `pre-push` hook ile lokal taramayi standartlastirmak
+| Konu | Net Sonuç |
+|---|---|
+| Secret push edilirse ne olur? | Secret expose olmuş kabul edilir |
+| İlk aksiyon ne olmalı? | Secret hemen revoke veya rotate edilmelidir |
+| CI taraması ne sağlar? | PR aşamasında görünür ve zorunlu bir kontrol sağlar |
+| Tek başına yeterli mi? | Hayır, lokal tarama ile desteklenmelidir |
+| `pre-push` hook durumu nedir? | Bu dokümanda öneri seviyesindedir; uygulanacaksa ayrı kartla planlanmalıdır |
 
 </details>
 
@@ -296,7 +291,6 @@ The recommended operating model is:
 - Betterleaks stays mandatory in CI
 - Each developer installs Betterleaks locally
 - Developers run a scan before `git push`
-- Ideally this is automated through a `pre-push` hook
 
 Benefits of this approach:
 
@@ -313,7 +307,7 @@ betterleaks git .
 
 If the command reports findings, the push should be stopped, the secret should be removed, and if the secret was ever valid or reachable, it should be rotated before trying again.
 
-As a next step, the team could standardize this with a shared `pre-push` hook or a developer bootstrap script.
+`pre-push` hook standardization is not implemented as part of this document. It should be treated as a future improvement and, if the team wants to adopt it, planned through a separate work item. For now, it is better framed as something that can be evaluated in `v2.0`.
 
 ---
 
@@ -342,18 +336,14 @@ For a community-driven project like LearnOps, this helps contributors move quick
 
 ---
 
-## Summary
+## Quick Summary Table
 
-Betterleaks is a practical shift-left security step for LearnOps. But the key truth remains:
-
-- Once a secret is pushed, exposure may already have happened
-- The first response after detection must be secret rotation
-- CI scanning should stay in place, but it should be complemented with local pre-push scanning
-
-That makes the recommended model:
-
-- Keep Betterleaks as a required CI check
-- Encourage local Betterleaks installation on developer machines
-- Standardize pre-push scanning where possible
+| Topic | Takeaway |
+|---|---|
+| What happens if a secret is pushed? | It should already be treated as exposed |
+| What is the first response step? | Revoke or rotate the secret immediately |
+| What does CI scanning provide? | A visible and enforceable PR-stage control |
+| Is CI alone enough? | No, it should be complemented with local scanning |
+| What is the status of `pre-push` hooks? | They are only a future improvement idea unless planned in a separate task |
 
 </details>
