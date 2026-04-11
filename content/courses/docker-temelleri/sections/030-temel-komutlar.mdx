@@ -13,7 +13,7 @@ Docker'da mantığı anladıktan sonra günlük kullanımda en çok karşılaşa
 
 ```bash
 docker pull nginx
-docker build -t ornek-uygulama .
+docker build -t örnek-uygulama .
 docker run -d -p 8080:80 nginx
 docker ps
 docker logs <container_adi>
@@ -39,7 +39,7 @@ Bu komutlar Docker kullanımında temel iş akışını temsil eder. Önce image
 
 `docker run`, yeni başlayanların en çok göreceği komutlardan biridir çünkü image ile container arasındaki köprüyü kurar. Bu komut bir image'i alıp çalışan bir container haline getirir.
 
-Ornegin:
+Örnegin:
 
 ```bash
 docker run -d -p 8080:80 nginx
@@ -70,11 +70,11 @@ oldukça faydalıdır. Bu komutlar, "çalışmıyor" gibi genel bir problemi dah
 Temel bir Docker kullanımını şu sıra ile düşünebilirsiniz:
 
 1. Image indir veya build et
-2. Image'dan container calistir
+2. Image'dan container çalıştır
 3. Container'in durumunu kontrol et
 4. Gerekirse loglara bak
 5. Container içine bağlanıp inceleme yap
-6. Is bitince container'i durdur ve temizle
+6.İş bitince container'i durdur ve temizle
 
 Bu akışı anlamak, komut ezberinden daha değerlidir. Çünkü mantık oturduğunda yeni komutları öğrenmek daha kolay olur.
 
