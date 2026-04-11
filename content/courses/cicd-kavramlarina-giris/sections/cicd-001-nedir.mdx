@@ -1,0 +1,43 @@
+---
+id: "cicd-001-nedir"
+title: "CI/CD Nedir?"
+order: 10
+order_index: 10                 
+---
+
+# **CI/CD Nedir?**
+
+Yazılım geliştirmeyi devasa bir **mutfağa** benzetebiliriz.
+
+Eskiden şefler (yazılımcılar) aylarca mutfakta kapanır, yüzlerce farklı malzemeyi (kodları) bir araya getirir ve günün sonunda dev bir kazan yemekle ortaya çıkarlardı. Eğer tuz en başta fazla kaçmışsa, bunu ancak yemek masaya gittiğinde fark ederlerdi.
+
+İşte **CI/CD**, bu mutfağa kurulan modern, sensörlü ve otomatik bir üretim bandıdır.
+
+## **1\. CI: Continuous Integration (Sürekli Entegrasyon)**
+
+CI, işin **"mutfaktaki hazırlık"** aşamasıdır. Bir projede birden fazla yazılımcı çalıştığında, herkesin yazdığı kodun birbiriyle uyumlu olması gerekir.
+
+* **Nasıl Çalışır?** Yazılımcı kodunu yazdığı an, bu kod ortak bir havuzda diğerleriyle birleştirilir.  
+* **Neden Önemli?** Kod birleştiği anda otomatik testler devreye girer. Eğer yeni eklenen satır, sistemin başka bir yerini bozuyorsa sistem **"Kırmızı Alarm\!"** verir. Böylece hata aylar sonra değil, saniyeler içinde fark edilir.
+
+## **2\. CD: Continuous Delivery & Deployment (Sürekli Teslimat ve Dağıtım)**
+
+Kodun testlerden başarıyla geçtiğini varsayalım. Peki, bu kod kullanıcıya nasıl ulaşacak? İşte burada devreye **CD** girer. İki farklı aşaması vardır:
+
+### **Continuous Delivery (Sürekli Teslimat)**
+
+Kod, canlıya çıkmaya her an hazır bir pakettir. Ancak "Yayınla" butonuna bir insanın basması gerekir. Güvenlikten emin olmak isteyen şirketler genelde bu durakta durur.
+
+### **Continuous Deployment (Sürekli Dağıtım)**
+
+Burası işin zirvesidir. Eğer kod testleri geçtiyse, hiçbir insan müdahalesi olmadan otomatik olarak canlıya (kullanıcılara) gönderilir. Günde yüzlerce kez güncelleme yapan dev teknoloji şirketlerinin sırrı budur.
+
+## **Neden Herkes CI/CD Konuşuyor?**
+
+Eskiden yeni bir özelliği yayınlamak için **"Dağıtım Geceleri"** düzenlenirdi; uykusuz kalınır, sistemin çökmesinden korkulurdu. CI/CD bu korkuyu ortadan kaldırır:
+
+* **Hız:** Yeni bir fikir, dakikalar içinde son kullanıcıya ulaşabilir.  
+* **Güven:** Testler otomatize olduğu için "insan hatası" minimuma iner.  
+* **Geri Dönüş:** Eğer bir şeyler ters giderse, eski sürüme dönmek sadece saniyeler sürer.
+
+**Özetle:** CI/CD sadece teknik bir araç değil, bir **kültürdür.** Kodun yazıldığı andan kullanıcıyla buluştuğu ana kadar geçen süreci bir "robotik orkestra" gibi yönetmektir.
