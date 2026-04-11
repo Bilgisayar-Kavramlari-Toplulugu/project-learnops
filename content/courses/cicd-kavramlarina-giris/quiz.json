@@ -1,5 +1,5 @@
 {
-  "_note": "CI/CD Kavramlarına Giriş Quiz - Balanced Version",
+  "_note": "CI/CD Kavramlarına Giriş Quiz - Professional Version",
   "course_slug": "cicd-kavramlarina-giris",
   "pass_threshold": 0.70,
   "duration_seconds": 1500,
@@ -15,7 +15,7 @@
         { "index": 3, "text": "Manual Code Review" }
       ],
       "correct_index": 0,
-      "explanation": "Kodun sık sık merkezi bir depoda birleştirilmesi ve test edilmesi Sürekli Entegrasyon'un (CI) tanımıdır."
+      "explanation": "CI, kodun sık sık merkezi depoda birleştirilmesi ve her seferinde test edilmesidir. Bu süreç, entegrasyon hatalarının ve çakışmaların erkenden tespit edilmesini sağlar."
     },
     {
       "order_index": 2,
@@ -28,7 +28,7 @@
         { "index": 3, "text": "Sunucu maliyetlerini %100 oranında sıfırlaması." }
       ],
       "correct_index": 2,
-      "explanation": "CI/CD, riski küçük parçalara bölerek dağıtımı daha güvenli ve yönetilebilir hale getirir."
+      "explanation": "Büyük paketler yerine küçük ve doğrulanmış değişikliklerle ilerlemek, canlı ortamdaki hata riskini azaltır. Bir sorun oluştuğunda ise geri dönüş süreci çok daha hızlı ve kolay olur."
     },
     {
       "order_index": 3,
@@ -41,7 +41,7 @@
         { "index": 3, "text": "Sistem otomatik olarak tüm kodları siler." }
       ],
       "correct_index": 1,
-      "explanation": "Fail-fast prensibi gereği, test adımı başarısız olduğunda zincirleme olarak sonraki adımlar iptal edilir."
+      "explanation": "Fail-fast prensibi gereği, bir aşama hata verirse süreç derhal kesilir. Bu sayede bozuk veya eksik kodun son kullanıcıya ulaşması otomatik olarak engellenmiş olur."
     },
     {
       "order_index": 4,
@@ -54,7 +54,7 @@
         { "index": 3, "text": "Artifact" }
       ],
       "correct_index": 3,
-      "explanation": "Artifact, bir pipeline aşamasının çıktısı olan ve dağıtıma hazır olan paketlenmiş yapıdır."
+      "explanation": "Artifact, bir pipeline aşamasının çıktısı olan ve dağıtıma hazır hale getirilmiş veri paketidir. Örneğin derlenmiş bir uygulama dosyası veya hazır bir Docker imajı birer artifact'tir."
     },
     {
       "order_index": 5,
@@ -67,7 +67,7 @@
         { "index": 3, "text": ".config/github/" }
       ],
       "correct_index": 0,
-      "explanation": "GitHub, otomasyon dosyalarını yalnızca kök dizindeki .github/workflows/ altında tanır."
+      "explanation": "GitHub otomasyon dosyalarını tanımak için standart bir yapı izler. Tüm iş akışı (YAML) dosyaları mutlaka projenin kök dizinindeki .github/workflows/ klasörü altında yer almalıdır."
     },
     {
       "order_index": 6,
@@ -80,7 +80,7 @@
         { "index": 3, "text": "YAML dosyasının okunabilirliğini bozar." }
       ],
       "correct_index": 1,
-      "explanation": "Hassas veriler repoda açık halde değil, şifrelenmiş Secrets yapılarında saklanmalıdır."
+      "explanation": "Hassas verilerin kod içinde açıkça paylaşılması ciddi bir güvenlik açığıdır. Bu veriler 'Secrets' bölümünde şifreli tutulmalı ve sadece ihtiyaç anında pipeline'a güvenle aktarılmalıdır."
     },
     {
       "order_index": 7,
@@ -93,7 +93,7 @@
         { "index": 3, "text": "on: watch" }
       ],
       "correct_index": 2,
-      "explanation": "Zamana bağlı periyodik işlemler 'schedule' tetikleyicisi ile konfigüre edilir."
+      "explanation": "Zamana bağlı periyodik görevler 'schedule' tetikleyicisi ve Cron dizilimi ile otomatize edilir. Bu yöntem sayesinde sistem, insan müdahalesi gerektirmeden düzenli olarak çalışır."
     },
     {
       "order_index": 8,
@@ -106,7 +106,7 @@
         { "index": 3, "text": "Her gün gece yarısı (00:00)." }
       ],
       "correct_index": 3,
-      "explanation": "Cron yapısında '0 0' ifadesi günün ilk dakikasını ve ilk saatini temsil eder."
+      "explanation": "Cron yapısında soldan sağa doğru dakikalar ve saatler yer alır. '0 0' ifadesi, günün ilk dakikası ve ilk saatini işaret ederek işlemin her gün tam gece yarısı başlamasını sağlar."
     },
     {
       "order_index": 9,
@@ -119,7 +119,7 @@
         { "index": 3, "text": "Entegrasyon Testleri" }
       ],
       "correct_index": 2,
-      "explanation": "Hız ve maliyet avantajı nedeniyle en geniş kapsamlı test katmanı Unit Test'tir."
+      "explanation": "Birim testleri çok hızlı çalışır ve düşük maliyetlidir. Yazılımın en küçük parçalarını doğruladığı için sağlam bir projenin temelini her zaman geniş kapsamlı birim testleri oluşturur."
     },
     {
       "order_index": 10,
@@ -132,7 +132,7 @@
         { "index": 3, "text": "Integration Test (Entegrasyon Testi)" }
       ],
       "correct_index": 3,
-      "explanation": "Entegrasyon testleri, birimlerin bir araya geldiğinde (entegre olduğunda) ortaya çıkan iletişimi test eder."
+      "explanation": "Entegrasyon testleri, farklı bileşenlerin bir araya geldiğinde doğru şekilde iletişim kurup kuramadığını ölçer. Bağımsız parçaların bir bütün olarak uyumunu bu aşamada doğrularız."
     },
     {
       "order_index": 11,
@@ -145,7 +145,7 @@
         { "index": 3, "text": "read from vault: API_KEY" }
       ],
       "correct_index": 1,
-      "explanation": "GitHub Actions'ta secret değerlerine '${{ }}' bağlamı üzerinden erişilir."
+      "explanation": "GitHub Actions'ta bağlamsal verilere '${{ }}' yapısı ile erişilir. Secrets objesi üzerinden tanımlanan anahtarlar, bu sözdizimi sayesinde pipeline içinde güvenli bir şekilde kullanılır."
     },
     {
       "order_index": 12,
@@ -158,7 +158,7 @@
         { "index": 3, "text": "types: [deleted]" }
       ],
       "correct_index": 0,
-      "explanation": "paths-ignore, belirli dosya yollarındaki değişikliklerin workflow'u tetiklemesini önlemek için kullanılır."
+      "explanation": "paths-ignore, kodun işlevini etkilemeyen dosya değişikliklerinde workflow'un gereksiz yere çalışmasını engeller. Bu sayede işlemci gücü ve zaman tasarrufu sağlanmış olur."
     },
     {
       "order_index": 13,
@@ -171,7 +171,7 @@
         { "index": 3, "text": "Hiçbiri, bütçe kısıtlıysa kesintisiz geçiş mümkün değildir." }
       ],
       "correct_index": 1,
-      "explanation": "Blue/Green çift sunucu kapasitesi gerektirirken, Rolling mevcut kaynakları kademeli kullanarak bütçe dostu bir zero-downtime sağlar."
+      "explanation": "Blue/Green yöntemi aynı anda iki tam sunucu grubuna ihtiyaç duyarken, Rolling yöntemi mevcut sunucuları sırayla güncelleyerek ek maliyet oluşturmadan kesintisiz hizmet sunar."
     },
     {
       "order_index": 14,
@@ -184,7 +184,7 @@
         { "index": 3, "text": "GitHub Actions dosyasının yanlış dizine yüklendiğini." }
       ],
       "correct_index": 2,
-      "explanation": "Pipeline teknik olarak çalışsa bile, ortam (prod/dev) bağımsızlığının sağlanmaması mantıksal bir analiz hatasıdır."
+      "explanation": "Teknik olarak çalışan bir pipeline, ortamlar arası (prod/dev) şifre ayrımı yapılmadığı için mantıksal olarak başarısız olmuştur. Bu durum, hassas verilerin yanlış kurgulandığını gösterir."
     },
     {
       "order_index": 15,
@@ -197,7 +197,7 @@
         { "index": 3, "text": "All-at-once Deployment" }
       ],
       "correct_index": 0,
-      "explanation": "Canary yöntemi, küçük bir kullanıcı grubu (kanarya) üzerinden risk analizi yaparak yayılımı yönetir."
+      "explanation": "Canary yöntemi, olası büyük hataların tüm kullanıcıları etkilemesini önlemek için kademeli bir yayılım izler. Önce küçük bir 'deney grubu' üzerinde risk analizi yapılır."
     }
   ]
 }
