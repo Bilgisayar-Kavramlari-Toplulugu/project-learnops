@@ -1,0 +1,292 @@
+---
+id: "k8s-001-neden"
+title: "Kubernetes Neden Var? Orchestration Sorunu"
+order: 10
+order_index: 10
+---
+
+# Kubernetes Neden Var? Orchestration Sorunu
+
+Kubernetes'i anlamak için önce hangi sorunu çözdüğünü anlamak gerekir. Bu bölümde container'ların yaygınlaşmasıyla ortaya çıkan zorlukları ve Kubernetes'in bu zorlukları nasıl ele aldığını keşfedeceğiz.
+
+## Container Devrimi ve Yeni Sorunlar
+
+Docker, 2013 yılında çıkışıyla yazılım dünyasında bir devrim yarattı. Uygulamaları izole edilmiş container'larda paketlemek; **"bende çalışıyor ama production'da çalışmıyor"** problemini büyük ölçüde ortadan kaldırdı. Ekipler artık uygulamalarını güvenle farklı ortamlara taşıyabiliyordu.
+
+Ancak zamanla yeni sorular ortaya çıktı:
+
+- Yüzlerce container'ı kim yönetecek?
+- Bir container çökerse ne olacak?
+- Trafik arttığında kapasite nasıl artırılacak?
+- Yeni versiyon deploy edilirken servis kesintisi nasıl önlenecek?
+- Container'lar birbirleriyle nasıl haberleşecek?
+
+İşte tam bu noktada **Container Orchestration** ihtiyacı doğdu.
+
+---
+
+## Container Orchestration Nedir?
+
+Orchestration, Türkçe'ye "orkestrasyon" ya da "düzenleme" olarak çevrilebilir. Bir orkestranın şefini düşünün: onlarca müzisyen bağımsız olarak enstrüman çalar, ancak şef hepsini uyumlu bir şekilde yönetir, doğru zamanda doğru notu çalmalarını sağlar.
+
+Container orchestration da tam olarak budur: **çok sayıda container'ı otomatik olarak yönetme, dağıtma, ölçeklendirme ve iyileştirme süreci.**
+
+```
+Orchestration Olmadan:
+┌─────────────────────────────────────────┐
+│  Sunucu 1         Sunucu 2              │
+│  ┌────────┐       ┌────────┐            │
+│  │ app:v1 │  ??   │ app:v1 │            │
+│  └────────┘       └────────┘            │
+│  ┌────────┐                             │
+│  │   db   │                             │
+│  └────────┘                             │
+│                                         │
+│  ❌ Manual yönetim                      │
+│  ❌ Çöken container'ı kim başlatır?     │
+│  ❌ Load balancing nasıl yapılır?       │
+└─────────────────────────────────────────┘
+
+Orchestration İle:
+┌─────────────────────────────────────────┐
+│           Kubernetes Cluster            │
+│  ┌──────────────────────────────────┐   │
+│  │  Desired State: app replicas=3   │   │
+│  └──────────────────────────────────┘   │
+│  ┌────────┐  ┌────────┐  ┌────────┐    │
+│  │ app:v2 │  │ app:v2 │  │ app:v2 │    │
+│  └────────┘  └────────┘  └────────┘    │
+│                                         │
+│  ✅ Otomatik restart                   │
+│  ✅ Load balancing                      │
+│  ✅ Rolling updates                     │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## Kubernetes'in Kısa Tarihi
+
+**2003-2004:** Google, "Borg" adlı iç orchestration sistemini geliştirdi. Binlerce sunucuda milyarlarca container'ı yöneten bu sistem, Google'ın tüm altyapısını destekliyordu.
+
+**2013:** Docker'ın popülerleşmesiyle birlikte topluluğun container orchestration'a ihtiyacı netleşti.
+
+**2014:** Google, Borg'dan edindiği deneyimi açık kaynak olarak paylaştı. **Kubernetes** (Yunanca'da "dümenci" veya "pilot") doğdu.
+
+**2016:** Cloud Native Computing Foundation (CNCF) bünyesine girdi.
+
+**Bugün:** AWS, Azure, GCP, DigitalOcean dahil tüm büyük cloud sağlayıcıları Kubernetes'i yönetilen servis olarak sunuyor. Endüstri standardı haline geldi.
+
+> 💡 **İsim kökeni:** "Kubernetes" Yunanca kökenlidir ve gemi dümencisi anlamına gelir. K ve s harfleri arasında 8 harf olduğundan kısaltması **K8s** olarak kullanılır.
+
+---
+
+## Kubernetes Ne Sağlar?
+
+### 1. Self-Healing (Kendini İyileştirme)
+
+Container bir çökerse Kubernetes onu otomatik olarak yeniden başlatır. Bir node (sunucu) tamamen devre dışı kalırsa, üzerindeki container'lar sağlıklı node'lara taşınır.
+
+```bash
+# Bir pod'u silerseniz Kubernetes hemen yenisini oluşturur
+kubectl delete pod my-app-abc123
+# Birkaç saniye sonra:
+kubectl get pods
+# NAME                READY   STATUS    RESTARTS   AGE
+# my-app-def456       1/1     Running   0          5s  ← yeni pod!
+```
+
+### 2. Horizontal Scaling (Yatay Ölçeklendirme)
+
+Trafik arttığında uygulama örneklerinin sayısını artırır, azaldığında düşürür. Bu işlemi hem manuel yapabilir hem de otomatik hale getirebilirsiniz.
+
+```bash
+# 1 pod'u 5'e çıkar
+kubectl scale deployment my-app --replicas=5
+
+# Ya da otomatik: CPU %80 geçince scale et
+kubectl autoscale deployment my-app --min=2 --max=10 --cpu-percent=80
+```
+
+### 3. Load Balancing ve Service Discovery
+
+Container'lar dinamik IP alır. Kubernetes, trafiği sağlıklı container'lara dengeli dağıtır ve uygulamaların birbirini isim üzerinden bulmasını sağlar.
+
+### 4. Automated Rollouts ve Rollbacks
+
+Yeni versiyon dağıtırken servis kesintisi olmaz. Sorun çıkarsa tek komutla önceki versiyona dönülür.
+
+```bash
+# Yeni versiyon deploy et
+kubectl set image deployment/my-app app=my-app:v2.0
+
+# Sorun varsa geri dön
+kubectl rollout undo deployment/my-app
+```
+
+### 5. Secret ve Config Yönetimi
+
+Şifreler, API anahtarları ve yapılandırma değerleri güvenli biçimde saklanır ve container'lara inject edilir. Image'ı yeniden build etmeden konfigürasyon değiştirilebilir.
+
+### 6. Storage Orchestration
+
+Container'lara otomatik olarak persistent storage bağlanır. Bulut sağlayıcılarının disk servisleri seamless entegre edilir.
+
+---
+
+## Kubernetes Olmadan Hayat: Gerçek Bir Senaryo
+
+Kubernetes'in değerini somutlaştırmak için şu senaryoyu düşünelim:
+
+**Şirket:** Orta ölçekli bir e-ticaret firması  
+**Senaryo:** Black Friday yoğunluğu
+
+```
+Kubernetes Öncesi:
+─────────────────
+08:00 → Trafik 10x arttı
+08:05 → Sistem yavaşladı, müşteriler şikâyet ediyor
+08:10 → DevOps mühendisi uyandırıldı
+08:25 → Manuel olarak 3 sunucu daha kiralandı
+08:40 → Docker kuruldu, image çekildi
+09:00 → Container'lar ayağa kalktı
+09:15 → Load balancer manuel yapılandırıldı
+→ 1 saat 15 dakika kesinti/yavaşlama, gelir kaybı
+
+Kubernetes İle:
+──────────────
+08:00 → Trafik 10x arttı
+08:01 → HPA CPU %80 eşiğini geçti
+08:01 → Kubernetes pod sayısını 2'den 20'ye çıkardı
+08:02 → Yeni pod'lar devreye girdi
+→ ~2 dakika içinde otomatik çözüm, sıfır müdahale
+```
+
+---
+
+## Kubernetes'in Sınırlılıkları
+
+Kubernetes güçlüdür ama her derde deva değildir:
+
+| Avantaj | Sınırlılık |
+|---------|-----------|
+| Yüksek ölçeklenebilirlik | Öğrenme eğrisi dik |
+| Self-healing | Basit uygulamalar için fazla karmaşık |
+| Ekosistem zenginliği | Operasyonel yük yüksek |
+| Cloud-agnostic | Stateful uygulamalar zorlu |
+
+> ⚠️ **Ne Zaman Kubernetes Kullanmayalım?**  
+> Küçük takımlar, az sayıda servis, düşük trafik beklentisi varsa Docker Compose veya basit VM tabanlı çözümler daha pratik olabilir. Kubernetes, **karmaşıklığı** büyük sistemlerin **ihtiyaçlarıyla** orantılı olduğunda değer üretir.
+
+---
+
+## Kubernetes Ekosistemi
+
+Kubernetes tek başına bir araç değil, geniş bir ekosistemin merkezidir:
+
+```
+                    ┌─────────────────┐
+                    │   Kubernetes    │
+                    │    (K8s Core)   │
+                    └────────┬────────┘
+           ┌─────────────────┼─────────────────┐
+           ▼                 ▼                 ▼
+    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+    │   Helm      │  │  Prometheus │  │   Istio     │
+    │(Paket Mgr.) │  │(Monitoring) │  │(Service Mesh│
+    └─────────────┘  └─────────────┘  └─────────────┘
+           ▼                 ▼                 ▼
+    ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+    │  ArgoCD     │  │   Grafana   │  │   Linkerd   │
+    │  (GitOps)   │  │ (Dashboard) │  │(Lightweight)│
+    └─────────────┘  └─────────────┘  └─────────────┘
+```
+
+**CNCF (Cloud Native Computing Foundation)** bu ekosistemi yönetir. 1000'den fazla açık kaynak proje barındırır.
+
+---
+
+## Hangi Cloud Sağlayıcılar Kubernetes Sunar?
+
+| Sağlayıcı | Servis Adı | Kısaltma |
+|-----------|-----------|---------|
+| Google Cloud | Google Kubernetes Engine | GKE |
+| Amazon Web Services | Elastic Kubernetes Service | EKS |
+| Microsoft Azure | Azure Kubernetes Service | AKS |
+| DigitalOcean | DigitalOcean Kubernetes | DOKS |
+| Hetzner | Hetzner Kubernetes | HKE |
+
+Bu kurs boyunca yerel geliştirme için **minikube** veya **kind** kullanacağız.
+
+---
+
+## 🛠️ Hands-on: Ortam Kurulumu
+
+Bu kursta pratik yapmak için yerel bir Kubernetes ortamına ihtiyacınız var. `minikube` en kolay başlangıç noktasıdır.
+
+### Minikube Kurulumu
+
+**macOS:**
+```bash
+brew install minikube
+```
+
+**Linux (x86_64):**
+```bash
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+```
+
+**Windows (PowerShell - Admin):**
+```powershell
+winget install Kubernetes.minikube
+```
+
+### kubectl Kurulumu
+
+kubectl, Kubernetes cluster'ını komut satırından yönetmek için kullanılır:
+
+**macOS:**
+```bash
+brew install kubectl
+```
+
+**Linux:**
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+
+### İlk Cluster'ı Başlatın
+
+```bash
+# Cluster'ı başlat
+minikube start
+
+# Doğrula
+kubectl cluster-info
+# Çıktı:
+# Kubernetes control plane is running at https://192.168.49.2:8443
+# CoreDNS is running at https://192.168.49.2:8443/api/v1/...
+
+kubectl get nodes
+# NAME       STATUS   ROLES           AGE   VERSION
+# minikube   Ready    control-plane   1m    v1.28.x
+```
+
+Tebrikler! İlk Kubernetes cluster'ınız çalışıyor. Bir sonraki bölümde bu cluster'ın mimarisini derinlemesine inceleyeceğiz.
+
+---
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+
+- Container orchestration sorunun neden ortaya çıktığını ve ne anlama geldiğini
+- Kubernetes'in Google'ın Borg sisteminden evrildiğini ve CNCF bünyesinde olduğunu
+- K8s'in sağladığı temel özellikleri: self-healing, scaling, load balancing, rolling updates
+- Kubernetes'in güçlü olduğu senaryolar ve sınırlılıkları
+- Geniş Kubernetes ekosistemi ve cloud sağlayıcı seçenekleri
+- Yerel geliştirme ortamı kurulumu (minikube + kubectl)
+
+Bir sonraki bölümde Kubernetes'in iç mimarisini, Control Plane ve Worker Node bileşenlerini öğreneceğiz.
