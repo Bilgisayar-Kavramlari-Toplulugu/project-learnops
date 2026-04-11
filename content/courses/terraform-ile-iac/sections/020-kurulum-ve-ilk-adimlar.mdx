@@ -1,0 +1,378 @@
+---
+id: "tf-002-giris"
+title: "Terraform Kurulumu ve İlk Adımlar"
+order: 20
+order_index: 20
+---
+
+# Terraform Kurulumu ve İlk Adımlar
+
+Teoriyi bir kenara bırakıp Terraform'u kuruyor ve ilk altyapı kodumuzu yazıyoruz. Bu bölümün sonunda çalışan bir Terraform kurulumunuz ve gerçekten bir kaynak oluşturan `.tf` dosyanız olacak.
+
+---
+
+## Terraform Kurulumu
+
+Terraform, tek bir binary dosyasından oluşur — kurulum son derece basittir.
+
+### Linux (Ubuntu/Debian)
+
+```bash
+# HashiCorp GPG anahtarını ekle
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+# Repoyu ekle
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+  https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+  sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+# Kur
+sudo apt update && sudo apt install terraform
+
+# Doğrula
+terraform version
+# Terraform v1.7.x
+```
+
+### macOS (Homebrew)
+
+```bash
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+
+# Doğrula
+terraform version
+```
+
+### Windows (Chocolatey)
+
+```powershell
+choco install terraform
+
+# Doğrula
+terraform version
+```
+
+### tfenv ile Versiyon Yönetimi (Önerilir)
+
+Birden fazla projede farklı Terraform versiyonları kullanıyorsanız, `tfenv` ile versiyon yönetimi yapın:
+
+```bash
+# tfenv kur (macOS/Linux)
+git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# Belirli bir versiyon kur
+tfenv install 1.7.5
+tfenv use 1.7.5
+
+# Proje bazlı versiyon kilitleme (.terraform-version dosyası)
+echo "1.7.5" > .terraform-version
+```
+
+> 💡 **Neden tfenv?** Production projelerinde Terraform versiyonu kritiktir. `v1.5` ile yazılmış kod `v1.2` ile çalışmayabilir. tfenv her proje için doğru versiyonu garanti eder.
+
+---
+
+## VSCode Eklentileri
+
+Verimli çalışmak için şu eklentileri kurun:
+
+```
+HashiCorp Terraform  →  hashicorp.terraform
+  - Syntax highlighting
+  - IntelliSense (auto-complete)
+  - Linting
+  - Terraform fmt on save
+
+GitLens  →  eamodio.gitlens
+  - .tf dosyalarındaki değişiklikleri git geçmişiyle takip et
+```
+
+VSCode ayarlarına ekleyin (`settings.json`):
+
+```json
+{
+  "[terraform]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "hashicorp.terraform"
+  }
+}
+```
+
+---
+
+## Terraform'un Çalışma Modeli
+
+Terraform çalışmadan önce mimarisini anlamak önemlidir:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    terraform CLI                             │
+├─────────────────────────────────────────────────────────────┤
+│                    Core Engine                               │
+│   - Konfigürasyon okur (.tf dosyaları)                       │
+│   - State ile karşılaştırır                                  │
+│   - Execution plan üretir                                    │
+├────────────────────┬────────────────────────────────────────┤
+│    Provider A      │    Provider B    │    Provider C        │
+│    (GCP)          │    (AWS)         │    (GitHub)           │
+│   - API çağrıları │    - API çağrı.  │    - API çağrı.      │
+└────────────────────┴─────────────────┴────────────────────────┘
+```
+
+**Provider**, Terraform'un belirli bir platformla (GCP, AWS, Azure vb.) iletişim kurmasını sağlayan plugin'dir. Her provider kendi API çağrılarını yönetir; siz sadece HCL yazarsınız.
+
+---
+
+## İlk Terraform Projesi: Local File
+
+Gerçek bir cloud hesabına ihtiyaç duymadan Terraform'un nasıl çalıştığını anlamak için `local` provider'ı kullanalım.
+
+### Proje Yapısını Oluşturun
+
+```bash
+mkdir terraform-baslangic
+cd terraform-baslangic
+```
+
+### main.tf Dosyasını Yazın
+
+```hcl
+# main.tf
+
+terraform {
+  required_version = ">= 1.7.0"
+
+  required_providers {
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.4"
+    }
+  }
+}
+
+# Yerel bir dosya oluştur
+resource "local_file" "merhaba" {
+  content  = "Merhaba Terraform! Bu dosyayı ben oluşturdum."
+  filename = "${path.module}/cikti.txt"
+}
+```
+
+**Dosyayı parçalayalım:**
+
+| Blok | Açıklama |
+|------|----------|
+| `terraform {}` | Terraform versiyonu ve required providers |
+| `required_providers` | Hangi provider'ların kullanılacağı ve versiyonları |
+| `resource "TYPE" "NAME"` | Oluşturulacak kaynak tanımı |
+
+---
+
+## Temel Terraform Komutları
+
+### terraform init
+
+```bash
+$ terraform init
+
+Initializing the backend...
+Initializing provider plugins...
+- Finding hashicorp/local versions matching "~> 2.4"...
+- Installing hashicorp/local v2.4.1...
+- Installed hashicorp/local v2.4.1 (signed by HashiCorp)
+
+Terraform has been successfully initialized!
+```
+
+`init` ne yapar?
+- `.terraform/` klasörü oluşturur
+- Provider plugin'lerini indirir
+- Backend yapılandırmasını hazırlar
+
+> ⚠️ **Önemli:** `.terraform/` klasörünü **asla** Git'e commit etmeyin. `.gitignore`'a ekleyin:
+> ```
+> .terraform/
+> .terraform.lock.hcl — bu commit edilmeli!
+> *.tfstate
+> *.tfstate.backup
+> ```
+
+### terraform plan
+
+```bash
+$ terraform plan
+
+Terraform used the selected providers to generate the following execution plan.
+
+  # local_file.merhaba will be created
+  + resource "local_file" "merhaba" {
+      + content              = "Merhaba Terraform! Bu dosyayı ben oluşturdum."
+      + filename             = "./cikti.txt"
+      + id                   = (known after apply)
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+```
+
+`plan` size şunu söyler:
+- `+` : Oluşturulacak kaynaklar
+- `~` : Değiştirilecek kaynaklar
+- `-` : Silinecek kaynaklar
+
+**Hiçbir şey değiştirmez** — sadece gösterir. Canlıya almadan önce her zaman önce `plan` yapın.
+
+### terraform apply
+
+```bash
+$ terraform apply
+
+# Plan tekrar gösterilir...
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+local_file.merhaba: Creating...
+local_file.merhaba: Creation complete after 0s [id=abc123...]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+```
+
+`apply` gerçekten değişiklik yapar. Onay için `yes` yazmanız gerekir.
+
+CI/CD pipeline'larında otomatik onay için:
+
+```bash
+terraform apply -auto-approve  # ⚠️ Dikkatli kullanın!
+```
+
+### terraform destroy
+
+```bash
+$ terraform destroy
+
+  # local_file.merhaba will be destroyed
+  - resource "local_file" "merhaba" {
+      - content  = "Merhaba Terraform!" -> null
+      - filename = "./cikti.txt"      -> null
+    }
+
+Plan: 0 to add, 0 to change, 1 to destroy.
+
+Do you really want to destroy all resources?
+  Enter a value: yes
+
+Destroy complete! Resources: 1 destroyed.
+```
+
+`destroy` Terraform'un yönettiği **tüm** kaynakları siler. Production'da **çok dikkatli** kullanın!
+
+---
+
+## terraform.lock.hcl Dosyası
+
+`terraform init` sonrası `.terraform.lock.hcl` oluşur:
+
+```hcl
+# .terraform.lock.hcl — GIT'E COMMIT EDİLMELİ
+
+provider "registry.terraform.io/hashicorp/local" {
+  version     = "2.4.1"
+  constraints = "~> 2.4"
+  hashes = [
+    "h1:...",
+    "zh:...",
+  ]
+}
+```
+
+Bu dosya **lock file**'dır — tüm ekip üyelerinin aynı provider versiyonunu kullanmasını garanti eder. `package-lock.json`'ın Terraform karşılığıdır. **Mutlaka Git'e commit edin.**
+
+---
+
+## .gitignore Şablonu
+
+Her Terraform projesinde kullanmanız gereken `.gitignore`:
+
+```gitignore
+# Terraform state dosyaları (içinde hassas veri olabilir!)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform çalışma klasörü
+.terraform/
+
+# Crash log
+crash.log
+crash.*.log
+
+# Override dosyaları (kişisel)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI konfigürasyon dosyaları
+.terraformrc
+terraform.rc
+
+# .env ve secret dosyaları
+*.env
+secrets.tfvars
+```
+
+---
+
+## Hands-on Mini Proje
+
+Şimdiye kadar öğrendiklerinizi pekiştirmek için şu alıştırmayı yapın:
+
+**Görev:** `local` provider ile bir uygulama konfigürasyon dosyası oluşturun.
+
+```hcl
+# config-generator/main.tf
+
+resource "local_file" "app_config" {
+  content = jsonencode({
+    app_name    = "learnops"
+    environment = "development"
+    version     = "1.0.0"
+    features = {
+      quiz_enabled     = true
+      progress_tracking = true
+    }
+  })
+  filename = "${path.module}/app-config.json"
+}
+
+output "config_path" {
+  description = "Oluşturulan config dosyasının yolu"
+  value       = local_file.app_config.filename
+}
+```
+
+Adımlar:
+1. `terraform init`
+2. `terraform plan` — ne oluşturacağını gözlemleyin
+3. `terraform apply` — dosyanın oluştuğunu doğrulayın
+4. `terraform destroy` — dosyanın silindiğini doğrulayın
+
+---
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+
+- Terraform'u farklı işletim sistemlerinde nasıl kuracağımızı
+- Provider kavramını ve Terraform'un çalışma mimarisini
+- Dört temel komutu: `init`, `plan`, `apply`, `destroy`
+- Lock file'ın önemini ve `.gitignore` şablonunu
+- `local` provider ile cloud hesabı olmadan ilk Terraform deneyimini
+
+Bir sonraki bölümde HCL'in temel yapı taşlarını — resource, variable, output, local — derinlemesine öğreneceğiz.
