@@ -1,0 +1,142 @@
+---
+id: "git-002-kurulum"
+title: "Git Kurulumu ve İlk Konfigürasyon"
+order: 20
+order_index: 20
+---
+
+# Git Kurulumu ve İlk Konfigürasyon
+
+Git'i kullanmaya başlamadan önce iki şeyi tamamlamanız gerekir: kurulum ve kimlik konfigürasyonu. Git'e "Ben kimim?" sorusunun yanıtını bir kez verirsiniz; bundan sonra her commit bu bilgiyle imzalanır.
+
+## Kurulum
+
+### Linux (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install git -y
+```
+
+### Linux (RHEL/Fedora/CentOS)
+
+```bash
+sudo dnf install git -y
+```
+
+### macOS
+
+macOS'ta en kolay yol Homebrew'dur:
+
+```bash
+brew install git
+```
+
+Alternatif olarak Xcode Command Line Tools da Git içerir:
+
+```bash
+xcode-select --install
+```
+
+### Windows
+
+[git-scm.com](https://git-scm.com/download/win) adresinden indirilen kurulum sihirbazını çalıştırın. Kurulum sırasında önerilen varsayılan seçenekleri bırakabilirsiniz.
+
+### Kurulumu Doğrulama
+
+```bash
+git --version
+# git version 2.43.0
+```
+
+## İlk Konfigürasyon: Kimliğinizi Tanıtın
+
+Git, her commit'e bir imza atar: **kim yaptı ve ne zaman yaptı**. Bu imzayı oluşturabilmesi için adınızı ve e-posta adresinizi bilmesi gerekir.
+
+```bash
+git config --global user.name "Adınız Soyadınız"
+git config --global user.email "email@ornek.com"
+```
+
+`--global` bayrağı bu ayarların bilgisayarınızdaki tüm Git projelerine uygulanacağı anlamına gelir. Belirli bir proje için farklı bir kimlik kullanmak istiyorsanız o projenin dizininde `--global` olmadan aynı komutu çalıştırırsınız.
+
+## Varsayılan Editörü Ayarlama
+
+Git, commit mesajı yazarken veya conflict çözümünde bir metin editörü açar. Varsayılanı `vim`'dir; farklı bir editör tercih ediyorsanız:
+
+```bash
+# VSCode
+git config --global core.editor "code --wait"
+
+# Nano (terminal içi, başlangıç dostu)
+git config --global core.editor "nano"
+
+# Vim (varsayılan)
+git config --global core.editor "vim"
+```
+
+## Varsayılan Branch Adını Ayarlama
+
+Yeni projelerde oluşturulan ilk branch'in adını belirleyin. Sektördeki yaygın modern standart `main`'dir:
+
+```bash
+git config --global init.defaultBranch main
+```
+
+## Konfigürasyonu Kontrol Etme
+
+Tüm global ayarlarınızı görüntülemek için:
+
+```bash
+git config --list --global
+```
+
+Belirli bir ayarı sorgulamak için:
+
+```bash
+git config user.name
+# Adınız Soyadınız
+
+git config user.email
+# email@ornek.com
+```
+
+Konfigürasyon dosyası `~/.gitconfig` dosyasında düz metin olarak saklanır. Doğrudan düzenleyebilirsiniz:
+
+```bash
+cat ~/.gitconfig
+```
+
+```ini
+[user]
+    name = Adınız Soyadınız
+    email = email@ornek.com
+[core]
+    editor = code --wait
+[init]
+    defaultBranch = main
+```
+
+## Konfigürasyon Öncelik Sırası
+
+Git üç seviyede konfigürasyon tanır; daha özel olan, daha genel olanı geçersiz kılar:
+
+```
+Sistem (/etc/gitconfig)
+  ↓ üstüne yazar
+Global (~/.gitconfig)       ← --global bayrağıyla ayarladıklarınız
+  ↓ üstüne yazar
+Yerel (.git/config)         ← Proje içinde --local veya varsayılan
+```
+
+## Özet
+
+Tek bir projede çalışacaksanız minimum yapılandırma şudur:
+
+```bash
+git config --global user.name "Ad Soyad"
+git config --global user.email "email@ornek.com"
+git config --global init.defaultBranch main
+```
+
+Bu üç komuttan sonra Git kullanıma hazırdır. Bir sonraki bölümde ilk depoyu oluşturup temel komutları öğreneceğiz.
