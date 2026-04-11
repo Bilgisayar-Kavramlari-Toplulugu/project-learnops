@@ -1,0 +1,118 @@
+---
+id: "linux-004-izinler"
+title: "Dosya İzinleri: chmod, chown, chgrp"
+order: 40
+order_index: 40
+---
+
+# Dosya İzinleri: chmod, chown, chgrp
+
+Linux'ta her dosya ve dizin için izinler titizlikle tanımlanır. Bu sistem, çok kullanıcılı ortamlarda güvenliği sağlamanın temel mekanizmasıdır.
+
+## İzin Türleri
+
+Her dosya için üç temel izin türü vardır:
+
+| Sembol | İsim    | Değer | Açıklama          |
+|--------|---------|-------|-------------------|
+| `r`    | read    | 4     | Okuma izni        |
+| `w`    | write   | 2     | Yazma izni        |
+| `x`    | execute | 1     | Çalıştırma izni   |
+
+Bu izinler üç farklı gruba ayrı ayrı atanır:
+
+- **User (u):** Dosyanın sahibi
+- **Group (g):** Dosyanın ait olduğu grubun üyeleri
+- **Others (o):** Diğer herkes
+
+## Sayısal (Octal) İzin Hesaplama
+
+İzinler, her grup için ayrı ayrı hesaplanan sayıların birleşimiyle ifade edilir:
+
+| İzin | Değer | Açıklama                          |
+|------|-------|-----------------------------------|
+| `r--` | 4    | Sadece okuma                      |
+| `rw-` | 6    | Okuma ve Yazma (4+2)             |
+| `rwx` | 7    | Okuma, Yazma ve Çalıştırma (4+2+1) |
+| `r-x` | 5    | Okuma ve Çalıştırma (4+1)        |
+
+Örnek: `755` → Sahip: `rwx` (7), Grup: `r-x` (5), Diğerleri: `r-x` (5)
+
+```bash
+# Mevcut dosya izinlerini görüntüle
+ls -la script.sh
+# Çıktı: -rwxr-xr-x 1 ahmet yazilim 1234 Apr 10 10:00 script.sh
+```
+
+## chmod — İzin Değiştirme
+
+```bash
+# Sembolik mod: Sahibine çalıştırma yetkisi ver
+chmod u+x script.sh
+
+# Sembolik mod: Diğerlerinden yazma iznini al
+chmod o-w dosya.txt
+
+# Sembolik mod: Sadece diğerlere okuma izni ver
+chmod o=r dosya.txt
+
+# Sayısal mod: Sahip rw, Grup r, Diğerleri r
+chmod 644 dosya.txt
+
+# Sayısal mod: Sahip rwx, Grup r-x, Diğerleri r-x (script/dizin için yaygın)
+chmod 755 script.sh
+```
+
+## chown — Sahiplik Değiştirme
+
+```bash
+# Dosyanın sahibini değiştir
+sudo chown ahmet dosya.txt
+
+# Sahibi ve grubunu birlikte değiştir
+sudo chown ahmet:yazilim dosya.txt
+
+# Dizin ve tüm içeriğinin sahibini değiştir (recursive)
+sudo chown -R ahmet:yazilim /proje
+```
+
+## chgrp — Grup Sahipliğini Değiştirme
+
+`chgrp`, bir dosyanın veya dizinin yalnızca grup sahipliğini değiştirmek için kullanılır. `chown user:group` sözdiziminin grup kısmıyla işlevsel olarak eşdeğerdir.
+
+```bash
+# Sadece grup sahipliğini değiştir
+sudo chgrp yazilim dosya.txt
+
+# Dizin ve tüm içeriğinin grubunu değiştir (recursive)
+sudo chgrp -R yazilim /proje
+
+# chown ile alternatif — ikisi eşdeğer
+sudo chown :yazilim dosya.txt
+```
+
+> 💡 **İpucu:** Yalnızca grup değiştirmeniz gerekiyorsa `chgrp` daha açıklayıcıdır; hem sahibi hem grubu değiştirmeniz gerekiyorsa tek komutla `chown user:group` kullanmak yeterlidir.
+
+## sudo — Yüksek Yetkiyle Çalıştırma
+
+`sudo`, bir komutu en yetkili kullanıcı (`root`) hakları ile çalıştırmanızı sağlar. Sistem dosyalarını değiştirmek, paket yüklemek veya başka kullanıcılara ait dosyaları yönetmek için gereklidir.
+
+```bash
+# Sistem paket listesini güncelle (root yetkisi gerektirir)
+sudo apt update
+
+# Root shell'e geç (dikkatli kullanın!)
+sudo -i
+```
+
+> 💡 **İpucu:** En az yetki prensibi gereği, `sudo` kullanımını minimumda tutun. Bir script'i `root` olarak çalıştırmak yerine, gerçekten ihtiyaç duyulan izinleri dosyaya atayın.
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- `r`, `w`, `x` izinlerinin ne anlama geldiğini ve sayısal karşılıklarını
+- User, Group ve Others gruplarına göre izin sisteminin nasıl çalıştığını
+- `chmod` ile sembolik ve sayısal modda izin değiştirmeyi
+- `chown` ile dosya sahibini ve grubunu yönetmeyi
+- `chgrp` ile yalnızca grup sahipliğini değiştirmeyi
+- `sudo` komutunun ne işe yaradığını ve ne zaman kullanılacağını
