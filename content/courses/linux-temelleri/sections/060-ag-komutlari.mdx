@@ -1,0 +1,97 @@
+---
+id: "linux-006-ag"
+title: "Ağ Komutları: curl, wget, netstat, ss"
+order: 60
+order_index: 60
+---
+
+# Ağ Komutları: curl, wget, netstat, ss
+
+Ağ sorunlarını teşhis etmek ve servislerle iletişim kurmak, DevOps çalışmasının günlük parçasıdır. Bu bölümde en sık kullanılan ağ araçlarını öğreneceğiz.
+
+## Dosya İndirme
+
+### wget — URL'den Dosya İndirme
+
+```bash
+# Belirtilen URL'den dosya indir
+wget https://example.com/dosya.tar.gz
+
+# Arka planda indir
+wget -b https://example.com/buyuk-dosya.iso
+
+# Belirli bir dizine kaydet
+wget -P /tmp https://example.com/dosya.tar.gz
+```
+
+### curl — Veri Transferi ve API Testi
+
+`curl`, `wget`'e göre çok daha güçlü ve esnek bir araçtır. API testleri, header inceleme ve veri gönderme gibi senaryolarda tercih edilir.
+
+```bash
+# Basit GET isteği
+curl https://api.example.com/status
+
+# Sadece HTTP header bilgilerini göster
+curl -I https://google.com
+
+# POST isteği gönder (JSON body ile)
+curl -X POST https://api.example.com/data \
+  -H "Content-Type: application/json" \
+  -d '{"key": "value"}'
+
+# Bir dosyaya kaydet
+curl -o cikti.html https://example.com
+```
+
+> 💡 **İpucu:** `curl -I` ile bir URL'nin HTTP durum kodunu (200, 301, 404 gibi) ve response header'larını hızlıca kontrol edebilirsiniz. Servis sağlığı kontrolü için idealdir.
+
+## Ağ Bağlantılarını İzleme
+
+### ss — Modern Soket İstatistikleri
+
+`ss`, modern Linux dağıtımlarında ağ bağlantılarını ve soket istatistiklerini izlemek için tercih edilen komuttur. Bilgileri doğrudan çekirdekten (netlink) aldığı için `netstat`'tan çok daha hızlıdır.
+
+```bash
+# Dinlemedeki tüm TCP ve UDP portları listele
+ss -tuln
+
+# Belirli bir port numarasını filtrele
+ss -tuln | grep :8080
+
+# Tüm aktif bağlantıları göster
+ss -ta
+```
+
+### netstat — Klasik Ağ Aracı (Deprecated)
+
+```bash
+# Tüm ağ bağlantılarını göster
+netstat -an
+
+# Dinlemedeki portları listele
+netstat -tuln
+```
+
+> ⚠️ **Not:** `netstat` günümüzde çoğu dağıtımda varsayılan olarak yüklü gelmez ve kullanımdan kaldırılmaktadır. Yeni sistemlerde her zaman `ss` kullanın.
+
+## Yaygın Kullanım Senaryoları
+
+```bash
+# Hangi uygulama 80 portunu dinliyor?
+ss -tuln | grep :80
+
+# Sunucuya HTTP isteği at ve header'ları gör
+curl -I http://localhost:8080
+
+# Bir servise bağlantı testi
+curl -v telnet://sunucu:22
+```
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- `wget` ile dosya indirmeyi
+- `curl` ile HTTP istekleri atmayı ve API testleri yapmayı
+- `ss` ile dinlemedeki portları ve ağ bağlantılarını izlemeyi
+- `netstat` yerine neden `ss` kullanılması gerektiğini

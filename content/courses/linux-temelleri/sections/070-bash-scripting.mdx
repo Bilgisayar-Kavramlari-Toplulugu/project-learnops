@@ -1,0 +1,138 @@
+---
+id: "linux-007-bash"
+title: "Bash Scripting: Değişken, Koşul, Döngü"
+order: 70
+order_index: 70
+---
+
+# Bash Scripting: Değişken, Koşul, Döngü
+
+Bash scripting, tekrar eden görevleri otomatize etmenin ve DevOps süreçlerini kodla yönetmenin temelidir. "Bir komutu birden fazla kez kullanacaksanız script yazın" prensibi burada hayat bulur.
+
+## Shebang ve Script Yapısı
+
+Her Bash script dosyasının ilk satırında hangi yorumlayıcının kullanılacağını belirten **Shebang** satırı bulunmalıdır:
+
+```bash
+#!/bin/bash
+
+# Bu satır sisteme: "Bu dosyayı /bin/bash ile çalıştır" der
+echo "Script başladı"
+```
+
+Script'i çalıştırmadan önce çalıştırma izni vermek gerekir:
+
+```bash
+chmod +x script.sh
+./script.sh
+```
+
+## Değişken Tanımlama
+
+Değişkenler `=` işareti ile tanımlanır; **aralarında boşluk olmamalıdır.** Çağırırken `$` öneki kullanılır:
+
+```bash
+#!/bin/bash
+
+ORTAM="production"
+PORT=8080
+
+echo "Ortam: $ORTAM"
+echo "Port: $PORT"
+
+# Komut çıktısını değişkene ata
+HOSTNAME=$(hostname)
+echo "Sunucu: $HOSTNAME"
+```
+
+## Koşullu Yapılar (If-Else)
+
+```bash
+#!/bin/bash
+
+ORTAM="production"
+
+if [ "$ORTAM" == "production" ]; then
+    echo "Canlı ortamdasınız! Dikkatli olun."
+elif [ "$ORTAM" == "staging" ]; then
+    echo "Test ortamı."
+else
+    echo "Bilinmeyen ortam: $ORTAM"
+fi
+```
+
+Sayısal karşılaştırma için farklı operatörler kullanılır:
+
+| Operatör | Anlamı           |
+|----------|------------------|
+| `-eq`    | Eşittir          |
+| `-ne`    | Eşit değildir    |
+| `-lt`    | Küçüktür         |
+| `-le`    | Küçük eşittir    |
+| `-gt`    | Büyüktür         |
+| `-ge`    | Büyük eşittir    |
+
+```bash
+HATA_SAYISI=5
+
+if [ $HATA_SAYISI -gt 0 ]; then
+    echo "Uyarı: $HATA_SAYISI hata bulundu!"
+fi
+```
+
+## Döngüler
+
+### For Döngüsü
+
+```bash
+#!/bin/bash
+
+# Sayı aralığında döngü
+for i in {1..5}; do
+    echo "Adım: $i"
+done
+
+# Dizideki elemanlar üzerinde döngü
+SUNUCULAR=("web-01" "web-02" "db-01")
+for SUNUCU in "${SUNUCULAR[@]}"; do
+    echo "Kontrol ediliyor: $SUNUCU"
+done
+```
+
+### While Döngüsü
+
+```bash
+#!/bin/bash
+
+sayac=1
+
+while [ $sayac -le 5 ]; do
+    echo "Deneme: $sayac"
+    ((sayac++))
+done
+```
+
+## Pratik Örnek: Disk Kullanım Uyarısı
+
+```bash
+#!/bin/bash
+
+ESIK=80
+KULLANIM=$(df / | tail -1 | awk '{print $5}' | tr -d '%')
+
+if [ $KULLANIM -gt $ESIK ]; then
+    echo "UYARI: Disk doluluk oranı %$KULLANIM. Eşik: %$ESIK"
+else
+    echo "Disk durumu normal: %$KULLANIM"
+fi
+```
+
+> 💡 **İpucu:** Script'lerinizde her zaman `set -e` satırını kullanmayı düşünün. Bu sayede bir komut hata verdiğinde script otomatik olarak durur ve hatayı gizlemez.
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- Shebang satırının ne olduğunu ve neden gerekli olduğunu
+- Bash'te değişken tanımlama ve kullanma kurallarını
+- `if-elif-else` yapısıyla koşullu mantık yazmayı
+- `for` ve `while` döngülerini pratikte nasıl kullanacağımızı
