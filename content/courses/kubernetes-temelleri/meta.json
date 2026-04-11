@@ -1,0 +1,9 @@
+{
+  "slug": "kubernetes-temelleri",
+  "title": "Kubernetes Temelleri",
+  "description": "Container orchestration dünyasına adım atın. Pod'dan Deployment'a, Service'ten Ingress'e kadar Kubernetes'in temel yapı taşlarını öğrenin ve gerçek bir uygulama deploy edin.",
+  "category": "devops",
+  "difficulty": "intermediate",
+  "duration_minutes": 180,
+  "is_published": false
+}

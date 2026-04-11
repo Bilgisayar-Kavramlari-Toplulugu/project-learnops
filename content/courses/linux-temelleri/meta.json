@@ -1,0 +1,9 @@
+{
+  "slug": "linux-temelleri",
+  "title": "Linux Temelleri",
+  "description": "DevOps mühendisleri için Linux işletim sistemi temelleri: dosya sistemi, izinler, process yönetimi, ağ komutları ve Bash scripting.",
+  "category": "devops",
+  "difficulty": "beginner",
+  "duration_minutes": 120,
+  "is_published": false
+}

@@ -1,0 +1,154 @@
+---
+id: "git-006-conflict"
+title: "Merge Conflict Nasıl Çözülür?"
+order: 60
+order_index: 60
+---
+
+# Merge Conflict Nasıl Çözülür?
+
+Merge conflict (birleştirme çakışması), iki farklı branch'te aynı dosyanın aynı satırı farklı şekillerde değiştirildiğinde ortaya çıkar. Git hangi versiyonu tutacağına karar veremez ve kararı size bırakır. Panik yapmanıza gerek yok — conflict çözümü öğrenilebilir bir süreçtir.
+
+## Conflict Ne Zaman Oluşur?
+
+```
+main:    A → B → E
+              ↘
+feature:       C → D
+
+B commit'inden sonra main ve feature aynı satırı değiştirdiyse
+E ile D merge edildiğinde conflict oluşur.
+```
+
+Git'in birleştiremediği durumlar:
+
+- İki branch aynı satırı farklı içerikle değiştirmiş
+- Bir branch dosyayı silmiş, diğeri düzenlemiş
+- İki branch aynı yere farklı dosyalar eklemiş
+
+## Conflict İşaretçileri
+
+Conflict oluştuğunda Git, çakışan dosyayı özel işaretçilerle doldurur:
+
+```
+<<<<<<< HEAD
+Mevcut branch'teki (genellikle main) içerik
+=======
+Gelen branch'teki (feature) içerik
+>>>>>>> feature/kullanici-girisi
+```
+
+- `<<<<<<< HEAD` — Mevcut branch'inizdeki versiyon başlar
+- `=======` — Ayırıcı çizgi
+- `>>>>>>> feature/...` — Birleştirilen branch'teki versiyon başlar
+
+Tüm bu işaretçileri çözüme kavuşturmanız gerekir.
+
+## Adım Adım Conflict Çözümü
+
+### 1. Conflict'i Tetikleyin
+
+```bash
+git switch main
+git merge feature/kullanici-girisi
+# Auto-merging index.html
+# CONFLICT (content): Merge conflict in index.html
+# Automatic merge failed; fix conflicts and then commit the result.
+```
+
+### 2. Hangi Dosyalarda Conflict Var?
+
+```bash
+git status
+# Both modified: index.html
+```
+
+### 3. Dosyayı Düzenle
+
+`index.html` içeriği:
+
+```html
+<<<<<<< HEAD
+<h1>Hoşgeldiniz</h1>
+=======
+<h1>Merhaba, Kullanıcı!</h1>
+>>>>>>> feature/kullanici-girisi
+```
+
+Kararınıza göre düzenleyin. Üç seçeneğiniz var:
+
+**Seçenek A — Mevcut branch'i (HEAD) koru:**
+```html
+<h1>Hoşgeldiniz</h1>
+```
+
+**Seçenek B — Gelen branch'i (feature) kabul et:**
+```html
+<h1>Merhaba, Kullanıcı!</h1>
+```
+
+**Seçenek C — İkisini birleştir:**
+```html
+<h1>Hoşgeldiniz, Kullanıcı!</h1>
+```
+
+**Önemli:** `<<<<<<<`, `=======`, `>>>>>>>` işaretçi satırlarını tamamen silin. Dosyada tek bir işaretçi kalsa bile conflict çözülmemiş sayılır.
+
+### 4. Çözülen Dosyayı Staging'e Ekle
+
+```bash
+git add index.html
+```
+
+### 5. Commit Et
+
+```bash
+git commit
+# Editör açılır, merge commit mesajı hazır gelir
+# Kaydet ve çık
+```
+
+## Araç Destekli Çözüm
+
+Terminal editörü yerine görsel araçlar conflict çözümünü kolaylaştırır:
+
+```bash
+# VSCode ile
+git config --global merge.tool vscode
+git config --global mergetool.vscode.cmd 'code --wait $MERGED'
+git mergetool
+
+# Veya doğrudan VSCode'dan
+# "Source Control" panelinde conflict işaretli dosyaları açın
+# "Accept Current Change" / "Accept Incoming Change" / "Accept Both" seçenekleri çıkar
+```
+
+## Merge'i İptal Etme
+
+Conflict çözmek yerine merge işlemini tamamen geri almak isterseniz:
+
+```bash
+git merge --abort
+# Depo merge öncesi haline döner
+```
+
+## Conflict Önleme Stratejileri
+
+Conflict'i tamamen önleyemezsiniz; ancak sıklığını azaltabilirsiniz:
+
+1. **Kısa ömürlü branch:** Branch ne kadar uzun yaşarsa, `main`'den o kadar uzaklaşır ve conflict ihtimali artar.
+2. **Sık sık `main`'i çekin:** Feature branch'inizde çalışırken düzenli aralıklarla `git pull --rebase origin main` yapın.
+3. **Küçük, odaklı değişiklikler:** Tek bir PR'da çok fazla dosyayı değiştirmek conflict riskini artırır.
+4. **İletişim:** Aynı dosyada çalışacaksanız ekibinizi önceden bilgilendirin.
+
+## Conflict Çözüm Özeti
+
+```bash
+git merge feature/branch    # Conflict oluşur
+git status                  # Hangi dosyalar?
+# Dosyayı editörde düzenle, işaretçileri sil
+git add dosya.txt           # Çözüldü olarak işaretle
+git commit                  # Merge commit oluştur
+```
+
+Conflict, Git'in sizinle "bu konuda karar vermeni bekliyorum" dediği andır. Kodunuzu anlayan tek kişi siz olduğunuz için bu karar size aittir.

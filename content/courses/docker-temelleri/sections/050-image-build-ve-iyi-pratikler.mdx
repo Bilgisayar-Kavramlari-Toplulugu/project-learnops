@@ -1,0 +1,86 @@
+---
+id: "docker-005-image"
+title: "Image Build, Tag ve Push Akışı"
+order: 50
+order_index: 50
+---
+
+# Image Build, Tag ve Push Akışı
+
+Docker kullanırken image üretmek tek başına yeterli değildir. Gerçek hayatta image'i oluşturur, ona anlamlı bir etiket vererek sürümlendirir ve gerektiğinde bir registry'ye göndeririz. Bu bölümde Docker image yaşam döngüsünün build, tag ve push adımlarını birlikte ele alacağız.
+
+## `docker build` ne yapar?
+
+`docker build`, bulunduğunuz klasördeki Dockerfile'i okuyarak bir image üretir. En temel kullanım şu şekildedir:
+
+```bash
+docker build -t benim-uygulamam:1.0 .
+```
+
+Bu komutta:
+
+- `-t` image'e isim ve tag verir
+- `benim-uygulamam` image adıdır
+- `1.0` sürüm etiketidir
+- `.` mevcut klasörün build context olduğunu belirtir
+
+Build işlemi tamamlandığında image artık lokal makinede kullanılabilir hale gelir.
+
+## Tag neden gereklidir?
+
+Tag, image'in hangi sürümü veya hangi varyasyonu olduğunu anlamayı kolaylaştırır. Eğer tag kullanmazsanız Docker çoğu zaman varsayılan olarak `latest` etiketini kullanır. Ancak gerçek projelerde yalnızca `latest` kullanmak çoğu zaman yeterli değildir.
+
+Örneğin şu tag'ler daha anlamlı olabilir:
+
+- `frontend:1.0.0`
+- `frontend:staging`
+- `frontend:2026-04-10`
+
+Tag kullanmak ekip içinde şu soruların cevabını netleştirir:
+
+- Hangi image deploy edildi?
+- Hangi sürüm test edildi?
+- Hangi image geri alınmalı?
+
+## Registry nedir?
+
+Registry, image'lerin saklandığı merkezi depodur. Docker Hub en bilinen örnektir. Bunun dışında GitHub Container Registry veya şirket içi özel registry çözümleri de kullanılabilir.
+
+Registry mantığı önemlidir çünkü image sadece lokal makinede kaldığında başka biri onu kullanamaz. Bir ekip ortamında veya CI/CD sürecinde image'in paylaşılması gerekir. İşte bu paylaşım genellikle registry üzerinden yapılır.
+
+## `docker push` ne yapar?
+
+Lokal makinede hazır olan image'i registry'ye göndermek için `docker push` kullanılır. Tipik akış şöyledir:
+
+```bash
+docker tag benim-uygulamam:1.0 kullaniciadi/benim-uygulamam:1.0
+docker push kullaniciadi/benim-uygulamam:1.0
+```
+
+Buradaki mantık şudur:
+
+- Önce image uygun registry formatına göre etiketlenir
+- Sonra o etiketle registry'ye gönderilir
+
+Docker Hub kullanıyorsanız image adı çoğu zaman kullanıcı adı veya organizasyon adı ile birlikte yazılır.
+
+## Tipik Docker Hub akışı
+
+Başlangıç seviyesinde basit bir akış şu şekilde düşünülebilir:
+
+1. Dockerfile yaz
+2. `docker build` ile image üret
+3. `docker tag` ile anlamlı bir isim/sürüm ver
+4. Gerekirse `docker login` ile giriş yap
+5. `docker push` ile registry'ye gönder
+
+Bu akış, bir image'in yalnızca lokalde denenmesini değil, paylaşılmasını ve dağıtılmasını da mümkün kılar.
+
+## Özet
+
+Bu bölümde image'in üretildikten sonra nasıl yönetildiğini gördük.
+
+- `docker build` image üretir
+- `docker tag` image'e anlamlı bir isim ve sürüm verir
+- Registry, image'lerin paylaşıldığı merkezi depodur
+- `docker push`, image'i Docker Hub gibi bir registry'ye gönderir
