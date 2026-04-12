@@ -1,0 +1,9 @@
+{
+  "slug": "terraform-ile-iac",
+  "title": "Terraform ile Infrastructure as Code",
+  "description": "Terraform ile altyapınızı kod olarak yönetin. HCL sözdiziminden state yönetimine, modüler yapıdan GCP provider kullanımına kadar gerçek dünya senaryolarıyla Infrastructure as Code öğrenin.",
+  "category": "devops",
+  "difficulty": "intermediate",
+  "duration_minutes": 160,
+  "is_published": false
+}

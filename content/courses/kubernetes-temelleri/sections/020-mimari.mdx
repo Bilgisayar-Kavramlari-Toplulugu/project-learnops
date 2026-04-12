@@ -1,0 +1,324 @@
+---
+id: "k8s-002-mimari"
+title: "Control Plane ve Worker Node Mimarisi"
+order: 20
+order_index: 20
+---
+
+# Control Plane ve Worker Node Mimarisi
+
+Kubernetes'i etkili kullanmak için iç mimarisini anlamak kritik önem taşır. Bu bölümde bir Kubernetes cluster'ının nasıl oluştuğunu, hangi bileşenlerden meydana geldiğini ve bu bileşenlerin birbirleriyle nasıl iletişim kurduğunu inceleyeceğiz.
+
+## Cluster Nedir?
+
+Kubernetes **cluster**'ı, birlikte çalışan bir grup sunucudan oluşur. Bu sunucular iki temel role ayrılır:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                  Kubernetes Cluster                       │
+│                                                          │
+│  ┌─────────────────────────────┐                        │
+│  │       Control Plane         │  ← "Beyin" - Kararlar  │
+│  │  (Master Node)              │    buradan alınır       │
+│  └─────────────────────────────┘                        │
+│              │                                           │
+│    ┌─────────┼─────────┐                                │
+│    ▼         ▼         ▼                                │
+│  ┌─────┐  ┌─────┐  ┌─────┐                             │
+│  │Node1│  │Node2│  │Node3│  ← Worker Nodes              │
+│  │     │  │     │  │     │    Container'lar burada çalışır│
+│  └─────┘  └─────┘  └─────┘                             │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Control Plane Bileşenleri
+
+Control Plane, cluster'ın "beyni"dir. Kararlar burada alınır, istekler burada işlenir.
+
+### 1. kube-apiserver
+
+Tüm Kubernetes operasyonlarının geçiş noktasıdır. Kullanıcılar, araçlar ve diğer bileşenler yalnızca API Server üzerinden cluster ile iletişim kurar.
+
+```
+Kullanıcı → kubectl → kube-apiserver → etcd / diğer bileşenler
+```
+
+```bash
+# kubectl aslında API server'a HTTP isteği atar
+kubectl get pods
+# Arka planda: GET https://<api-server>/api/v1/namespaces/default/pods
+
+# Bunu açıkça görmek için:
+kubectl get pods -v=8  # Verbose mode - HTTP isteklerini gösterir
+```
+
+**Özellikleri:**
+- Authentication (kimlik doğrulama) ve Authorization (yetkilendirme)
+- API istek validasyonu
+- RESTful API sunar
+- Tüm durum değişiklikleri buradan geçer
+
+### 2. etcd
+
+Kubernetes'in tüm cluster verilerini saklayan **dağıtık key-value store**'dur. Cluster'ın "hafızası" diyebiliriz.
+
+```
+etcd'de Saklananlar:
+├── Pod tanımları
+├── Deployment konfigürasyonları
+├── Service bilgileri
+├── ConfigMap ve Secret'lar
+├── Node bilgileri
+└── Cluster metadata
+```
+
+> ⚠️ **Kritik Uyarı:** etcd'ye hiçbir zaman doğrudan yazılmaz. Yalnızca kube-apiserver erişir. Production'da etcd'nin düzenli yedeği alınmalıdır!
+
+### 3. kube-scheduler
+
+Yeni oluşturulan Pod'ları hangi Node'a yerleştireceğine karar veren bileşendir.
+
+Scheduler bir Pod görünce şunları değerlendirir:
+
+```
+Pod geldi! Nereye yerleştirelim?
+         │
+         ▼
+┌─────────────────────────────┐
+│ 1. Filtreleme               │
+│    - Node'un kaynakları     │
+│      yeterli mi? (CPU/RAM)  │
+│    - Node selector eşleşiyor│
+│      mu?                    │
+│    - Taint/Toleration var mı│
+└─────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│ 2. Puanlama (Scoring)       │
+│    - En az meşgul node      │
+│    - Locality (pod'a yakın) │
+│    - Custom priority rules  │
+└─────────────────────────────┘
+         │
+         ▼
+    En yüksek puanlı
+       Node seçilir
+```
+
+### 4. kube-controller-manager
+
+Kubernetes'teki **controller**'ları çalıştıran bileşendir. Her controller, belirli bir kaynağı istenen durumda tutmaktan sorumludur.
+
+| Controller | Görevi |
+|------------|--------|
+| **Node Controller** | Node'ların sağlığını izler, çökenleri raporlar |
+| **ReplicaSet Controller** | İstenen sayıda Pod'un çalışmasını sağlar |
+| **Deployment Controller** | Deployment güncellemelerini yönetir |
+| **Endpoints Controller** | Service ↔ Pod eşleşmelerini günceller |
+| **ServiceAccount Controller** | Default service account'ları oluşturur |
+
+**Reconciliation Loop (Uzlaşma Döngüsü):** Her controller şu döngüyü sürekli çalıştırır:
+
+```
+Mevcut Durum ──→ İstenen Durum ile karşılaştır
+       │
+       ▼
+  Fark var mı?
+  ├─ HAYIR → Bekle, tekrar kontrol et
+  └─ EVET  → Farkı gider (Pod ekle, sil, güncelle...)
+```
+
+### 5. cloud-controller-manager (Opsiyonel)
+
+Cloud provider'a özgü entegrasyonları yönetir. GCP, AWS veya Azure'da çalışıyorsa:
+- Load Balancer oluşturur
+- Persistent disk yönetir
+- Node eklenip çıkarıldığında cloud tarafını günceller
+
+---
+
+## Worker Node Bileşenleri
+
+Worker Node'lar, asıl iş yükünün çalıştığı sunuculardır.
+
+### 1. kubelet
+
+Her Worker Node'da çalışan ana ajan'dır. Control Plane ile Worker Node arasındaki köprüdür.
+
+**Görevleri:**
+- API Server'dan Pod tanımlarını alır
+- Container'ların başlatılmasını ve durdurulmasını sağlar
+- Container sağlığını izler (liveness/readiness probe'ları çalıştırır)
+- Node durumunu API Server'a raporlar
+
+```bash
+# kubelet'in durumunu kontrol et (Node üzerinde)
+systemctl status kubelet
+
+# kubelet logları
+journalctl -u kubelet -f
+```
+
+### 2. kube-proxy
+
+Her Node'da çalışan ağ proxy'sidir. Kubernetes Service kavramını ağ kurallarına (iptables/ipvs) çevirir.
+
+```
+Dışarıdan istek geldi:
+my-service:80
+       │
+       ▼
+  kube-proxy
+  (iptables kuralları)
+       │
+   ┌───┴────┐
+   ▼        ▼
+pod-1:8080  pod-2:8080  ← Load balancing
+```
+
+### 3. Container Runtime
+
+Container'ları gerçekten çalıştıran yazılımdır. Kubernetes, Container Runtime Interface (CRI) sayesinde birden fazla runtime destekler:
+
+| Runtime | Açıklama |
+|---------|---------|
+| **containerd** | En yaygın kullanılan, Docker'dan türetildi |
+| **CRI-O** | CNCF tarafından geliştirilen hafif runtime |
+| **Docker Engine** | Eskiden kullanılırdı, K8s 1.24'ten sonra kaldırıldı |
+
+> 💡 **Not:** "Docker kaldırıldı" denince paniklemek gerekmez! Docker ile oluşturulmuş image'lar hâlâ çalışır. Sadece Docker Engine artık runtime olarak kullanılmıyor, onun yerini `containerd` aldı.
+
+---
+
+## Bileşenler Arası İletişim
+
+Bir Pod deploy ettiğinizde arka planda neler olduğunu görelim:
+
+```
+kubectl apply -f pod.yaml
+        │
+        ▼
+1. kube-apiserver → isteği alır, valide eder, etcd'ye yazar
+        │
+        ▼
+2. kube-scheduler → yeni pod'u görür, node seçer, API server'a yazar
+        │
+        ▼
+3. kubelet (seçilen node'da) → pod tanımını alır
+        │
+        ▼
+4. container runtime → image çeker, container başlatır
+        │
+        ▼
+5. kubelet → pod'un Running olduğunu API server'a raporlar
+        │
+        ▼
+6. etcd → güncel durum kaydedilir
+```
+
+Bu tüm süreç genellikle **10-30 saniye** içinde tamamlanır.
+
+---
+
+## Node Kaynakları ve Capacity
+
+Her Node'un sınırlı kaynakları vardır:
+
+```bash
+kubectl describe node minikube | grep -A 10 "Capacity"
+# Capacity:
+#   cpu:                4           ← toplam CPU (core)
+#   memory:             8192Mi      ← toplam RAM
+#   pods:               110         ← max pod sayısı
+#
+# Allocatable:
+#   cpu:                4
+#   memory:             7706Mi      ← sistem için ayrılan düşülmüş
+#   pods:               110
+```
+
+Scheduler, Pod'ların `requests` değerlerini bu kapasite ile karşılaştırarak placement kararı verir.
+
+---
+
+## Cluster Bilgilerini İnceleyin
+
+```bash
+# Cluster genel bilgisi
+kubectl cluster-info
+
+# Tüm node'ları listele
+kubectl get nodes
+kubectl get nodes -o wide  # IP adresleri dahil
+
+# Node detayları
+kubectl describe node <node-name>
+
+# Tüm sistem pod'larını gör (Control Plane bileşenleri)
+kubectl get pods -n kube-system
+# NAME                               READY   STATUS
+# coredns-xxx                        1/1     Running   ← DNS
+# etcd-minikube                      1/1     Running   ← etcd
+# kube-apiserver-minikube            1/1     Running   ← API Server
+# kube-controller-manager-minikube   1/1     Running   ← Controller
+# kube-proxy-xxx                     1/1     Running   ← Proxy
+# kube-scheduler-minikube            1/1     Running   ← Scheduler
+```
+
+---
+
+## 🛠️ Hands-on: Mimariyi Keşfet
+
+Aşağıdaki komutları sırayla çalıştırarak cluster mimarisini inceleyin:
+
+```bash
+# 1. Node sayısı ve durumu
+kubectl get nodes -o wide
+
+# 2. kube-system namespace'indeki bileşenler
+kubectl get all -n kube-system
+
+# 3. API Server'ın hangi versiyonu çalıştırdığına bak
+kubectl version
+
+# 4. API Server endpoint'lerini listele
+kubectl api-resources | head -20
+
+# 5. etcd'nin sağlık durumu (minikube'de)
+kubectl exec -n kube-system etcd-minikube -- \
+  etcdctl --cacert=/var/lib/minikube/certs/etcd/ca.crt \
+          --cert=/var/lib/minikube/certs/etcd/server.crt \
+          --key=/var/lib/minikube/certs/etcd/server.key \
+          endpoint health
+
+# 6. Scheduler ve Controller Manager loglarına bak
+kubectl logs -n kube-system kube-scheduler-minikube | tail -20
+kubectl logs -n kube-system kube-controller-manager-minikube | tail -20
+```
+
+**Sorular:**
+1. `kubectl get nodes -o wide` çıktısında hangi IP adresi görünüyor?
+2. `kube-system` namespace'inde kaç pod çalışıyor?
+3. API Server hangi port üzerinde dinleme yapıyor?
+
+---
+
+## Özet
+
+Bu bölümde Kubernetes mimarisinin temel taşlarını öğrendik:
+
+**Control Plane:**
+- **kube-apiserver** → Tek giriş noktası, tüm istekler buradan geçer
+- **etcd** → Cluster'ın hafızası, tüm durum burada saklanır
+- **kube-scheduler** → Pod'ları Node'lara atar
+- **kube-controller-manager** → Desired state'i korur
+
+**Worker Node:**
+- **kubelet** → Control Plane ile Node arasındaki köprü
+- **kube-proxy** → Ağ kurallarını yönetir
+- **Container Runtime** → Container'ları çalıştırır (containerd)
+
+Bir sonraki bölümde Kubernetes'in en temel birimi olan **Pod**'u derinlemesine inceleyeceğiz.
