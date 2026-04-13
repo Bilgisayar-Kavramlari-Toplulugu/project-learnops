@@ -3,28 +3,28 @@
 import { Clock, Signal, Tag, CheckCircle2, ChevronLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { CourseDetail } from "@/types";
-import { useAuth } from "@/lib/auth";
+
+import { useProfile } from "@/hooks/profile/use-profile";
 import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
+import { api } from "@/lib/api";
 
 export default function CourseDetailClient({ course }: { course: CourseDetail }) {
-  const { refreshSession } = useAuth();
   const router = useRouter();
 
-  const ensureAuth = async () => {
-    try {
-      await refreshSession();
-      return true;
-    } catch {
-      router.replace(routes.login);
-      return false;
-    }
-  };
-
-  // TODO [Alper-Suleyman] Enrollement logic will be implemented here
+  const { data: user } = useProfile();
   const handleEnroll = async () => {
-    const isAuth = await ensureAuth();
-    if (!isAuth) return;
+    if (!user) {
+      router.replace(routes.login);
+      return;
+    }
+    // Sonraki Storyde Eklenecek şu an aktif değil
+    // try {
+    //   await api.post("/enrollments", { course_id: course.id });
+    //   // Başarılı olursa yönlendirme vs.
+    // } catch (error) {
+    //   console.error("Kayıt başarısız", error);
+    // }
   };
 
   const difficultyColors: Record<string, string> = {
