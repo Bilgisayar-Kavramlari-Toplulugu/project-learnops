@@ -1,0 +1,467 @@
+---
+id: "tf-005-workflow"
+title: "init, plan, apply, destroy Akışı"
+order: 50
+order_index: 50
+---
+
+# init, plan, apply, destroy Akışı
+
+Terraform ile çalışmak döngüsel bir süreçtir: **Yaz → Planla → Uygula → Doğrula → Tekrar.** Bu bölümde dört temel komutu production düzeyinde anlamlandırıyoruz — sadece ne yaptıklarını değil, **nasıl ve ne zaman** kullanacağınızı.
+
+---
+
+## Terraform Çalışma Döngüsü
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                                                              │
+│   1. terraform init                                          │
+│      ↓ Provider'ları indir, backend'i hazırla               │
+│                                                              │
+│   2. terraform validate                                      │
+│      ↓ Sözdizimini kontrol et                               │
+│                                                              │
+│   3. terraform fmt                                           │
+│      ↓ Kod formatını düzenle                                │
+│                                                              │
+│   4. terraform plan                                          │
+│      ↓ Değişiklikleri önizle                                │
+│                                                              │
+│   5. terraform apply                                         │
+│      ↓ Değişiklikleri uygula                                │
+│                                                              │
+│   6. terraform output / show                                 │
+│      ↓ Sonuçları doğrula                                    │
+│                                                              │
+│   ↩ Değişiklik gerekiyorsa 1'e dön                          │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 1. terraform init
+
+`init`, Terraform projesini başlatır. Her yeni klonlama veya backend değişikliğinden sonra çalıştırılır.
+
+```bash
+terraform init
+```
+
+**Ne yapar?**
+
+```
+Initializing the backend...
+  ↳ backend.tf okunur, GCS'e bağlanılır
+
+Initializing provider plugins...
+  ↳ required_providers kontrol edilir
+  ↳ .terraform/providers/ altına provider binary'leri indirilir
+
+Terraform has been successfully initialized!
+```
+
+### Önemli init Bayrakları
+
+```bash
+# Backend konfigürasyonunu güncelle (backend.tf değişince)
+terraform init -reconfigure
+
+# Local state'i remote'a taşı
+terraform init -migrate-state
+
+# Mevcut .terraform klasörünü yoksay, sıfırdan başla
+terraform init -upgrade  # Provider versiyonlarını günceller
+```
+
+### .terraform.lock.hcl — Lock Dosyası
+
+```bash
+$ cat .terraform.lock.hcl
+
+provider "registry.terraform.io/hashicorp/google" {
+  version     = "5.21.0"
+  constraints = ">= 5.0.0, < 6.0.0"
+  hashes = [
+    "h1:...",
+    "zh:...",
+  ]
+}
+```
+
+Bu dosya provider versiyonunu kilitler. **Mutlaka Git'e commit edin.** Tüm ekip ve CI/CD aynı provider versiyonunu kullanır.
+
+---
+
+## 2. terraform validate
+
+`validate`, HCL sözdizimini ve mantıksal tutarlılığı kontrol eder. `plan`dan önce hızlı bir kontrol mekanizmasıdır.
+
+```bash
+terraform validate
+```
+
+**Başarılı:**
+```
+Success! The configuration is valid.
+```
+
+**Hatalı:**
+```
+╷
+│ Error: Reference to undeclared resource
+│
+│   on main.tf line 12, in resource "google_compute_instance" "web":
+│   12:   network = google_compute_network.typo_in_name.id
+│
+│ A managed resource "google_compute_network" "typo_in_name" has not been declared
+│ in the root module.
+╵
+```
+
+> 💡 **İpucu:** `validate` sadece sözdizimi kontrolü yapar — gerçek cloud kaynaklarına dokunmaz. `plan`dan çok daha hızlıdır ve CI/CD'de erken hata yakalamak için kullanılır.
+
+---
+
+## 3. terraform fmt
+
+`fmt`, `.tf` dosyalarını HashiCorp'un standart formatına göre düzenler. Ekip içinde kod tutarlılığını sağlar.
+
+```bash
+# Dosyaları formatla (değişiklikleri uygula)
+terraform fmt
+
+# Değiştirilecek dosyaları listele (uygulamadan)
+terraform fmt -check  # CI/CD'de kullanım için
+
+# Recursive — alt klasörleri de formatla
+terraform fmt -recursive
+```
+
+**Öncesi:**
+```hcl
+resource "google_storage_bucket" "assets" {
+name="learnops-assets"
+location        = "EU"
+  force_destroy=false
+}
+```
+
+**Sonrası:**
+```hcl
+resource "google_storage_bucket" "assets" {
+  name          = "learnops-assets"
+  location      = "EU"
+  force_destroy = false
+}
+```
+
+> 💡 **Pro İpucu:** VSCode'da `"editor.formatOnSave": true` ile kaydettiğinizde otomatik formatlanır.
+
+---
+
+## 4. terraform plan
+
+`plan`, Terraform'un yapacağı değişiklikleri önceden gösterir. **Hiçbir şeyi değiştirmez.** Canlı ortama uygulamadan önce en kritik adımdır.
+
+```bash
+terraform plan
+```
+
+### Plan Çıktısını Okumak
+
+```
+Terraform will perform the following actions:
+
+  # google_compute_instance.web will be created
+  + resource "google_compute_instance" "web" {
+      + id           = (known after apply)
+      + name         = "learnops-web-server"
+      + machine_type = "e2-standard-2"
+      + zone         = "europe-west3-a"
+
+      + network_interface {
+          + network = "learnops-vpc"
+          + access_config {
+              + nat_ip = (known after apply)
+          }
+      }
+    }
+
+  # google_compute_instance.old_web will be destroyed
+  - resource "google_compute_instance" "old_web" {
+      - id           = "projects/learnops/zones/europe-west3-a/instances/old-web"
+      - name         = "old-web"
+      ...
+    }
+
+  # google_storage_bucket.assets will be updated in-place
+  ~ resource "google_storage_bucket" "assets" {
+        id   = "learnops-assets"
+        name = "learnops-assets"
+      ~ labels = {
+          + "environment" = "production"
+            "project"     = "learnops"
+        }
+    }
+
+Plan: 1 to add, 1 to change, 1 to destroy.
+```
+
+**Sembollerin Anlamı:**
+- `+` : Oluşturulacak
+- `-` : Silinecek
+- `~` : Güncellenmecek (in-place)
+- `-/+` : **Replace** — Silinip yeniden oluşturulacak (dikkat!)
+- `(known after apply)` : Apply sonrasına kadar bilinmeyen değer
+
+### Plan Dosyasına Kaydetme
+
+```bash
+# Planı dosyaya kaydet
+terraform plan -out=tfplan.binary
+
+# Kaydedilen planı görüntüle (human-readable)
+terraform show tfplan.binary
+
+# Kaydedilen planı uygula (değişmediğini garanti eder)
+terraform apply tfplan.binary
+```
+
+Bu yaklaşım production deploymentlar için kritiktir: plan ile apply arasında kimse değişiklik yapamazsa, tam olarak planladığınız şey uygulanır.
+
+---
+
+## 5. terraform apply
+
+`apply`, planı gerçekten uygular.
+
+```bash
+# Interaktif onay ile
+terraform apply
+
+# Belirli bir planı uygula (önerilir)
+terraform apply tfplan.binary
+
+# Onay gerektirmeyen (CI/CD için)
+terraform apply -auto-approve
+
+# Sadece belirli kaynakları hedefleme (dikkatli kullanın)
+terraform apply -target=google_compute_instance.web
+```
+
+### Apply Sonrası Doğrulama
+
+```bash
+# Tüm output değerlerini göster
+terraform output
+
+# Belirli bir output
+terraform output sunucu_ip
+
+# JSON formatında
+terraform output -json
+
+# Tüm yönetilen kaynakları listele
+terraform state list
+
+# Belirli bir kaynağın tüm attribute'larını gör
+terraform state show google_compute_instance.web
+```
+
+### Partial Apply ve Hata Durumu
+
+Apply sırasında hata olursa, Terraform başarılı olan kaynakları state'e yazar, başarısızları işaretler:
+
+```
+Error: Error creating ComputeInstance: googleapi: Error 409:
+The resource 'projects/.../instances/web-server' already exists
+
+  on main.tf line 5, in resource "google_compute_instance" "web":
+   5: resource "google_compute_instance" "web" {
+```
+
+Bu durumda:
+```bash
+# State'i senkronize et
+terraform refresh  # Artık önerilmiyor, yerine:
+terraform apply -refresh-only
+
+# veya sadece başarısız kaynağı hedefle
+terraform apply -target=google_compute_instance.web
+```
+
+---
+
+## 6. terraform destroy
+
+`destroy`, Terraform tarafından yönetilen **tüm** kaynakları siler.
+
+```bash
+# Interaktif onay ile
+terraform destroy
+
+# Onay gerektirmeden (CI/CD test ortamları için)
+terraform destroy -auto-approve
+
+# Sadece belirli kaynağı sil
+terraform destroy -target=google_compute_instance.old_web
+```
+
+> ⚠️ **Production'da ASLA `destroy -auto-approve` Çalıştırmayın!** Bu komut geri alınamaz. Production ortamlarında `prevent_destroy = true` lifecycle kuralı kullanın.
+
+```hcl
+resource "google_sql_database_instance" "main" {
+  # ...
+
+  lifecycle {
+    prevent_destroy = true  # terraform destroy çalışırsa hata verir
+  }
+}
+```
+
+---
+
+## Gerçek Dünya CI/CD Pipeline'ı
+
+Production Terraform deployment'ı bu akışı izler:
+
+```yaml
+# .github/workflows/terraform.yml (basitleştirilmiş)
+
+name: Terraform Deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  terraform-plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan.binary
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: tfplan.binary
+
+  terraform-apply:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production  # Manuel onay gerektirir
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Download Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+
+      - name: Terraform Apply
+        run: terraform apply tfplan.binary
+```
+
+---
+
+## Özet Karşılaştırma Tablosu
+
+| Komut | Cloud'a Dokunur mu? | Onay Gerektirir mi? | Ne Zaman Kullanılır? |
+|-------|---------------------|---------------------|----------------------|
+| `init` | Hayır | Hayır | İlk kurulum, backend değişikliği |
+| `validate` | Hayır | Hayır | Sözdizimi kontrolü, CI/CD erken aşama |
+| `fmt` | Hayır | Hayır | Kod formatı, commit öncesi |
+| `plan` | Hayır (sadece okur) | Hayır | Her değişiklik öncesi |
+| `apply` | **Evet** | Evet | Değişiklikleri uygulamak için |
+| `destroy` | **Evet** | Evet | Ortamı tamamen kaldırmak için |
+
+---
+
+## Hands-on: Tam Deployment Akışı
+
+Aşağıdaki adımları sırayla uygulayın:
+
+```bash
+# 1. Proje klasörü oluştur
+mkdir learnops-infra && cd learnops-infra
+
+# 2. Basit bir main.tf yaz (local provider kullanın)
+cat > main.tf << 'EOF'
+terraform {
+  required_providers {
+    local = { source = "hashicorp/local", version = "~> 2.4" }
+  }
+}
+
+variable "ortam" {
+  type    = string
+  default = "development"
+}
+
+resource "local_file" "config" {
+  content  = "Ortam: ${var.ortam}\nSon güncelleme: production-ready!"
+  filename = "${path.module}/app.config"
+}
+
+output "config_icerigi" {
+  value = local_file.config.content
+}
+EOF
+
+# 3. init → validate → fmt → plan → apply
+terraform init
+terraform validate
+terraform fmt
+terraform plan
+terraform apply
+
+# 4. Output'u görüntüle
+terraform output config_icerigi
+
+# 5. Değişiklik yap ve lifecycle'ı gözlemle
+# main.tf'te content değerini değiştirin, tekrar plan yapın
+
+# 6. Temizle
+terraform destroy
+```
+
+---
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+
+- `init` ile projeyi başlatmayı ve lock file'ın önemini
+- `validate` ile erken sözdizimi kontrolünü
+- `fmt` ile kod tutarlılığını sağlamayı
+- `plan` çıktısını okumayı (+ - ~ sembolleri, replace durumu)
+- `apply` ile production-safe deployment yapmayı (plan dosyasına kaydet → uygula)
+- `destroy`'u güvenli kullanmayı ve `prevent_destroy` ile korumayı
+- Gerçek dünya CI/CD pipeline'ına entegrasyonu
+
+Bir sonraki bölümde kodu yeniden kullanılabilir yapan **modül yapısını** öğreneceğiz.

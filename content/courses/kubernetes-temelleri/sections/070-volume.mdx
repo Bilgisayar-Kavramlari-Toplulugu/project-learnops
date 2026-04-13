@@ -1,0 +1,411 @@
+---
+id: "k8s-007-volume"
+title: "PersistentVolume ve PVC"
+order: 70
+order_index: 70
+---
+
+# PersistentVolume ve PVC
+
+Container'lar doğası gereği **geçicidir (ephemeral)**. Container silindiğinde içindeki tüm veriler de gider. Veritabanları, dosya yüklemeleri, log verileri gibi kalıcı olması gereken veriler için Kubernetes'in **Volume** sistemi kullanılır.
+
+## Container Storage Problemi
+
+```
+Container başladı
+├── /var/lib/mysql/ (DB verileri yazıldı)
+├── /uploads/ (kullanıcı dosyaları)
+└── /logs/ (uygulama logları)
+
+Container çöktü → YENİDEN BAŞLADI
+└── Tüm veriler KAYBOLDU! 💥
+
+Çözüm: Persistent Volume
+Container'ların yaşam döngüsünden bağımsız storage
+```
+
+---
+
+## Volume Türleri: Kısa Bakış
+
+Kubernetes pek çok volume tipi destekler:
+
+| Tip | Açıklama | Kalıcılık |
+|-----|---------|----------|
+| `emptyDir` | Pod yaşam süresi boyunca var, container'lar arası paylaşım | Pod silinince gider |
+| `hostPath` | Node dosya sistemine bağlanır | Node'a bağlı |
+| `nfs` | NFS sunucusuna bağlanır | Kalıcı |
+| `persistentVolumeClaim` | PVC üzerinden PV kullanımı | Kalıcı |
+| `configMap` | ConfigMap içeriğini dosya olarak mount | - |
+| `secret` | Secret içeriğini dosya olarak mount | - |
+
+---
+
+## emptyDir: Container'lar Arası Paylaşım
+
+Pod yaşadığı sürece var olan geçici dizin. Sidecar pattern'de çok kullanılır:
+
+```yaml
+spec:
+  containers:
+  - name: app
+    image: my-app:1.0
+    volumeMounts:
+    - name: shared-data
+      mountPath: /data/output
+
+  - name: data-processor
+    image: processor:1.0
+    volumeMounts:
+    - name: shared-data
+      mountPath: /data/input    # Aynı volume, farklı yol
+
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+```
+
+---
+
+## PersistentVolume (PV) ve PersistentVolumeClaim (PVC)
+
+Kubernetes, storage yönetimi için bir soyutlama katmanı sunar:
+
+```
+Administrator (veya Cloud)    Developer (uygulama ekibi)
+        │                             │
+        ▼                             ▼
+┌──────────────────┐         ┌──────────────────┐
+│ PersistentVolume │ ←──────→│PersistentVolume  │
+│ (Gerçek disk)    │  bağlanır│Claim (Talep)     │
+│                  │         │                  │
+│ - 100Gi SSD      │         │ - 10Gi istiyorum │
+│ - GCP disk       │         │ - ReadWriteOnce  │
+│ - NFS mount      │         │                  │
+└──────────────────┘         └──────────────────┘
+```
+
+**PersistentVolume (PV):** Cluster yöneticisi tarafından oluşturulan gerçek storage kaynağı.  
+**PersistentVolumeClaim (PVC):** Developer'ın storage talebini ifade ettiği kaynak. PV ile eşleşir.
+
+---
+
+## Access Mode'lar
+
+| Mode | Kısaltma | Anlamı |
+|------|---------|--------|
+| ReadWriteOnce | RWO | Tek node okur ve yazar |
+| ReadOnlyMany | ROX | Birden fazla node sadece okur |
+| ReadWriteMany | RWX | Birden fazla node okur ve yazar |
+
+> 💡 **Dikkat:** Storage backend tüm mode'ları desteklemeyebilir. Örneğin, GCP Persistent Disk yalnızca RWO destekler. NFS, RWX destekler.
+
+---
+
+## PersistentVolume Oluşturma (Static Provisioning)
+
+```yaml
+# pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain   # PVC silinince ne olsun?
+  storageClassName: standard
+  hostPath:                                # Test için hostPath (prod'da kullanmayın!)
+    path: /mnt/postgres-data
+```
+
+**Reclaim Policy:**
+
+| Policy | Anlamı |
+|--------|--------|
+| `Retain` | PVC silinince PV korunur, veri kalmaya devam eder |
+| `Delete` | PVC silinince PV ve veri de silinir (cloud disk) |
+| `Recycle` | Veriyi temizler, PV yeniden kullanılabilir (deprecated) |
+
+---
+
+## PersistentVolumeClaim Oluşturma
+
+```yaml
+# pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 5Gi        # 5Gi talep ediyorum
+```
+
+```bash
+kubectl apply -f pv.yaml
+kubectl apply -f pvc.yaml
+
+kubectl get pv
+# NAME           CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      STORAGECLASS
+# postgres-pv   10Gi       RWO            Retain           Available   standard
+
+kubectl get pvc
+# NAME           STATUS   VOLUME         CAPACITY   ACCESS MODES   STORAGECLASS
+# postgres-pvc   Bound    postgres-pv   10Gi       RWO            standard
+#               ↑ Bound = PV ile eşleşti!
+```
+
+---
+
+## PVC'yi Pod'a Bağlama
+
+```yaml
+# postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        env:
+        - name: POSTGRES_DB
+          value: myapp
+        - name: POSTGRES_USER
+          value: appuser
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data   # DB verileri burada saklanır
+      
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc               # PVC adı
+```
+
+---
+
+## StorageClass ve Dynamic Provisioning
+
+Manuel PV oluşturmak yerine, **StorageClass** ile PVC oluşturulduğunda disk otomatik yaratılır:
+
+```yaml
+# storageclass.yaml (Cloud'da genellikle önceden tanımlı gelir)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+provisioner: pd.csi.storage.gke.io    # GCP disk
+parameters:
+  type: pd-ssd
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+```
+
+```yaml
+# dynamic-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: fast-ssd     # StorageClass belirt
+  resources:
+    requests:
+      storage: 20Gi
+# → GCP'de otomatik 20Gi SSD disk oluşturulur!
+```
+
+```bash
+# Mevcut StorageClass'ları listele
+kubectl get storageclass
+# NAME                 PROVISIONER                    RECLAIMPOLICY   VOLUMEBINDINGMODE
+# standard (default)   k8s.io/minikube-hostpath       Delete          Immediate
+```
+
+---
+
+## Volume Boyutu Genişletme
+
+PVC boyutunu artırmak mümkündür (StorageClass `allowVolumeExpansion: true` ise):
+
+```bash
+# PVC'yi düzenle
+kubectl patch pvc postgres-pvc -p '{"spec":{"resources":{"requests":{"storage":"20Gi"}}}}'
+
+# Durumu izle
+kubectl get pvc postgres-pvc -w
+# STATUS: Resizing → FileSystemResizePending → Bound
+```
+
+---
+
+## 🛠️ Hands-on: PostgreSQL ile Kalıcı Veri
+
+**Adım 1:** Secret, PV ve PVC oluşturun:
+
+```bash
+# Secret
+kubectl create secret generic postgres-secret \
+  --from-literal=password=localdev123
+
+# PV (minikube için hostPath)
+cat > postgres-pv.yaml << 'EOF'
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: /tmp/postgres-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 1Gi
+EOF
+
+kubectl apply -f postgres-pv.yaml
+kubectl get pv,pvc
+```
+
+**Adım 2:** PostgreSQL deploy edin:
+
+```bash
+cat > postgres-deploy.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        env:
+        - name: POSTGRES_DB
+          value: testdb
+        - name: POSTGRES_USER
+          value: testuser
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+EOF
+
+kubectl apply -f postgres-deploy.yaml
+kubectl get pods -l app=postgres -w
+```
+
+**Adım 3:** Veri yazın ve kalıcılığı test edin:
+
+```bash
+# DB'ye bağlan ve tablo oluştur
+kubectl exec -it $(kubectl get pod -l app=postgres -o name) -- \
+  psql -U testuser -d testdb -c \
+  "CREATE TABLE test (id serial, msg text); INSERT INTO test(msg) VALUES ('Kalıcı veri!');"
+
+# Pod'u sil (deployment yenisini oluşturacak)
+kubectl delete pod -l app=postgres
+
+# Yeni pod hazır olana kadar bekle
+kubectl get pods -l app=postgres -w
+
+# Veriyi kontrol et - hâlâ var mı?
+kubectl exec -it $(kubectl get pod -l app=postgres -o name) -- \
+  psql -U testuser -d testdb -c "SELECT * FROM test;"
+# id | msg
+#----+----------
+#  1 | Kalıcı veri!  ← Veri korundu!
+```
+
+**Temizlik:**
+```bash
+kubectl delete -f postgres-deploy.yaml
+kubectl delete -f postgres-pv.yaml
+kubectl delete secret postgres-secret
+```
+
+---
+
+## Özet
+
+Bu bölümde Kubernetes storage yönetimini öğrendik:
+
+- Container storage geçicidir, kalıcı veri için Volume gerekir
+- **emptyDir:** Pod yaşam süresi boyunca geçici paylaşım
+- **PersistentVolume (PV):** Gerçek disk kaynağı
+- **PersistentVolumeClaim (PVC):** Developer'ın storage talebi
+- **Access Mode'lar:** RWO (tek node), ROX (çoklu read-only), RWX (çoklu read-write)
+- **StorageClass:** Otomatik disk oluşturma (Dynamic Provisioning)
+- **Reclaim Policy:** PVC silinince ne olacağını belirler (Retain/Delete)
+
+Bir sonraki bölümde cluster kaynaklarını mantıksal olarak ayıran **Namespace** kavramını öğreneceğiz.

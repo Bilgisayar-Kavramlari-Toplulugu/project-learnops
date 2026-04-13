@@ -1,0 +1,61 @@
+---
+id: "cicd-003-actions"
+title: "GitHub Actions"
+order: 30
+order_index: 30
+---
+
+# **Otomasyonun Dili: GitHub Actions YAML Anatomisi**
+
+GitHub Actions kullanırken yazdığınız her şey .github/workflows/ klasörü altındaki bir .yml dosyasında yaşar. Bu dosya, GitHub'a "Ne zaman, nerede ve hangi sırayla çalışmalısın?" talimatını verir.
+
+## **1\. Dosya Başlangıcı ve Tetikleyiciler (name & on)**
+
+Her planın bir adı ve bir başlangıç şartı vardır.
+
+* **name**: Workflow'un (iş akışının) adıdır. GitHub panelinde bu isimle görünür.  
+* **on**: Bu workflow'un ne zaman çalışacağını belirleyen "tetikleyici"dir (trigger).  
+  * **push**: Kodu gönderdiğinizde çalışır.  
+  * **pull\_request**: Bir birleştirme isteği açıldığında çalışır.  
+  * **schedule**: Belirli bir saatte (cron tabanlı) çalışır.
+
+## **2\. İşlerin Tanımlanması (jobs)**
+
+Bir YAML dosyasında birden fazla job olabilir. Varsayılan olarak bu işler **paralel** çalışır.
+
+* **runs-on**: Bu işin hangi işletim sisteminde (Runner) koşacağını seçersiniz. (Örn: ubuntu-latest, windows-latest, macos-latest).
+
+## **3\. Adımların Hiyerarşisi (steps)**
+
+Her job içinde yapılacak küçük görevler listesidir. İki ana anahtar kelime çok kritiktir:
+
+* **uses**: Başkalarının yazdığı hazır aksiyonları çağırmak için kullanılır. (Örn: Kodun kopyalanması için actions/checkout@v4).  
+* **run**: Terminalde çalıştıracağınız özel bir komuttur. (Örn: npm install veya python script.py).
+
+## **🛠 YAML Yazarken Altın Kurallar (Hata Yapmamak İçin)**
+
+YAML dosyaları oldukça "hassas" yapılardır. Yazarken şu üç kurala dikkat etmelisiniz:
+
+1. **Girintiler (Indentation) Hayatidir:** YAML'da parantez yoktur; her şey boşluklarla (space) belirlenir. Genellikle **2 boşluk** kullanılır. Eğer bir step, job'ın hizasındaysa sistem hata verir.  
+2. **Liste ve Sözlük Yapısı:** \* \- işareti ile başlayanlar birer listedir (örneğin adımlar listesi).  
+   * key: value yapısı ise bir ayar tanımlar.  
+3. **Büyük/Küçük Harf Duyarlılığı:** on ve ON aynı şey değildir. GitHub Actions dokümantasyonundaki standartlara sadık kalmalısınız.
+
+## **Örnek Bir "Hello World" Akışı**
+
+Aşağıdaki basit yapılandırma, her kod gönderildiğinde (push) çalışan temel bir iş akışını temsil eder:
+```bash
+name: İlk Otomasyonum  
+on: [push] 
+
+jobs:  
+  merhaba-is-akisi:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - name: Kodları Getir  
+        uses: actions/checkout@v4 
+
+      - name: Selam Ver  
+        run: echo "Merhaba, sistem başarıyla çalışıyor\!"
+``` 
+>Not: YAML dosyanızı oluşturduktan sonra GitHub'a push ettiğinizde, projenizin "Actions" sekmesinden bu sürecin nasıl ilerlediğini canlı olarak takip edebilirsiniz.
