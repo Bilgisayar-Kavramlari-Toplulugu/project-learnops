@@ -3,10 +3,10 @@
 Reads meta.json for course metadata and MDX frontmatter for sections.
 UPSERT logic based on slug (courses) and section_id_str (sections).
 
-Usage (run from backend/ directory):
-    poetry run python ../scripts/seed_content.py --env development
-    poetry run python ../scripts/seed_content.py --env production
-    poetry run python ../scripts/seed_content.py --env development --dry-run
+Usage (run from project root):
+    poetry run python scripts/seed_content.py --env development
+    poetry run python scripts/seed_content.py --env production
+    poetry run python scripts/seed_content.py --env development --dry-run
 """
 
 import argparse
@@ -199,11 +199,9 @@ def get_database_url() -> str:
 def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
     """UPSERT courses by slug and sections by section_id_str.
 
-    Sections are handled with delete-then-insert per course to avoid
-    UniqueViolation on the (course_id, order_index) constraint
-    (uq_sections_course_order) that would occur when order values change
-    during one-by-one UPSERTs.  user_progress rows cascade-delete via FK,
-    so this is safe only because the seed script runs before users exist.
+    Both courses and sections use PostgreSQL ON CONFLICT … DO UPDATE so that
+    re-running the script never deletes existing rows (and therefore never
+    cascade-deletes user_progress data).
     """
     for course_data in courses:
         meta = course_data["meta"]
@@ -245,27 +243,26 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
         ).first()
         course_id = course_row[0]
 
-        # Delete existing sections for this course, then re-insert.
-        # This avoids UniqueViolation on uq_sections_course_order when
-        # order_index values are reassigned between sections.
-        session.execute(
-            sa.delete(Section.__table__).where(
-                Section.__table__.c.course_id == course_id
-            )
-        )
-        logger.info(f"  Deleted existing sections for course {meta['slug']}")
-
+        # UPSERT sections by section_id_str
         for section_data in course_data["sections"]:
             fm = section_data["frontmatter"]
-            session.execute(
-                sa.insert(Section.__table__).values(
-                    course_id=course_id,
-                    section_id_str=fm["id"],
-                    title=fm["title"],
-                    order_index=fm["order"],
-                )
+            section_values = {
+                "course_id": course_id,
+                "section_id_str": fm["id"],
+                "title": fm["title"],
+                "order_index": fm["order"],
+            }
+            stmt = pg_insert(Section.__table__).values(**section_values)
+            stmt = stmt.on_conflict_do_update(
+                constraint="uq_sections_section_id_str",
+                set_={
+                    "title": stmt.excluded.title,
+                    "order_index": stmt.excluded.order_index,
+                    "updated_at": sa.func.now(),
+                },
             )
-            logger.info(f"  INSERT section: {fm['id']}")
+            session.execute(stmt)
+            logger.info(f"  UPSERT section: {fm['id']}")
 
 
 # ---------------------------------------------------------------------------
