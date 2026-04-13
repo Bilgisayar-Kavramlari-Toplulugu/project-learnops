@@ -150,7 +150,7 @@ async def mark_section_complete(
             logger.info(
                 f"Course completed: user={user_id}, course={course_id}, progress=100%"
             )
-            
+
         # Commit (ATOMICITY: Tüm işlemler başarılı olmuştur)
         # Eğer buraya kadar geldiysek, hiç hata yok
         # Tüm değişiklikler atomik olarak database'e yazılır
