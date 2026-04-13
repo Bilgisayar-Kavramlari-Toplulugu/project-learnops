@@ -15,7 +15,7 @@ from app import (
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
-from app.routers import auth, users, progress
+from app.routers import auth, progress, users
 
 logger = logging.getLogger(__name__)
 

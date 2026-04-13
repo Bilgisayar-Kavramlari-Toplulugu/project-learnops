@@ -1,12 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from logging import getLogger
 from uuid import UUID
 
-from fastapi import HTTPException, status
-from sqlalchemy import select, func, case, and_
+from fastapi import HTTPException
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.courses import Section, Enrollment, UserProgress
+from app.models.courses import Enrollment, Section, UserProgress
 
 logger = getLogger(__name__)
 
@@ -89,15 +89,16 @@ async def mark_section_complete(
                 user_id=user_id,
                 section_id=section.id,
                 completed=True,
-                completed_at=datetime.utcnow()
+                completed_at=datetime.now(timezone.utc)
             )
             db.add(user_progress)
             logger.info(f"New progress entry: user={user_id}, section={section_id_str}")
         
         elif not user_progress.completed:
-            # Kayıt var ama tamamlanmamış → güncelle (eski bir session'dan kaldı olabilir)
+            # Kayıt var ama tamamlanmamış → güncelle
+            # (Eski bir session'dan kalmış olabilir)
             user_progress.completed = True
-            user_progress.completed_at = datetime.utcnow()
+            user_progress.completed_at = datetime.now(timezone.utc)
             logger.info(f"Progress updated: user={user_id}, section={section_id_str}")
 
         # DRY PRINCIPLE: Tek query ile hesapla (N+1 problem çözüldü)
@@ -118,7 +119,7 @@ async def mark_section_complete(
             func.count(Section.id).label("total"),
             func.sum(
                 case(
-                    (UserProgress.completed == True, 1),
+                    (UserProgress.completed, 1),
                     else_=0
                 )
             ).label("completed")
@@ -145,23 +146,25 @@ async def mark_section_complete(
 
         # Tüm section'lar tamamlandı mı? (Integer comparison → float precision yok)
         if completed_sections == total_sections and not enrollment.completed_at:
-            enrollment.completed_at = datetime.utcnow()
-            logger.info(f"Course completed: user={user_id}, course={course_id}, progress=100%")
-
+            enrollment.completed_at = datetime.now(timezone.utc)
+            logger.info(
+                f"Course completed: user={user_id}, course={course_id}, progress=100%"
+            )
+            
         # Commit (ATOMICITY: Tüm işlemler başarılı olmuştur)
         # Eğer buraya kadar geldiysek, hiç hata yok
         # Tüm değişiklikler atomik olarak database'e yazılır
         # Eğer hata olursa except bloğu devreye girer ve rollback yapılır
         await db.commit()
-        await db.refresh(enrollment)
 
         logger.info(
             f"Section complete: user={user_id}, section={section_id_str}, "
-            f"progress={new_progress}%, course_done={enrollment.completed_at is not None}"
+            f"progress={new_progress}%, "
+            f"course_done={enrollment.completed_at is not None}"
         )
 
         return {
-            "course_id": enrollment.course_id,
+            "course_id": course_id,
             "section_id_str": section_id_str,
             "progress_percent": new_progress,
             "completed": user_progress.completed,
