@@ -1,6 +1,6 @@
 # İçerik Ekibi Kurulum ve Çalışma Rehberi
 
-> Bu doküman yalnızca içerik ekibine özeldir.  
+> Bu doküman yalnızca içerik ekibine özeldir.
 > Geliştirici kurulum rehberi (`learnops_gelistirici_rehberi_v1.0`) ile karıştırılmamalıdır.
 
 ---
@@ -26,7 +26,7 @@ Zaten sahip olduklarınız: Git, Docker Desktop, Node.js 22, VSCode
 
 **Python 3.13 kurulumu:**
 
-Windows: https://python.org/downloads → Python 3.13.x indirin.  
+Windows: https://python.org/downloads → Python 3.13.x indirin.
 Kurulum sırasında **"Add Python to PATH"** kutusunu işaretleyin.
 
 ```powershell
@@ -86,7 +86,7 @@ DATABASE_URL=postgresql+asyncpg://learnops:localdev123@localhost:5432/learnops
 ENVIRONMENT=development
 ```
 
-> JWT, OAuth ve diğer alanlar içerik çalışması için gerekli değildir.  
+> JWT, OAuth ve diğer alanlar içerik çalışması için gerekli değildir.
 > Diğer değerleri ekip liderinden alın.
 
 ```powershell
@@ -122,7 +122,7 @@ git checkout -b content/CNT-06-cicd-giris
 git checkout -b content/CNT-00-scripts
 ```
 
-> ⚠️ `feature/ISSUE-xxx` formatı yazılım ekibine aittir.  
+> ⚠️ `feature/ISSUE-xxx` formatı yazılım ekibine aittir.
 > İçerik ekibi kesinlikle `content/CNT-XX` formatını kullanır. Karıştırılmamalıdır.
 
 ---
@@ -134,7 +134,7 @@ git checkout -b content/CNT-00-scripts
 | **VSCode MDX** (Hızlı) | Ctrl+Shift+V | Başlıklar, listeler, kod blokları | Platform stili, next-mdx-remote componentleri |
 | **Full Stack** (Gerçek Görünüm) | `docker compose up -d` → http://localhost:3000 | Tüm platform stili, gerçek render | — |
 
-**MVP pratik karar:** Yazarlar VSCode'da yazar ve seed testi yapar.  
+**MVP pratik karar:** Yazarlar VSCode'da yazar ve seed testi yapar.
 IL, staging'de görsel review yaparak son onayı verir. Tam stack kurulumu isteğe bağlıdır.
 
 ---
@@ -155,8 +155,8 @@ order_index: 10
 `id` değişirse `user_progress` tablosundaki kayıtlar bu ID'yi bulamaz ve
 tüm kullanıcıların ilerleme verisi o section için **sıfırlanır**.
 
-- Dosya adı değişebilir ✅  
-- Başlık değişebilir ✅  
+- Dosya adı değişebilir ✅
+- Başlık değişebilir ✅
 - **`id` değişmez** ❌
 
 ---
@@ -168,7 +168,7 @@ tüm kullanıcıların ilerleme verisi o section için **sıfırlanır**.
 ❌ Yanlış: 1, 2, 3, 4...
 ```
 
-10'ar artış sayesinde araya yeni section eklemek için her zaman boşluk bulunur.  
+10'ar artış sayesinde araya yeni section eklemek için her zaman boşluk bulunur.
 Örneğin 10 ile 20 arasına 15 eklenebilir — tüm dosyaları yeniden numaralandırmak gerekmez.
 
 > `order` ve `order_index` her zaman aynı değeri alır. İkisi birlikte yazılır.
@@ -192,7 +192,7 @@ tüm kullanıcıların ilerleme verisi o section için **sıfırlanır**.
 
 ### 5.4 `is_published` Kuralı
 
-Her kurs `is_published: false` ile başlar.  
+Her kurs `is_published: false` ile başlar.
 Yalnızca IL onayından sonra `true` yapılır.
 
 `false` olan kurslar DB'ye yazılır ama frontend'de görünmez —
