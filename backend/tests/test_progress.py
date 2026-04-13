@@ -12,12 +12,11 @@ def _auth_cookies(user) -> dict:
     token = create_access_token(sub=str(user.id))
     return {"access_token": token}
 
-
 @pytest.fixture
 async def test_course(db_session):
     """Create a test course with sections."""
     course = Course(
-        slug="test-course-123",
+        course_id_str="test-course-123",
         title="Test Course",
         description="A test course",
     )
@@ -31,7 +30,8 @@ async def test_course(db_session):
             course_id=course.id,
             section_id_str=f"section-{i}",
             title=f"Section {i}",
-            order_index=i,
+            content="Test content",
+            order=i,
         )
         db_session.add(section)
         sections.append(section)
@@ -95,7 +95,9 @@ class TestProgressEndpoints:
         assert response2.status_code == 200
 
         # Should be the same result
-        assert response1.json() == response2.json()
+        data1 = response1.json()
+        data2 = response2.json()
+        assert data1 == data2
 
     async def test_complete_section_not_enrolled(self, client, test_user, test_course):
         """Test completing section when user is not enrolled."""
@@ -109,21 +111,21 @@ class TestProgressEndpoints:
         assert response.status_code == 400
         assert "kayıtlı değil" in response.json()["detail"].lower()
 
-    async def test_complete_section_not_found(self, client, enrolled_user):
+    async def test_complete_section_not_found(
+            self, 
+            client, 
+            enrolled_user):
         """Test completing a non-existent section."""
-        user, course, sections, enrollment = enrolled_user
-
         response = await client.post(
-            "/v1/progress/sections/non-existent-section/complete",
-            cookies=_auth_cookies(user),
-        )
+            "/v1/progress/sections/non-existent-section/complete")
 
         assert response.status_code == 404
         assert "bulunamadı" in response.json()["detail"].lower()
 
     async def test_complete_all_sections_course_completion(
-        self, client, enrolled_user, db_session
-    ):
+            self, 
+            client, 
+            enrolled_user, db_session):
         """Test that completing all sections marks course as completed."""
         user, course, sections, enrollment = enrolled_user
 

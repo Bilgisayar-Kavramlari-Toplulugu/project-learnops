@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.courses import Section, Enrollment, UserProgress
+from app.models.courses import Enrollment, Section, UserProgress
 
 logger = getLogger(__name__)
 
@@ -156,7 +156,6 @@ async def mark_section_complete(
             logger.info(
                 f"Course completed: user={user_id}, course={course_id}, progress=100%"
             )
-
         # Commit (ATOMICITY: Tüm işlemler başarılı olmuştur)
         # Eğer buraya kadar geldiysek, hiç hata yok
         # Tüm değişiklikler atomik olarak database'e yazılır
