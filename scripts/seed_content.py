@@ -152,6 +152,9 @@ def discover_courses() -> list[dict]:
     for course_dir in sorted(CONTENT_DIR.iterdir()):
         if not course_dir.is_dir():
             continue
+        if course_dir.name.startswith("_"):
+            logger.info(f"Skipping template directory: {course_dir.name}")
+            continue
 
         meta_path = course_dir / "meta.json"
         if not meta_path.exists():
@@ -256,6 +259,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
             stmt = stmt.on_conflict_do_update(
                 constraint="uq_sections_section_id_str",
                 set_={
+                    "course_id": stmt.excluded.course_id,
                     "title": stmt.excluded.title,
                     "order_index": stmt.excluded.order_index,
                     "updated_at": sa.func.now(),
