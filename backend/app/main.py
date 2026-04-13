@@ -16,6 +16,7 @@ from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
 from app.routers import auth, users
+from app.routers import dashboard
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/v1")
 app.include_router(users.router, prefix="/v1")
+app.include_router(dashboard.router)
 
 
 # Rate Limiting
