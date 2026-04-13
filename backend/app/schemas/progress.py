@@ -13,3 +13,4 @@ class SectionProgressResponse(BaseModel):
     progress_percent: float = Field(..., ge=0, le=100)
     completed: bool
     course_completed_at: Optional[datetime] = None
+

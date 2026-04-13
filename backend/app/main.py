@@ -74,7 +74,6 @@ app.include_router(courses.router, prefix="/v1")
 app.include_router(progress.router, prefix="/v1")
 app.include_router(enrollments.router, prefix="/v1")
 
-
 # Rate Limiting
 app.add_middleware(RateLimiterMiddleware)
 

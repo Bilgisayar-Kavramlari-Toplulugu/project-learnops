@@ -6,12 +6,17 @@ from fastapi import HTTPException
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.courses import Enrollment, Section, UserProgress
+from app.models.courses import Section, Enrollment, UserProgress
 
 logger = getLogger(__name__)
 
 
-async def mark_section_complete(db: AsyncSession, user_id: UUID, section_id_str: str):
+
+async def mark_section_complete(
+        db: AsyncSession,
+        user_id: UUID,
+        section_id_str: str
+):
     """
     Bir bölümü tamamlanmış olarak işaretleyin ve ders ilerlemesini güncelleyin.
 
@@ -19,12 +24,12 @@ async def mark_section_complete(db: AsyncSession, user_id: UUID, section_id_str:
     - Tüm DB işlemleri tek transaction'da yapılır
     - Hata gelirse tüm değişiklikler geri alınır (rollback)
     - Kurs tamamlama durumu her zaman tutarlı kalır
-
+    
     **IDEMPOTENCY:**
     - Aynı bölümü 2 kez tıklamak güvenlidir
     - İkinci çağrıda hiç işlem yapılmaz (already completed)
     - Frontend'teki double-click sorunları başarısız olmaz
-
+    
     **DRY (Don't Repeat Yourself):**
     - Tamamlanan/toplam section'ları 1 aggregation query ile hesapla
     - 2 ayrı query yerine: SELECT COUNT(*) + SELECT COUNT(WHERE completed=true)
@@ -42,22 +47,31 @@ async def mark_section_complete(db: AsyncSession, user_id: UUID, section_id_str:
             logger.warning(f"Section not found: {section_id_str}")
             raise HTTPException(status_code=404, detail="Section bulunamadı")
 
+        
+        if not section:
+            logger.warning(f"Section not found: {section_id_str}")
+            raise HTTPException(status_code=404, detail="Section bulunamadı")
+        
         course_id = section.course_id
 
         # User bu kursa kayıtlı mı?
         enrollment_stmt = select(Enrollment).where(
-            and_(Enrollment.user_id == user_id, Enrollment.course_id == course_id)
+            and_(
+                Enrollment.user_id == user_id,
+                Enrollment.course_id == course_id
+            )
         )
         enrollment = (await db.execute(enrollment_stmt)).scalar_one_or_none()
-
+        
         if not enrollment:
             logger.warning(f"User {user_id} not enrolled in course {course_id}")
             raise HTTPException(
-                status_code=400, detail="Kullanıcı bu kursa kayıtlı değil"
+                status_code=400, 
+                detail="Kullanıcı bu kursa kayıtlı değil"
             )
 
         # UserProgress upsert: Yoksa yeni oluştur, varsa ve tamamlanmamışsa güncelle
-        #
+        # 
         # IDEMPOTENCY DESIGN:
         # 1. İlk çağrı: UserProgress oluştur, completed=True set et
         # 2. İkinci çağrı: completed zaten True → hiç işlem yapılmıyor (safe)
@@ -68,7 +82,10 @@ async def mark_section_complete(db: AsyncSession, user_id: UUID, section_id_str:
         # Hata gelirse tüm değişiklikler rollback olur
         #
         progress_stmt = select(UserProgress).where(
-            and_(UserProgress.user_id == user_id, UserProgress.section_id == section.id)
+            and_(
+                UserProgress.user_id == user_id,
+                UserProgress.section_id == section.id
+            )
         )
         user_progress = (await db.execute(progress_stmt)).scalar_one_or_none()
 
@@ -170,5 +187,6 @@ async def mark_section_complete(db: AsyncSession, user_id: UUID, section_id_str:
         logger.error(f"Error marking section complete: {e}", exc_info=True)
         await db.rollback()  # Tüm değişiklikleri geri al
         raise HTTPException(
-            status_code=500, detail="Bölüm tamamlanması sırasında hata oluştu"
+            status_code=500,
+            detail="Bölüm tamamlanması sırasında hata oluştu"
         )
