@@ -1,7 +1,9 @@
-from uuid import UUID
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
+
 from pydantic import BaseModel, Field
+
 
 class SectionProgressResponse(BaseModel):
     course_id: UUID
