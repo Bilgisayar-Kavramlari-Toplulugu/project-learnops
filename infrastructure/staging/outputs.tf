@@ -87,3 +87,12 @@ output "deployment_info" {
     vpc_network        = google_compute_network.vpc.name
   }
 }
+
+# ===========================
+# Monitoring Outputs
+# ===========================
+
+output "monitoring_dashboard_url" {
+  description = "Cloud Monitoring dashboard URL in GCP Console"
+  value       = var.enable_monitoring ? "https://console.cloud.google.com/monitoring/dashboards?project=${var.project_id}" : null
+}

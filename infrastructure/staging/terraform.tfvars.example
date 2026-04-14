@@ -54,3 +54,8 @@ secret_linkedin_client_id     = "LINKEDIN_CLIENT_ID"
 secret_linkedin_client_secret = "LINKEDIN_CLIENT_SECRET"
 
 secret_token_encryption_key = "TOKEN_ENCRYPTION_KEY"
+
+# Monitoring & Alerting
+# Email address for receiving uptime and error rate alerts
+alert_email       = "team@example.com"
+enable_monitoring = true

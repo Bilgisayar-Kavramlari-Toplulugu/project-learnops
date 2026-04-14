@@ -63,7 +63,8 @@ resource "google_project_service" "required_apis" {
     "secretmanager.googleapis.com",
     "servicenetworking.googleapis.com",
     "vpcaccess.googleapis.com",
-    "artifactregistry.googleapis.com"
+    "artifactregistry.googleapis.com",
+    "monitoring.googleapis.com"
   ])
 
   project            = google_project.staging.project_id

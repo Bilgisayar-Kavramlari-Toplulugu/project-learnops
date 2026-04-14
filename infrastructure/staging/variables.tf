@@ -122,3 +122,19 @@ variable "secret_token_encryption_key" {
   type        = string
   default     = "TOKEN_ENCRYPTION_KEY"
 }
+
+# ===========================
+# Monitoring & Alerting
+# ===========================
+
+variable "alert_email" {
+  description = "Email address for monitoring alert notifications"
+  type        = string
+  default     = ""
+}
+
+variable "enable_monitoring" {
+  description = "Enable Cloud Monitoring resources (uptime checks, alerts, dashboard)"
+  type        = bool
+  default     = true
+}

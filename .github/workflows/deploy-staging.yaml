@@ -238,6 +238,7 @@ jobs:
           github_repo = "${{ github.event.repository.name }}"
           backend_image = "${{ needs.build-backend.outputs.BACKEND_IMAGE_BASE }}:${{ needs.build-backend.outputs.BACKEND_VERSION }}"
           frontend_image = "${{ needs.build-frontend.outputs.FRONTEND_IMAGE_BASE }}:${{ needs.build-frontend.outputs.FRONTEND_VERSION }}"
+          alert_email = "${{ secrets.ALERT_EMAIL }}"
           EOF
 
       - name: Terraform Init
