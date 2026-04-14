@@ -25,8 +25,7 @@ async def test_course(db_session):
             course_id=course.id,
             section_id_str=f"section-{i}",
             title=f"Section {i}",
-            content="Test content",
-            order=i,
+            order_index=i,
         )
         db_session.add(section)
         sections.append(section)
