@@ -111,21 +111,21 @@ class TestProgressEndpoints:
         assert response.status_code == 400
         assert "kayıtlı değil" in response.json()["detail"].lower()
 
-    async def test_complete_section_not_found(
-            self, 
-            client, 
-            enrolled_user):
+    async def test_complete_section_not_found(self, client, enrolled_user):
         """Test completing a non-existent section."""
+        user, course, sections, enrollment = enrolled_user
+
         response = await client.post(
-            "/v1/progress/sections/non-existent-section/complete")
+            "/v1/progress/sections/non-existent-section/complete",
+            cookies=_auth_cookies(user),
+        )
 
         assert response.status_code == 404
         assert "bulunamadı" in response.json()["detail"].lower()
 
     async def test_complete_all_sections_course_completion(
-            self, 
-            client, 
-            enrolled_user, db_session):
+        self, client, enrolled_user, db_session
+    ):
         """Test that completing all sections marks course as completed."""
         user, course, sections, enrollment = enrolled_user
 
