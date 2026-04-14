@@ -1,0 +1,171 @@
+---
+id: "git-008-github"
+title: "GitHub Flow ve Pull Request"
+order: 80
+order_index: 80
+---
+
+# GitHub Flow ve Pull Request
+
+GitHub Flow, küçük ve orta ölçekli ekiplerde yaygınlaşmış hafif bir dal stratejisidir. Tek bir ana dal (`main`) ve kısa ömürlü feature branch'lerinden oluşur. Pull Request (PR), kod değişikliklerini ekiple paylaşmak, tartışmak ve incelemek için kullanılan mekanizmadır.
+
+## GitHub Flow'un 6 Adımı
+
+```
+1. main → güncel al
+2. feature branch → oluştur
+3. Değişiklik yap → commit et
+4. Remote'a push et
+5. Pull Request aç
+6. Review → Merge → Branch sil
+```
+
+### Adım 1: main'i Güncel Tut
+
+Her yeni iş öncesi main'i güncelle:
+
+```bash
+git switch main
+git pull origin main
+```
+
+### Adım 2: Feature Branch Oluştur
+
+```bash
+git switch -c feature/kullanici-bildirimleri
+```
+
+Branch adı ne üzerinde çalıştığınızı açıkça belirtmeli. Belirsiz isimler (`fix`, `test`, `deneme`) ekip içinde karışıklığa yol açar.
+
+### Adım 3: Değişiklik Yap ve Commit Et
+
+```bash
+# Çalış...
+git add .
+git commit -m "feat: e-posta bildirimleri için model oluşturuldu"
+
+git add .
+git commit -m "feat: bildirim gönderme servisi eklendi"
+
+git add .
+git commit -m "test: bildirim servisi unit testleri"
+```
+
+Commit mesajlarınızda **ne yaptığınızı** değil, **neden yaptığınızı** açıklayın. PR açıldığında bu mesajlar inceleme rehberi olur.
+
+### Adım 4: Remote'a Push Et
+
+```bash
+git push -u origin feature/kullanici-bildirimleri
+```
+
+### Adım 5: Pull Request Aç
+
+GitHub'da deponuza gidin. "Compare & pull request" butonu otomatik belirir. PR'da şunlar bulunmalı:
+
+- **Başlık:** Kısa, açıklayıcı (`feat: kullanıcı bildirim sistemi`)
+- **Açıklama:** Ne değişti, neden değişti, nasıl test edildi
+- **Bağlantılı issue:** `Closes #42` (varsa)
+- **Reviewer:** İncelemesini istediğiniz kişi
+- **Label:** `feature`, `bugfix`, `documentation` vb.
+
+### Adım 6: Review ve Merge
+
+Reviewer, kod üzerinde yorum bırakır. Yazarın yorumları ele alması beklenir:
+
+```bash
+# Reviewer yorumlarına göre düzelt
+git add .
+git commit -m "fix: review yorumuna göre hata mesajı düzeltildi"
+git push
+# PR otomatik güncellenir
+```
+
+Onay sonrası GitHub'da "Merge pull request" tıklanır. Branch'i silin:
+
+```bash
+git switch main
+git pull
+git branch -d feature/kullanici-bildirimleri
+git push origin --delete feature/kullanici-bildirimleri
+```
+
+## Commit Mesajı Konvansiyonu
+
+Tutarlı commit mesajları PR incelemesini ve `git log` okumayı kolaylaştırır. **Conventional Commits** formatı yaygın kullanılan standarttır:
+
+```
+<tip>(<kapsam>): <kısa açıklama>
+
+[isteğe bağlı gövde]
+
+[isteğe bağlı dipnot]
+```
+
+```bash
+feat(auth): kullanıcı giriş formu eklendi
+fix(api): null dönen endpoint düzeltildi
+docs(readme): kurulum adımları güncellendi
+test(auth): giriş servisi unit testleri
+chore(deps): express 4.18 → 4.19 güncellendi
+refactor(db): sorgu optimizasyonu yapıldı
+```
+
+Bu projede kullanılan format (`feat(content): add git sections #CNT-03`) bu konvansiyona dayanmaktadır.
+
+## .gitignore
+
+Takip edilmemesi gereken dosyalar `.gitignore` dosyasına eklenir. Git bu dosyaları `git add .` ile bile almaz.
+
+```gitignore
+# Bağımlılıklar
+node_modules/
+vendor/
+
+# Derleme çıktıları
+dist/
+build/
+*.pyc
+__pycache__/
+
+# Ortam değişkenleri (hassas bilgi!)
+.env
+.env.local
+.env.production
+
+# IDE dosyaları
+.vscode/
+.idea/
+*.swp
+
+# İşletim sistemi
+.DS_Store
+Thumbs.db
+```
+
+> **Kritik kural:** `.env` dosyaları **asla** commit edilmez. Veritabanı şifreleri, API anahtarları gibi hassas bilgiler yanlışlıkla commit edilirse git geçmişinde sonsuza dek kalır. Bu durumda tüm hassas bilgilerin değiştirilmesi gerekir.
+
+## Branch Koruması (Branch Protection)
+
+Ekip büyüdükçe `main`'e doğrudan push'u kısıtlamak kritik önem taşır. GitHub'da `Settings → Branches → Branch protection rules`:
+
+- **Require a pull request before merging:** Doğrudan push engellenir
+- **Require approvals:** Minimum X kişi onaylamalı
+- **Require status checks:** CI testleri geçmeli
+- **Require conversation resolution:** Tüm yorumlar kapatılmalı
+
+## Özet: GitHub Flow
+
+```
+main    ← her zaman deploy edilebilir durumda
+  ↓
+feature branch  ← kısa ömürlü, odaklı
+  ↓
+Pull Request    ← tartış, incele, düzelt
+  ↓
+Merge           ← küçük ve sık
+  ↓
+Branch sil      ← temiz tut
+```
+
+GitHub Flow'un özü basittir: `main` her zaman çalışır durumda, değişiklikler küçük PR'larla eklenir, inceleme kültürü kod kalitesini yüksek tutar. Bu kurs boyunca öğrendiğiniz tüm Git kavramlarının — branch, merge, rebase, conflict çözümü, remote — gerçek dünyadaki bir araya geliş noktası burasıdır.

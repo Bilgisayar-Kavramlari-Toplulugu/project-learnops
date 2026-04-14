@@ -1,0 +1,508 @@
+{
+  "_note": "Eğitim amaçlı. Cevaplar kasıtlı açıktır. v2.0'da private repo'ya taşınır.",
+  "course_slug": "terraform-ile-iac",
+  "pass_threshold": 0.7,
+  "duration_seconds": 2000,
+  "questions": [
+    {
+      "order_index": 1,
+      "is_active": true,
+      "text": "Terraform'da 'terraform init' komutu ne zaman çalıştırılmalıdır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "İlk kurulum, backend değişikliği veya yeni provider eklendiğinde"
+        },
+        {
+          "index": 1,
+          "text": "Her 'terraform apply' öncesinde"
+        },
+        {
+          "index": 2,
+          "text": "Yalnızca ilk kez proje başlatılırken"
+        },
+        {
+          "index": 3,
+          "text": "Yalnızca provider versiyonu güncellendiğinde"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "'terraform init' yalnızca ilk kurulumda değil; backend konfigürasyonu değiştiğinde, yeni provider eklendiğinde veya farklı bir makinede projeye başlarken de çalıştırılmalıdır. Bu komut provider plugin'lerini indirir, backend'i yapılandırır ve çalışma ortamını hazırlar."
+    },
+    {
+      "order_index": 2,
+      "is_active": true,
+      "text": "Terraform'da 'idempotans' ne anlama gelir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Terraform'un birden fazla cloud provider'ı aynı anda desteklemesi"
+        },
+        {
+          "index": 1,
+          "text": "Aynı konfigürasyonun kaç kez uygulanırsa uygulansın aynı sonucu üretmesi"
+        },
+        {
+          "index": 2,
+          "text": "Terraform planının değişiklikleri otomatik geri alabilmesi"
+        },
+        {
+          "index": 3,
+          "text": "State dosyasının şifreli tutulması"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "İdempotans, Terraform'un temel prensiplerinden biridir: mevcut durum zaten istenen durumla eşleşiyorsa hiçbir değişiklik yapılmaz, farklıysa yalnızca gerekli değişiklikler uygulanır. Bu sayede 'terraform apply' birden çok kez çalıştırılsa bile tekrar eden veya tutarsız sonuçlar oluşmaz."
+    },
+    {
+      "order_index": 3,
+      "is_active": true,
+      "text": "Terraform state dosyasının (terraform.tfstate) asıl amacı nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Terraform konfigürasyon dosyalarını yedeklemek"
+        },
+        {
+          "index": 1,
+          "text": "Provider kimlik bilgilerini şifreli olarak saklamak"
+        },
+        {
+          "index": 2,
+          "text": "Terraform'un yönettiği kaynakların gerçek durumuyla eşleşmesini sağlamak için referans bilgisi tutmak"
+        },
+        {
+          "index": 3,
+          "text": "Terraform sürümünü ve bağımlılıkları kayıt altına almak"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "State dosyası, Terraform'un 'hafızasıdır'. Hangi kaynakların var olduğunu, bu kaynakların attribute'larını ve aralarındaki ilişkileri saklar. Bir sonraki 'plan' veya 'apply' sırasında Terraform, mevcut durumu (.tf dosyaları) bu state ile karşılaştırarak yalnızca gerekli değişiklikleri tespit eder."
+    },
+    {
+      "order_index": 4,
+      "is_active": true,
+      "text": "HCL'de deklaratif ve imperatif yaklaşım arasındaki temel fark nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Deklaratif daha hızlı çalışır, imperatif daha yavaş"
+        },
+        {
+          "index": 1,
+          "text": "Deklaratif çoklu ortamları destekler; imperatif tek ortamla sınırlıdır"
+        },
+        {
+          "index": 2,
+          "text": "Deklaratif sadece cloud kaynakları için; imperatif yerel kaynaklar için kullanılır"
+        },
+        {
+          "index": 3,
+          "text": "Deklaratif 'ne istediğinizi' tarif eder; imperatif 'nasıl yapılacağını' adım adım tarif eder"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Terraform deklaratif bir araçtır: siz son durumu (desired state) tanımlarsınız, Terraform mevcut durumu analiz ederek oraya nasıl ulaşacağını kendisi çözer. Bash scriptleri gibi imperatif araçlarda ise her adımı sırayla siz yazarsınız; bu durum 'eğer X zaten varsa' gibi koşul kontrollerini karmaşık hale getirir."
+    },
+    {
+      "order_index": 5,
+      "is_active": true,
+      "text": "Bir geliştirici 'terraform plan' komutunu çalıştırdığında çıktıda şu ifadeyi görüyor: '-/+ resource \"google_compute_instance\" \"web\"'. Bu sembol ne anlama gelir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Kaynak güncelleme yerine silinip yeniden oluşturulacak (replace)"
+        },
+        {
+          "index": 1,
+          "text": "Kaynak silinecek, yerine başka bir kaynak eklenmeyecek"
+        },
+        {
+          "index": 2,
+          "text": "Kaynak hem silinecek hem de in-place güncellenecek"
+        },
+        {
+          "index": 3,
+          "text": "Kaynak oluşturulacak ve aynı zamanda başka bir kaynak da silinecek"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "'-/+' sembolü 'destroy and recreate' yani 'replace' işlemini gösterir. Bazı attribute değişiklikleri (örn. bir VM'in boot disk'i veya compute engine zone'u) in-place güncellenemeyen değişikliklerdir; bu durumda Terraform mevcut kaynağı siler ve sıfırdan yenisini oluşturur. Bu, özellikle production'da dikkat gerektiren bir işlemdir ve downtime'a yol açabilir."
+    },
+    {
+      "order_index": 6,
+      "is_active": true,
+      "text": "Ekibiniz aynı Terraform projesinde çalışıyor. Ayşe 'terraform apply' başlattı; Ali aynı anda 'terraform apply' çalıştırmaya çalışıyor. Remote backend (GCS) kullanılıyor. Ne olur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Her iki apply de paralel olarak çalışır, sonuçlar birleştirilir"
+        },
+        {
+          "index": 1,
+          "text": "Ali, 'state lock' hatası alır ve Ayşe'nin işlemi bitene kadar beklemesi gerekir"
+        },
+        {
+          "index": 2,
+          "text": "Ali'nin apply'ı Ayşe'ninkini iptal eder"
+        },
+        {
+          "index": 3,
+          "text": "Her iki apply de çalışır ama sonuncusu state'in üzerine yazar"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Remote backend'ler state locking özelliğini destekler. Bir 'apply' başladığında state üzerine bir kilit (lock) yazılır; bu kilit varken başka bir Terraform komutu state'i değiştiremez. Ali, kimin state'i kilitlediğine dair bilgi içeren bir 'Error acquiring the state lock' hatası alır. Bu, eş zamanlı değişikliklerden kaynaklanan state bozulmasını önler."
+    },
+    {
+      "order_index": 7,
+      "is_active": true,
+      "text": "Aşağıdaki Terraform konfigürasyonunda 'local.makine_tipi' hangi değeri alır? (var.ortam = \"production\")\n\nlocals {\n  makine_tipi = var.ortam == \"production\" ? \"e2-standard-4\" : \"e2-micro\"\n}",
+      "options": [
+        {
+          "index": 0,
+          "text": "e2-micro"
+        },
+        {
+          "index": 1,
+          "text": "null"
+        },
+        {
+          "index": 2,
+          "text": "e2-standard-4"
+        },
+        {
+          "index": 3,
+          "text": "Hata verir, locals içinde var kullanılamaz"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "HCL'de conditional expression (ternary operatör) 'koşul ? doğru_değer : yanlış_değer' şeklinde çalışır. var.ortam == \"production\" koşulu doğru (true) olduğunda sol taraf olan \"e2-standard-4\" değeri döner. Locals bloğu içinde variable referansları tamamen geçerlidir ve yaygın bir kullanım biçimidir."
+    },
+    {
+      "order_index": 8,
+      "is_active": true,
+      "text": ".terraform.lock.hcl dosyası Git'e commit edilmeli midir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Hayır, çünkü hassas kimlik bilgileri içerebilir"
+        },
+        {
+          "index": 1,
+          "text": "Hayır, çünkü her geliştiricinin kendi versiyonu olmalıdır"
+        },
+        {
+          "index": 2,
+          "text": "Evet, ama yalnızca production branch'inde"
+        },
+        {
+          "index": 3,
+          "text": "Evet, çünkü tüm ekibin aynı provider versiyonunu kullanmasını garanti eder"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": ".terraform.lock.hcl dosyası provider versiyonlarını ve binary hash'lerini içerir; bu dosyanın Git'e commit edilmesi tüm ekibin ve CI/CD pipeline'ının aynı provider versiyonunu kullanmasını garanti eder. npm'deki package-lock.json veya Python'daki poetry.lock ile aynı işlevi görür. Aksine terraform.tfstate dosyaları kesinlikle commit edilmemelidir."
+    },
+    {
+      "order_index": 9,
+      "is_active": true,
+      "text": "Bir üretim ortamında kritik bir Cloud SQL instance'ının Terraform ile silinmesini engellemek için hangi yapılandırma kullanılmalıdır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "resource bloğuna lifecycle { prevent_destroy = true } eklemek"
+        },
+        {
+          "index": 1,
+          "text": "terraform apply komutuna --protect flag'i eklemek"
+        },
+        {
+          "index": 2,
+          "text": "terraform.tfvars dosyasında protect = true tanımlamak"
+        },
+        {
+          "index": 3,
+          "text": "Remote backend'de silme izinlerini kaldırmak"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "lifecycle { prevent_destroy = true } bloğu, o resource'un 'terraform destroy' veya 'terraform apply' sırasında silinmesini engeller. Silme işlemi yapılmaya çalışıldığında Terraform hata vererek işlemi durdurur. GCP'de ek olarak 'deletion_protection = true' attribute'u da kullanılabilir; bu ikisi birlikte çift katmanlı koruma sağlar."
+    },
+    {
+      "order_index": 10,
+      "is_active": true,
+      "text": "Terraform variable bloğunda 'sensitive = true' ayarlandığında ne olur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Değer şifrelenmiş olarak state dosyasına kaydedilir"
+        },
+        {
+          "index": 1,
+          "text": "Değer Terraform output ve plan çıktılarında gizlenir, ancak state dosyasında düz metin olarak saklanır"
+        },
+        {
+          "index": 2,
+          "text": "Değer hiçbir yerde saklanmaz, her apply'da yeniden sorulur"
+        },
+        {
+          "index": 3,
+          "text": "Değer yalnızca production workspace'de kullanılabilir"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "sensitive = true, değerin terminal çıktılarında ve plan/apply ekranlarında gizlenmesini sağlar (\"(sensitive value)\" olarak gösterilir). Ancak değer state dosyasında hâlâ düz metin olarak saklanır — bu nedenle state dosyasının güvenliği kritiktir (şifreli remote backend kullanımı, erişim kısıtlama). Gerçek şifreleme için Secret Manager veya Vault kullanılmalıdır."
+    },
+    {
+      "order_index": 11,
+      "is_active": true,
+      "text": "Terraform modülünde 'outputs.tf' dosyasının temel amacı nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Modülün hata mesajlarını loglamak"
+        },
+        {
+          "index": 1,
+          "text": "Modülün otomatik olarak oluşturduğu variables.tf içeriğini göstermek"
+        },
+        {
+          "index": 2,
+          "text": "Modülün içindeki resource'ların değerlerini dışarıya (root modüle veya diğer modüllere) aktarmak"
+        },
+        {
+          "index": 3,
+          "text": "Modülün hangi cloud provider'ı kullandığını belirtmek"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Output bloğu, modülün iç kaynaklarından hesaplanan değerleri (IP adresi, bağlantı stringi, ARN vb.) dış dünyaya aktarır. Root modül bu değerlere 'module.modul_adi.output_adi' şeklinde erişebilir. Modüller arasındaki veri akışı bu mekanizmayla sağlanır; örneğin database modülünün connection_name output'u, compute modülünce kullanılabilir."
+    },
+    {
+      "order_index": 12,
+      "is_active": true,
+      "text": "Bir Terraform projesinde 'data' bloğunun 'resource' bloğundan farkı nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "data bloğu yalnızca local provider ile; resource bloğu cloud provider'lar ile kullanılır"
+        },
+        {
+          "index": 1,
+          "text": "data bloğu yalnızca output değerleri için kullanılır"
+        },
+        {
+          "index": 2,
+          "text": "data bloğu daha hızlıdır çünkü state dosyası kullanmaz"
+        },
+        {
+          "index": 3,
+          "text": "data bloğu mevcut kaynakları okur, resource bloğu yeni kaynaklar oluşturur/yönetir"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "data bloğu (data source), Terraform dışında oluşturulmuş veya başka bir Terraform projesi tarafından yönetilen mevcut kaynakların bilgilerini okumak için kullanılır. State'e yazmaz, kaynak oluşturmaz veya değiştirmez. resource bloğu ise Terraform'un oluşturup yaşam döngüsünü yöneteceği kaynakları tanımlar."
+    },
+    {
+      "order_index": 13,
+      "is_active": true,
+      "text": "Production ortamında Terraform remote backend olarak GCS kullanılıyor. State bucket'ını yanlışlıkla 'terraform destroy' ile silmeye çalışırsanız ne olur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "State bucket Terraform ile yönetilmediği için 'terraform destroy' bunu etkilemez; ancak state erişimi kaybedilir"
+        },
+        {
+          "index": 1,
+          "text": "Terraform, state bucket'ı başka bir Terraform projesi yönetmediği için bu işlemi gerçekleştiremez"
+        },
+        {
+          "index": 2,
+          "text": "Terraform önce state'i local'e yedekler, sonra bucket'ı siler"
+        },
+        {
+          "index": 3,
+          "text": "GCS bucket'larında 'terraform destroy' her zaman başarısız olur"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "En iyi pratik olarak state bucket'ının Terraform ile yönetilmemesi gerekir (tavuk-yumurta problemi). Manuel oluşturulan bu bucket, root Terraform projesinin state'inde olmadığı için 'terraform destroy' onu etkilemez. Ancak bucket yanlışlıkla manuel silinirse, state dosyasına erişim kaybedilir ve bu ciddi bir sorun oluşturur — bu nedenle GCS versiyonlama ve silme koruması aktif edilmelidir."
+    },
+    {
+      "order_index": 14,
+      "is_active": true,
+      "text": "Bir Terraform projesinde aşağıdaki konfigürasyon var:\n\nresource \"google_compute_instance\" \"web\" {\n  count = 3\n  name  = \"web-${count.index}\"\n}\n\n'terraform state list' komutunun çıktısı nasıl görünür?",
+      "options": [
+        {
+          "index": 0,
+          "text": "google_compute_instance.web"
+        },
+        {
+          "index": 1,
+          "text": "google_compute_instance.web[0]\ngoogle_compute_instance.web[1]\ngoogle_compute_instance.web[2]"
+        },
+        {
+          "index": 2,
+          "text": "google_compute_instance.web-0\ngoogle_compute_instance.web-1\ngoogle_compute_instance.web-2"
+        },
+        {
+          "index": 3,
+          "text": "google_compute_instance.web[count=3]"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "count meta-argümanı kullanıldığında, oluşturulan her kaynak state'te indeks numarası ile ayrı ayrı takip edilir. 'google_compute_instance.web[0]', 'google_compute_instance.web[1]' ve 'google_compute_instance.web[2]' şeklinde üç ayrı state kaydı oluşur. Bu kaynakları ayrı ayrı hedeflemek için 'terraform apply -target=google_compute_instance.web[1]' kullanılabilir."
+    },
+    {
+      "order_index": 15,
+      "is_active": true,
+      "text": "GCP'de Terraform için service account oluştururken 'en az yetki prensibi' nasıl uygulanır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Service account'a 'roles/owner' rolü verilir, böylece her kaynak oluşturulabilir"
+        },
+        {
+          "index": 1,
+          "text": "Service account'a 'roles/editor' rolü verilir, çünkü Terraform'un her kaynağa erişmesi gerekir"
+        },
+        {
+          "index": 2,
+          "text": "Service account'a yalnızca Terraform'un oluşturacağı kaynaklar için gerekli spesifik IAM rolleri verilir"
+        },
+        {
+          "index": 3,
+          "text": "Terraform için her zaman ADC (Application Default Credentials) kullanılır, service account gerekmez"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "En az yetki prensibi, bir kimliğin yalnızca görevini yapmak için gerekli olan minimum izinlere sahip olması gerektiğini söyler. 'roles/owner' veya 'roles/editor' gibi geniş roller güvenlik riski oluşturur. Terraform için Cloud Run servisleri oluşturuyorsa 'roles/run.admin', Cloud SQL için 'roles/cloudsql.admin' gibi spesifik roller verilmelidir. Bu yaklaşım credential sızması durumunda hasarı minimize eder."
+    },
+    {
+      "order_index": 16,
+      "is_active": true,
+      "text": "Terraform workspace'i hangi senaryoda kullanmak en uygundur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Farklı cloud provider'larını (AWS, GCP, Azure) aynı anda yönetmek için"
+        },
+        {
+          "index": 1,
+          "text": "Birden fazla geliştirici aynı anda farklı feature'lar üzerinde çalışırken"
+        },
+        {
+          "index": 2,
+          "text": "Terraform modüllerini versiyonlamak için"
+        },
+        {
+          "index": 3,
+          "text": "Aynı Terraform konfigürasyonunu benzer ama izole ortamlara (dev, staging, prod) deploy etmek için"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Terraform workspace, aynı konfigürasyon kodunu farklı state dosyaları ile çalıştırmanızı sağlar. Development, staging ve production ortamları yapısal olarak benzer ama izole tutulması gerekiyorsa workspace ideal çözümdür. 'terraform.workspace' referansı ile ortama özgü değerler (machine type, replica count vb.) dinamik olarak belirlenebilir. Ortamlar çok farklıysa ayrı klasör yapısı daha uygun olabilir."
+    },
+    {
+      "order_index": 17,
+      "is_active": true,
+      "text": "CI/CD pipeline'ında 'terraform plan -out=tfplan.binary && terraform apply tfplan.binary' şeklinde iki adımlı yaklaşımın avantajı nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Plan ve apply arasında altyapı değişmiş olsa bile, tam olarak incelenen plan uygulanır; sürpriz değişiklik olmaz"
+        },
+        {
+          "index": 1,
+          "text": "Apply komutu daha hızlı çalışır çünkü plan tekrar hesaplanmaz"
+        },
+        {
+          "index": 2,
+          "text": "Binary format, plan dosyasının şifreli olmasını sağlar"
+        },
+        {
+          "index": 3,
+          "text": "Bu yaklaşım yalnızca Terraform Cloud'da çalışır, local'de fark yaratmaz"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Plan dosyasına kaydetme yaklaşımı 'plan aşamasında görülen tam olarak uygulanır' garantisi verir. İnceleme ve onay sürecinde altyapıda başka değişiklikler olsa bile, apply yalnızca önceden incelenen ve onaylanan planı uygular. Bu, production deployment'larında özellikle kritiktir: güvenlik ekibi veya teknik lider planı inceler, onaydan sonra tam olarak o plan devreye alınır."
+    },
+    {
+      "order_index": 18,
+      "is_active": true,
+      "text": "Bir şirkette mevcut GCP altyapısı (konsoldan oluşturulmuş 5 Cloud SQL instance) Terraform ile yönetilmek isteniyor. Hangi komut bu instance'ları Terraform state'e dahil eder?",
+      "options": [
+        {
+          "index": 0,
+          "text": "terraform refresh"
+        },
+        {
+          "index": 1,
+          "text": "terraform import"
+        },
+        {
+          "index": 2,
+          "text": "terraform state sync"
+        },
+        {
+          "index": 3,
+          "text": "terraform plan -import"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "'terraform import', Terraform dışında oluşturulmuş mevcut kaynakları Terraform state'e dahil etmek için kullanılır. Kullanım: önce .tf dosyasında resource bloğu yazılır, sonra 'terraform import google_sql_database_instance.main projects/PROJE/instances/ISIM' gibi çalıştırılır. Terraform 1.5+ sürümünden itibaren 'import' bloğu .tf içinde de tanımlanabilir, bu da import sürecini koda entegre eder."
+    },
+    {
+      "order_index": 19,
+      "is_active": true,
+      "text": "Bir Terraform projesinde production ve staging ortamları için farklı GCS bucket adları kullanılıyor. Ancak 'terraform plan' komutu her iki ortamda da aynı bucket adını gösteriyor. Muhtemel sebep nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Remote backend aktif değil, local state kullanılıyor"
+        },
+        {
+          "index": 1,
+          "text": "GCS provider bucket adı değişikliklerini desteklemiyor"
+        },
+        {
+          "index": 2,
+          "text": "terraform.tfvars dosyasında ortama özgü değişkenler tanımlanmamış veya yanlış workspace seçilmiş"
+        },
+        {
+          "index": 3,
+          "text": "Terraform plan, state dosyasındaki eski değerleri gösteriyor"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Ortamlar arasında farklı değerler kullanılmak isteniyorsa ya workspace'e göre locals/conditionals yazılmalı ('var.ortam == \"production\" ? ... : ...'), ya da her ortam için ayrı .tfvars dosyası kullanılmalı ve -var-file parametresiyle belirtilmelidir. Workspace kullanıyorsanız, 'terraform workspace show' ile doğru workspace'de olduğunuzu doğrulayın; yanlış workspace'deyseniz değişkenler beklediğiniz değerleri almayabilir."
+    },
+    {
+      "order_index": 20,
+      "is_active": true,
+      "text": "Bir DevOps ekibi Terraform konfigürasyonunda tfsec taraması yapıyor ve şu uyarıyı alıyor: 'google-storage-no-public-access'. Bu uyarıyı çözmek ve güvenliği artırmak için hangi değişiklik yapılmalıdır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "google_storage_bucket resource'undan location attribute'unu kaldırmak"
+        },
+        {
+          "index": 1,
+          "text": "Bucket'ı google-beta provider'a geçirmek"
+        },
+        {
+          "index": 2,
+          "text": "tfsec uyarısını .tfsec/config.json ile ignore etmek"
+        },
+        {
+          "index": 3,
+          "text": "google_storage_bucket resource'una uniform_bucket_level_access = true ve public_access_prevention = \"enforced\" eklemek"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "'google-storage-no-public-access' uyarısı, bucket'ın yanlışlıkla public erişime açılabileceğine işaret eder. 'uniform_bucket_level_access = true' ayarı, legacy ACL'leri devre dışı bırakarak tutarlı IAM tabanlı erişim kontrolü sağlar. 'public_access_prevention = \"enforced\"' ise bucket'ın ve içindeki objelerin hiçbir koşulda herkese açık hale getirilememesini garanti eder. Bu iki ayar birlikte en güvenli bucket yapılandırmasını oluşturur."
+    }
+  ]
+}

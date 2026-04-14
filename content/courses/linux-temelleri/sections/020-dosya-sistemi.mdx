@@ -1,0 +1,65 @@
+---
+id: "linux-002-dosya-sistemi"
+title: "Dosya Sistemi Hiyerarşisi"
+order: 20
+order_index: 20
+---
+
+# Dosya Sistemi Hiyerarşisi
+
+Linux dünyasında temel felsefe şudur: **"Linux'ta her şey bir dosyadır."** Donanımlar, süreçler ve konfigürasyonlar — hepsi dosya sistemi üzerinden yönetilir. Bu yaklaşım, sistemi tutarlı ve tahmin edilebilir kılar.
+
+## Filesystem Hierarchy Standard (FHS)
+
+Linux'taki dizin yapısı, FHS adı verilen bir standarda göre düzenlenmiştir. Bu sayede hangi dağıtımı kullanırsanız kullanın, dosyaların nerede olduğunu bilirsiniz:
+
+| Dizin      | Görevi                                                                 |
+|------------|------------------------------------------------------------------------|
+| `/`        | Kök (Root) dizini. Sistemin başlangıç noktasıdır.                     |
+| `/bin`     | Temel kullanıcı komutlarını içerir (`ls`, `cp` gibi).                 |
+| `/etc`     | Sisteme ve uygulamalara ait yapılandırma (config) dosyaları burada.   |
+| `/var`     | Log dosyaları ve veritabanları gibi değişken (variable) verileri içerir. |
+| `/home`    | Kullanıcıların kişisel ev dizinlerini barındırır.                     |
+| `/proc`    | Sistem durumunu ve süreçleri temsil eden sanal dosya sistemidir.      |
+| `/sys`     | Donanım aygıtları ve çekirdek parametrelerini yönetmek için kullanılır. |
+| `/usr/bin` | Kullanıcılar tarafından yüklenen genel komutları içerir.              |
+
+## DevOps Açısından Kritik Dizinler
+
+Günlük çalışmada en sık karşılaşacağınız dizinler şunlardır:
+
+**`/etc`** — Konfigürasyon merkezi. Nginx, SSH, cron ve neredeyse tüm servislerin ayar dosyaları burada bulunur.
+
+```bash
+# Nginx konfigürasyonuna bakmak
+cat /etc/nginx/nginx.conf
+
+# SSH servis ayarları
+cat /etc/ssh/sshd_config
+```
+
+**`/var/log`** — Log dosyalarının deposu. Bir şeyler ters gidince ilk bakılacak yer burasıdır.
+
+```bash
+# Sistem loglarını canlı takip et
+tail -f /var/log/syslog
+```
+
+**`/proc`** — Çalışan sistem hakkında anlık bilgi sunan sanal bir dosya sistemidir. Disk üzerinde gerçek bir yer kaplamaz; Kernel tarafından dinamik olarak oluşturulur.
+
+```bash
+# Sistemdeki CPU bilgisi
+cat /proc/cpuinfo
+
+# Bellek durumu
+cat /proc/meminfo
+```
+
+> 💡 **İpucu:** `/proc` ve `/sys` dizinleri "sanal" dosya sistemleridir. İçlerindeki dosyaları okumak sistemi izlemenin en düşük seviyeli yoludur.
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- FHS standardının Linux'ta dizin yapısını nasıl belirlediğini
+- Her ana dizinin görevini ve ne zaman kullanıldığını
+- `/etc`, `/var/log` ve `/proc` gibi kritik dizinlerin DevOps'taki önemini

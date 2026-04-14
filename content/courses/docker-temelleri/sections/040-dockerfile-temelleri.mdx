@@ -1,0 +1,70 @@
+---
+id: "docker-004-dockerfile"
+title: "Dockerfile Temelleri"
+order: 40
+order_index: 40
+---
+
+# Dockerfile Temelleri
+
+Dockerfile, bir Docker image'inin nasıl üretileceğini tarif eden metin dosyasıdır. Başka bir deyişle, image oluşturma talimatlarını adım adım yazarız ve Docker bu dosyayı okuyarak image build eder. Dockerfile sayesinde image oluşturma süreci tekrar üretilebilir hale gelir.
+
+## Dockerfile neden gereklidir?
+
+Elinizde bir uygulama olduğunu düşünün. Bu uygulamanın belirli bir runtime sürümüne, sistem paketlerine ve başlangıç komutuna ihtiyacı olabilir. Tüm bunları manuel olarak tekrar tekrar kurmak yerine Dockerfile ile tanımlarsınız. Böylece hem sizin hem ekipteki diğer kişilerin aynı image'i benzer şekilde üretmesi kolaylaşır.
+
+Bu tekrar üretilebilirlik DevOps açısından çok değerlidir. Çünkü ekipteki herkes ve CI sistemi aynı tanım üzerinden image üretebilir. Böylece ortam kurulumunun kişilere bağlı olması azalır.
+
+## Sık kullanılan direktifler
+
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+Bu örnekte:
+
+- `FROM` temel image'i belirler
+- `WORKDIR` çalışma klasörünü ayarlar
+- `COPY` dosyaları image'a kopyalar
+- `RUN` build sırasında komut çalıştırır
+- `EXPOSE` uygulamanın dinlediği portu belirtir
+- `CMD` container açıldığında çalışacak varsayılan komutu tanımlar
+
+## `RUN` ile `CMD` farkı
+
+Başlangıç seviyesinde en çok karıştırılan noktalardan biri budur:
+
+- `RUN`, image build edilirken çalışır
+- `CMD`, container başladığında çalışır
+
+Örneğin `npm install` gibi bir adım image build sırasında gerekir. Bu nedenle `RUN` ile yazılır. Ama uygulamayı başlatan komut container açıldığında lazım olduğu için `CMD` ile tanımlanır.
+
+Bu farkı anlamak, Dockerfile okurken de yazarken de çok faydalıdır.
+
+## Dockerfile'i nasıl okumalıyız?
+
+Dockerfile'i sadece "komut listesi" gibi düşünmek eksik olur. Aslında bu dosya şu sorulara cevap verir:
+
+- Uygulama hangi tabanda çalışıyor?
+- Dosyalar image içinde nereye gidiyor?
+- Hangi bağımlılıklar yükleniyor?
+- Varsayılan başlangıç komutu ne?
+
+Bu nedenle iyi yazılmış bir Dockerfile hem makine için teknik tanım, hem de ekip için mini dokümantasyon görevi görür.
+
+> **İpucu:** Dockerfile yazarken amaç yalnızca image üretmek değil, onu okunabilir ve tekrar kullanılabilir hale getirmektir.
+
+## Özet
+
+Bu bölümde Dockerfile'in ne olduğunu ve neden gerekli olduğunu gördük.
+
+- Dockerfile, image oluşturma tarifidir
+- Temel direktifler `FROM`, `COPY`, `RUN`, `CMD` gibi adımlarla çalışır
+- `RUN` build sırasında, `CMD` container başladığında çalışır
+- İyi bir Dockerfile teknik tanım olduğu kadar iletişim aracıdır

@@ -49,3 +49,33 @@ export interface DashboardSuggestion {
   level: string;
   icon: LucideIcon;
 }
+
+// ─── Course Listing Types ─────────────────────────────────────────────────────
+
+export interface Course {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  duration_minutes: number;
+  is_published: boolean;
+  created_at: string;
+}
+
+export interface CourseSection {
+  id: string;
+  course_id: string;
+  title: string;
+  section_id_str: string;
+  description: string | null;
+  order_index: number;
+  is_published: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CourseDetail extends Course {
+  sections: CourseSection[];
+}

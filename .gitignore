@@ -144,6 +144,7 @@ celerybeat.pid
 
 # Environments
 infrastructure/.env
+infrastructure/**/.env
 .envrc
 .venv
 env/

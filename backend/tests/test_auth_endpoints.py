@@ -3,10 +3,10 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import jwt
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from jose import jwt
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
