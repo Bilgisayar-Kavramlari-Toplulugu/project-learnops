@@ -208,6 +208,18 @@ resource "google_service_account_iam_member" "github_workload_identity" {
 }
 
 # ===========================
+# Grant GitHub Actions SA access to Terraform State Bucket
+# ===========================
+
+resource "google_storage_bucket_iam_member" "github_actions_state_bucket" {
+  bucket = var.terraform_state_bucket_name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.github_actions.email}"
+
+  depends_on = [google_service_account.github_actions]
+}
+
+# ===========================
 # Upload Environment Secrets to Secret Manager
 # ===========================
 
