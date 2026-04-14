@@ -11,7 +11,7 @@ from app.models.courses import Course, Enrollment, Section
 async def test_course(db_session):
     """Create a test course with sections."""
     course = Course(
-        course_id_str="test-course-123",
+        slug="test-course-123",
         title="Test Course",
         description="A test course",
     )
