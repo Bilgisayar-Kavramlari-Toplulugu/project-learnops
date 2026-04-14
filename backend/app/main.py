@@ -15,11 +15,7 @@ from app import (
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
-<<<<<<< feature/BE-16-section-progress-api
 from app.routers import auth, progress, users
-=======
-from app.routers import auth, courses, users
->>>>>>> develop
 
 logger = logging.getLogger(__name__)
 
@@ -74,11 +70,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/v1")
 app.include_router(users.router, prefix="/v1")
-<<<<<<< feature/BE-16-section-progress-api
 app.include_router(progress.router, prefix="/v1")
-=======
-app.include_router(courses.router, prefix="/v1")
->>>>>>> develop
 
 
 # Rate Limiting
