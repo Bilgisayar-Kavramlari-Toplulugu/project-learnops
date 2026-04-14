@@ -237,9 +237,17 @@ jobs:
           region = "${{ env.GCP_REGION }}"
           artifact_registry_region = "${{ env.ARTIFACT_REGISTRY_REGION }}"
           github_repo = "${{ github.event.repository.name }}"
-          backend_image = "${{ needs.build-backend.outputs.BACKEND_IMAGE_BASE }}:${{ needs.build-backend.outputs.BACKEND_VERSION }}"
-          frontend_image = "${{ needs.build-frontend.outputs.FRONTEND_IMAGE_BASE }}:${{ needs.build-frontend.outputs.FRONTEND_VERSION }}"
           EOF
+
+          # Only override backend_image if backend was actually built
+          if [[ "${{ needs.build-backend.result }}" == "success" ]]; then
+            echo 'backend_image = "${{ needs.build-backend.outputs.BACKEND_IMAGE_BASE }}:${{ needs.build-backend.outputs.BACKEND_VERSION }}"' >> terraform.tfvars
+          fi
+
+          # Only override frontend_image if frontend was actually built
+          if [[ "${{ needs.build-frontend.result }}" == "success" ]]; then
+            echo 'frontend_image = "${{ needs.build-frontend.outputs.FRONTEND_IMAGE_BASE }}:${{ needs.build-frontend.outputs.FRONTEND_VERSION }}"' >> terraform.tfvars
+          fi
 
       - name: Terraform Init
         id: init
