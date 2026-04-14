@@ -9,18 +9,17 @@ from app.services import progress_service
 
 router = APIRouter(prefix="/progress", tags=["Progress"])
 
+
 @router.post(
     "/sections/{section_id_str}/complete",
     response_model=SectionProgressResponse,
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def complete_section(
     section_id_str: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     return await progress_service.mark_section_complete(
-        db=db,
-        user_id=current_user.id,
-        section_id_str=section_id_str
+        db=db, user_id=current_user.id, section_id_str=section_id_str
     )
