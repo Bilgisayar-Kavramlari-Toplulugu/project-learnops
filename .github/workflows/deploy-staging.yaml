@@ -9,6 +9,7 @@ on:
     paths:
       - "backend/**"
       - "frontend/**"
+      - "infrastructure/**"
       - ".github/workflows/deploy-staging.yaml"
   workflow_dispatch:
 
@@ -31,6 +32,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      infrastructure: ${{ steps.filter.outputs.infrastructure }}
     steps:
       - uses: actions/checkout@v6
 
@@ -42,6 +44,8 @@ jobs:
               - 'backend/**'
             frontend:
               - 'frontend/**'
+            infrastructure:
+              - 'infrastructure/**'
 
   build-backend:
     name: Build & Push Backend
@@ -111,6 +115,14 @@ jobs:
             ${{ steps.image-tags.outputs.backend_image_base }}:latest
             ${{ steps.image-tags.outputs.backend_image_base }}:${{ steps.image-tags.outputs.backend_version }}
             ${{ steps.image-tags.outputs.backend_image_base }}:sha-${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ vars.BACKEND_SERVICE_NAME || 'backend' }} \
+            --image="${{ steps.image-tags.outputs.backend_image_base }}:sha-${{ github.sha }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --quiet
 
       - name: Build Summary
         run: |
@@ -186,6 +198,14 @@ jobs:
             ${{ steps.image-tags.outputs.frontend_image_base }}:${{ steps.image-tags.outputs.frontend_version }}
             ${{ steps.image-tags.outputs.frontend_image_base }}:sha-${{ github.sha }}
 
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ vars.FRONTEND_SERVICE_NAME || 'frontend' }} \
+            --image="${{ steps.image-tags.outputs.frontend_image_base }}:sha-${{ github.sha }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --quiet
+
       - name: Build Summary
         run: |
           echo "## Frontend Image Built Successfully" >> $GITHUB_STEP_SUMMARY
@@ -194,13 +214,8 @@ jobs:
   terraform-deploy:
     name: Deploy Infrastructure with Terraform
     runs-on: ubuntu-latest
-    needs: [build-backend, build-frontend]
-
-    if: |
-        always() &&
-        (needs.build-backend.result == 'success' || needs.build-backend.result == 'skipped') &&
-        (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped') &&
-        (needs.build-backend.result == 'success' || needs.build-frontend.result == 'success')
+    needs: [changes]
+    if: needs.changes.outputs.infrastructure == 'true'
 
 
     defaults:
@@ -232,40 +247,15 @@ jobs:
 
       - name: Create terraform.tfvars
         run: |
-          # Use newly built image, or fall back to the currently deployed image to avoid empty/invalid values
-          if [[ "${{ needs.build-backend.result }}" == "success" ]]; then
-            BACKEND_IMAGE="${{ needs.build-backend.outputs.BACKEND_IMAGE_BASE }}:${{ needs.build-backend.outputs.BACKEND_VERSION }}"
-          else
-            BACKEND_IMAGE=$(gcloud run services describe backend \
-              --region="${{ env.GCP_REGION }}" \
-              --project="${{ secrets.GCP_PROJECT_ID }}" \
-              --format="value(template.containers[0].image)" 2>/dev/null || true)
-            # First-deploy fallback: service doesn't exist yet, use :latest from known AR path
-            if [[ -z "$BACKEND_IMAGE" ]]; then
-              BACKEND_IMAGE="${{ env.ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-backend/backend:latest"
-            fi
-          fi
-
-          if [[ "${{ needs.build-frontend.result }}" == "success" ]]; then
-            FRONTEND_IMAGE="${{ needs.build-frontend.outputs.FRONTEND_IMAGE_BASE }}:${{ needs.build-frontend.outputs.FRONTEND_VERSION }}"
-          else
-            FRONTEND_IMAGE=$(gcloud run services describe frontend \
-              --region="${{ env.GCP_REGION }}" \
-              --project="${{ secrets.GCP_PROJECT_ID }}" \
-              --format="value(template.containers[0].image)" 2>/dev/null || true)
-            # First-deploy fallback: service doesn't exist yet, use :latest from known AR path
-            if [[ -z "$FRONTEND_IMAGE" ]]; then
-              FRONTEND_IMAGE="${{ env.ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-frontend/frontend:latest"
-            fi
-          fi
-
+          # Infrastructure-only deploy: always use :latest so we don't rebuild images.
+          # App image updates are handled separately via gcloud run deploy in build jobs.
           cat > terraform.tfvars <<EOF
           project_id = "${{ secrets.GCP_PROJECT_ID }}"
           region = "${{ env.GCP_REGION }}"
           artifact_registry_region = "${{ env.ARTIFACT_REGISTRY_REGION }}"
           github_repo = "${{ github.event.repository.name }}"
-          backend_image = "${BACKEND_IMAGE}"
-          frontend_image = "${FRONTEND_IMAGE}"
+          backend_image = "${{ env.ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-backend/backend:latest"
+          frontend_image = "${{ env.ARTIFACT_REGISTRY_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-frontend/frontend:latest"
           EOF
 
       - name: Terraform Init

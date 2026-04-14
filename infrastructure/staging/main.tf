@@ -244,10 +244,6 @@ resource "google_cloud_run_v2_service" "backend" {
   location = var.region
 
   template {
-    annotations = {
-      "deploy-time" = timestamp()
-    }
-
     service_account = google_service_account.backend_runtime.email
 
     vpc_access {
@@ -528,10 +524,6 @@ resource "google_cloud_run_v2_service" "frontend" {
   location = var.region
 
   template {
-    annotations = {
-      "deploy-time" = timestamp()
-    }
-
     service_account = google_service_account.frontend_runtime.email
 
     containers {
