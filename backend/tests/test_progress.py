@@ -5,6 +5,12 @@ from datetime import datetime
 import pytest
 
 from app.models.courses import Course, Enrollment, Section
+from app.services.jwt_service import create_access_token
+
+
+def _auth_cookies(user) -> dict:
+    token = create_access_token(sub=str(user.id))
+    return {"access_token": token}
 
 
 @pytest.fixture
@@ -57,7 +63,8 @@ class TestProgressEndpoints:
 
         # Complete first section
         response = await client.post(
-            f"/v1/progress/sections/{sections[0].section_id_str}/complete"
+            f"/v1/progress/sections/{sections[0].section_id_str}/complete",
+            cookies=_auth_cookies(user)
         )
 
         assert response.status_code == 200
@@ -74,13 +81,15 @@ class TestProgressEndpoints:
 
         # Complete section first time
         response1 = await client.post(
-            f"/v1/progress/sections/{sections[0].section_id_str}/complete"
+            f"/v1/progress/sections/{sections[0].section_id_str}/complete",
+            cookies=_auth_cookies(user)
         )
         assert response1.status_code == 200
 
         # Complete same section second time
         response2 = await client.post(
-            f"/v1/progress/sections/{sections[0].section_id_str}/complete"
+            f"/v1/progress/sections/{sections[0].section_id_str}/complete",
+            cookies=_auth_cookies(user)
         )
         assert response2.status_code == 200
 
@@ -94,7 +103,8 @@ class TestProgressEndpoints:
         course, sections = test_course
 
         response = await client.post(
-            f"/v1/progress/sections/{sections[0].section_id_str}/complete"
+            f"/v1/progress/sections/{sections[0].section_id_str}/complete",
+            cookies=_auth_cookies(test_user)
         )
 
         assert response.status_code == 400
@@ -105,8 +115,11 @@ class TestProgressEndpoints:
             client, 
             enrolled_user):
         """Test completing a non-existent section."""
+        user, course, sections, enrollment = enrolled_user
+        
         response = await client.post(
-            "/v1/progress/sections/non-existent-section/complete")
+            "/v1/progress/sections/non-existent-section/complete",
+            cookies=_auth_cookies(user))
 
         assert response.status_code == 404
         assert "bulunamadı" in response.json()["detail"].lower()
@@ -121,7 +134,8 @@ class TestProgressEndpoints:
         # Complete all sections
         for section in sections:
             response = await client.post(
-                f"/v1/progress/sections/{section.section_id_str}/complete"
+                f"/v1/progress/sections/{section.section_id_str}/complete",
+                cookies=_auth_cookies(user)
             )
             assert response.status_code == 200
 
