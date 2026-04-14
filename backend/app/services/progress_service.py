@@ -4,8 +4,11 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import and_, case, func, select
+from fastapi import HTTPException
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.courses import Enrollment, Section, UserProgress
 from app.models.courses import Enrollment, Section, UserProgress
 
 logger = getLogger(__name__)
@@ -97,6 +100,8 @@ async def mark_section_complete(
         elif not user_progress.completed:
             # Kayıt var ama tamamlanmamış → güncelle
             # (Eski bir session'dan kalmış olabilir)
+            # Kayıt var ama tamamlanmamış → güncelle
+            # (Eski bir session'dan kalmış olabilir)
             user_progress.completed = True
             user_progress.completed_at = datetime.now(timezone.utc)
             logger.info(f"Progress updated: user={user_id}, section={section_id_str}")
@@ -119,6 +124,7 @@ async def mark_section_complete(
             func.count(Section.id).label("total"),
             func.sum(
                 case(
+                    (UserProgress.completed, 1),
                     (UserProgress.completed, 1),
                     else_=0
                 )
@@ -151,6 +157,11 @@ async def mark_section_complete(
                 f"Course completed: user={user_id}, course={course_id}, progress=100%"
             )
             
+            enrollment.completed_at = datetime.utcnow()
+            logger.info(
+                f"Course completed: user={user_id}, course={course_id}, progress=100%"
+            )
+            
         # Commit (ATOMICITY: Tüm işlemler başarılı olmuştur)
         # Eğer buraya kadar geldiysek, hiç hata yok
         # Tüm değişiklikler atomik olarak database'e yazılır
@@ -159,6 +170,8 @@ async def mark_section_complete(
 
         logger.info(
             f"Section complete: user={user_id}, section={section_id_str}, "
+            f"progress={new_progress}%, "
+            f"course_done={enrollment.completed_at is not None}"
             f"progress={new_progress}%, "
             f"course_done={enrollment.completed_at is not None}"
         )
