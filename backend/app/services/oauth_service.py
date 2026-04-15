@@ -1,6 +1,6 @@
 import uuid as uuid_mod
 
-from jwt.exceptions import PyJWTError as JWTError
+from jose import JWTError
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload

@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jwt.exceptions import PyJWTError as JWTError
+from jose import JWTError
 
 from app.services.jwt_service import decode_token
 
