@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import models as _models  # noqa: F401 - ensure all SQLAlchemy models are registered
+import app.models as _models  # noqa: F401 - ensure all SQLAlchemy models are registered
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
