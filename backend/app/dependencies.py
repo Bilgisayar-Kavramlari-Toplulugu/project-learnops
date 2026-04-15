@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, Request, status
+from jwt.exceptions import PyJWTError as JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from jwt.exceptions import PyJWTError as JWTError
 
 from app.database import get_db
 from app.models.users import User
