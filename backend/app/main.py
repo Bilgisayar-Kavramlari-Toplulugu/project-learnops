@@ -1,5 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
+from importlib import import_module
 
 from alembic import command  # type: ignore
 from alembic.config import Config
@@ -9,7 +10,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.sessions import SessionMiddleware
 
-import app.models as _models  # noqa: F401 - ensure all SQLAlchemy models are registered
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
@@ -25,6 +25,9 @@ def run_upgrade(connection, cfg):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ensure SQLAlchemy model metadata is loaded before startup tasks run.
+    import_module("app.models")
+
     # Sadece lokal geliştirme ortamında çalıştır, production'da atla
     if settings.ENVIRONMENT == "development":
         logger.info("Lokal ortam algılandı. Otomatik migrasyon başlatılıyor...")
