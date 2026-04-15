@@ -63,7 +63,8 @@ resource "google_project_service" "required_apis" {
     "secretmanager.googleapis.com",
     "servicenetworking.googleapis.com",
     "vpcaccess.googleapis.com",
-    "artifactregistry.googleapis.com"
+    "artifactregistry.googleapis.com",
+    "cloudresourcemanager.googleapis.com"
   ])
 
   project            = google_project.staging.project_id
@@ -115,10 +116,15 @@ resource "google_artifact_registry_repository" "repos" {
 
 resource "google_project_iam_member" "github_actions_roles" {
   for_each = toset([
-    "roles/run.developer",                # Cloud Run: Deploy and manage services (project-level)
-    "roles/cloudsql.client",              # Cloud SQL: Connect to instances (not admin)
-    "roles/iam.serviceAccountUser",       # Impersonate service accounts
-    "roles/secretmanager.secretAccessor", # Read secrets (not admin)
+    "roles/run.admin",                          # Cloud Run: Deploy services and manage IAM (needed for allUsers invoker binding)
+    "roles/cloudsql.admin",                     # Cloud SQL: Create and manage instances, databases, users
+    "roles/iam.serviceAccountUser",             # Impersonate service accounts
+    "roles/secretmanager.secretAccessor",       # Read secret values
+    "roles/secretmanager.viewer",               # Read secret metadata and versions (needed for data sources)
+    "roles/compute.networkAdmin",               # Manage VPC, global addresses, VPC connector
+    "roles/compute.loadBalancerAdmin",          # Manage URL maps, SSL certs, backend services, forwarding rules
+    "roles/resourcemanager.projectIamAdmin",    # Set project-level IAM bindings for runtime service accounts
+    "roles/vpcaccess.admin",                    # Create and manage Serverless VPC Access connectors
   ])
 
   project = google_project.staging.project_id
@@ -134,7 +140,7 @@ resource "google_artifact_registry_repository_iam_member" "github_actions_repo_w
   project    = google_project.staging.project_id
   location   = var.region
   repository = each.value.repository_id
-  role       = "roles/artifactregistry.writer"
+  role       = "roles/artifactregistry.repoAdmin" # Writer + getIamPolicy/setIamPolicy (needed to manage AR repo IAM in staging)
   member     = "serviceAccount:${google_service_account.github_actions.email}"
 
   depends_on = [google_service_account.github_actions, google_artifact_registry_repository.repos]
@@ -205,6 +211,18 @@ resource "google_service_account_iam_member" "github_workload_identity" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.learnops_staging_github.name}/attribute.repository/${var.github_org}/${var.github_repo}"
 
   depends_on = [google_iam_workload_identity_pool_provider.learnops_staging_github]
+}
+
+# ===========================
+# Grant GitHub Actions SA access to Terraform State Bucket
+# ===========================
+
+resource "google_storage_bucket_iam_member" "github_actions_state_bucket" {
+  bucket = var.terraform_state_bucket_name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.github_actions.email}"
+
+  depends_on = [google_service_account.github_actions]
 }
 
 # ===========================
