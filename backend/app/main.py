@@ -1,9 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from importlib import import_module
 
-import alembic.command
-from alembic.config import Config
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -20,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 def run_upgrade(connection, cfg):
+    import alembic.command
+
     cfg.attributes["connection"] = connection
     alembic.command.upgrade(cfg, "head")
 
@@ -27,12 +26,14 @@ def run_upgrade(connection, cfg):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure SQLAlchemy model metadata is loaded before startup tasks run.
-    import_module("app.models")
+    import app.models  # noqa: F401
 
     # Sadece lokal geliştirme ortamında çalıştır, production'da atla
     if settings.ENVIRONMENT == "development":
         logger.info("Lokal ortam algılandı. Otomatik migrasyon başlatılıyor...")
         try:
+            from alembic.config import Config
+
             alembic_cfg = Config("alembic.ini")
             engine = create_async_engine(settings.DATABASE_URL)
             async with engine.begin() as conn:
