@@ -2,8 +2,8 @@ import logging
 from contextlib import asynccontextmanager
 from importlib import import_module
 
+import alembic.command
 from alembic.config import Config
-from alembic import command  # type: ignore
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 def run_upgrade(connection, cfg):
     cfg.attributes["connection"] = connection
-    command.upgrade(cfg, "head")
+    alembic.command.upgrade(cfg, "head")
 
 
 @asynccontextmanager
