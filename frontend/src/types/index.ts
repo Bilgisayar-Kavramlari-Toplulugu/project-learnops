@@ -79,3 +79,10 @@ export interface CourseSection {
 export interface CourseDetail extends Course {
   sections: CourseSection[];
 }
+
+// ─── Section Progress Types ───────────────────────────────────────────────────
+
+export interface SectionProgressItem {
+  section_id_str: string;
+  completed: boolean;
+}

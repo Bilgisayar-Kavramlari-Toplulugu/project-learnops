@@ -4,4 +4,6 @@ export const routes = {
   dashboard: "/dashboard",
   courses: "/courses",
   profile: "/profile",
+  courseDetail: (slug: string) => `/courses/${slug}`,
+  section: (slug: string, sectionIdStr: string) => `/courses/${slug}/sections/${sectionIdStr}`,
 } as const;
