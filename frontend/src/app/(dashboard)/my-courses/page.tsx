@@ -1,9 +1,9 @@
-import { getCourses } from "@/lib/fetchCourses";
+import { getEnrolledCourses } from "@/lib/fetchCourses";
 import WrapperContainer from "@/components/features/dashboard/wrapper-container";
 import CoursesClient from "@/components/features/courses/courses-client";
 
 export default async function MyCoursesPage() {
-  const courses = await getCourses();
+  const courses = await getEnrolledCourses();
 
   if (courses.length === 0) {
     return (
