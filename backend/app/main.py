@@ -2,8 +2,8 @@ import logging
 from contextlib import asynccontextmanager
 from importlib import import_module
 
-from alembic import command  # type: ignore
 from alembic.config import Config
+from alembic import command  # type: ignore
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
