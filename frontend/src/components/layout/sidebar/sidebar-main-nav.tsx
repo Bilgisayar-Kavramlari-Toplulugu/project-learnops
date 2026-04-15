@@ -19,7 +19,9 @@ export function SidebarMainNav({ items, activePath, hideLabel }: SidebarMainNavP
       )}
       <nav className="space-y-1.5">
         {items.map((item) => {
-          const isActive = item.href === activePath;
+          const isActive =
+            activePath === item.href ||
+            (item.href !== "/" && activePath.startsWith(`${item.href}/`));
           const Icon = item.icon;
 
           return (

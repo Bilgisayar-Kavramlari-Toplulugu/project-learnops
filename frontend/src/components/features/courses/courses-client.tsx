@@ -48,7 +48,7 @@ export default function CoursesClient({ courses }: { courses: Course[] }) {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Kursları Keşfet
+                Tüm Kurslar
               </h1>
               <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
                 Yeni beceriler keşfetmek için eğitimlerimize göz atın.
