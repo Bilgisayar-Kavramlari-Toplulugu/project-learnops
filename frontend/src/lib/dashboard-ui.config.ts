@@ -43,15 +43,16 @@ export const dashboardSidebarItems: SidebarItem[] = [
     icon: House,
   },
   {
-    label: "Kurslarım",
-    href: routes.myCourses,
-    icon: BookOpen,
-  },
-  {
     label: "Tüm Kurslar",
     href: routes.courses,
     icon: BookOpen,
   },
+  {
+    label: "Kurslarım",
+    href: routes.myCourses,
+    icon: BookOpen,
+  },
+
   {
     label: "Profil",
     href: routes.profile,
