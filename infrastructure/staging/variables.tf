@@ -127,3 +127,15 @@ variable "secret_token_encryption_key" {
   type        = string
   default     = "TOKEN_ENCRYPTION_KEY"
 }
+
+variable "secret_backend_public_url" {
+  description = "Secret Manager secret ID for backend public URL (used in OAuth callback URLs)"
+  type        = string
+  default     = "BACKEND_PUBLIC_URL"
+}
+
+variable "secret_frontend_public_url" {
+  description = "Secret Manager secret ID for frontend public URL (used in OAuth callback URLs)"
+  type        = string
+  default     = "FRONTEND_PUBLIC_URL"
+}
