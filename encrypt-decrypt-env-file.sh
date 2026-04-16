@@ -34,6 +34,8 @@ RECIPIENTS=(
     ErtanSidar
     ismailaricioglu
     replakcan
+    svenes25
+    anenthusiastic
 )
 # ─────────────────────────────────────────────────────────────────────────────
 

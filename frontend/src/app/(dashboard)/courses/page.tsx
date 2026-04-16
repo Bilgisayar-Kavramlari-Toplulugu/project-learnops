@@ -1,22 +1,13 @@
-"use client";
+import CoursesClient from "@/components/features/courses/courses-client";
+import WrapperContainer from "@/components/features/dashboard/wrapper-container";
+import { getCourses } from "@/lib/fetchCourses";
 
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { routes } from "@/lib/routes";
-import { StarterCanvas } from "@/components/dashboard/starter-canvas";
-import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
-import { useUser } from "@/hooks/use-user";
-
-export default function CoursesPage() {
-  const { user, loading } = useUser();
-
-  if (loading || !user) return null;
+export default async function CoursesPage() {
+  const courses = await getCourses();
 
   return (
-    <DashboardShell user={user} sidebarItems={dashboardSidebarItems} activePath={routes.courses}>
-      <StarterCanvas
-        title="Kurslar"
-        description="Kurs listesi ve filtreler bu ekranda goruntulenir."
-      />
-    </DashboardShell>
+    <WrapperContainer>
+      <CoursesClient courses={courses} />
+    </WrapperContainer>
   );
 }

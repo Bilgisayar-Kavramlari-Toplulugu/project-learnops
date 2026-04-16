@@ -1,0 +1,433 @@
+---
+id: "tf-006-modul"
+title: "Modül Yapısı ile Yeniden Kullanım"
+order: 60
+order_index: 60
+---
+
+# Modül Yapısı ile Yeniden Kullanım
+
+Bir Terraform konfigürasyonu büyüdükçe, her şeyin tek bir `main.tf` dosyasında olması yönetilemez hale gelir. **Modüller**, Terraform kodunu kapsüller, yeniden kullanılabilir hale getirir ve farklı ekiplerin bağımsız çalışmasına olanak tanır. Bu bölümde modül dünyasına dalıyoruz.
+
+---
+
+## Modül Nedir?
+
+Modül, ilgili Terraform kaynaklarını mantıksal bir grup olarak paketleyen bir klasördür. En basit ifadeyle: **her Terraform proje klasörü zaten bir modüldür** (root modülü).
+
+```
+Proje yapısı (modülsüz):
+learnops-infra/
+  main.tf        ← 500 satır spagetti kod
+  variables.tf
+  outputs.tf
+
+vs.
+
+Proje yapısı (modüllü):
+learnops-infra/
+  main.tf          ← Temiz, modülleri çağırır
+  variables.tf
+  outputs.tf
+  modules/
+    network/       ← Network modülü
+      main.tf
+      variables.tf
+      outputs.tf
+    database/      ← Veritabanı modülü
+      main.tf
+      variables.tf
+      outputs.tf
+    compute/       ← Compute modülü
+      main.tf
+      variables.tf
+      outputs.tf
+```
+
+---
+
+## Neden Modül Kullanmalısınız?
+
+### 1. DRY Prensibi (Don't Repeat Yourself)
+
+```hcl
+# Modülsüz: Development için
+resource "google_sql_database_instance" "dev_db" { ... 30 satır ... }
+resource "google_sql_database" "dev_database" { ... 10 satır ... }
+resource "google_sql_user" "dev_user" { ... 15 satır ... }
+
+# Production için aynısını tekrar yaz:
+resource "google_sql_database_instance" "prod_db" { ... 30 satır ... }
+resource "google_sql_database" "prod_database" { ... 10 satır ... }
+resource "google_sql_user" "prod_user" { ... 15 satır ... }
+
+# ↑ Toplam: 110 satır tekrar
+```
+
+```hcl
+# Modüllü: Bir kere yaz, istediğin kadar kullan
+module "dev_database" {
+  source = "./modules/database"
+  ortam  = "development"
+  ...
+}
+
+module "prod_database" {
+  source = "./modules/database"
+  ortam  = "production"
+  ...
+}
+
+# ↑ Toplam: 10 satır
+```
+
+### 2. Soyutlama
+
+Modüller karmaşıklığı saklar. Bir Cloud SQL instance oluştururken 30 argüman gerekirken, modülünüz sadece işe yarar 3-4 argümanı dışa açar:
+
+```hcl
+# Kullanıcı sadece şunu görür ve yeterlidir:
+module "database" {
+  source   = "./modules/database"
+  ortam    = "production"
+  boyut    = "db-standard-2"
+  yedekler = true
+}
+```
+
+### 3. Ekip İzolasyonu
+
+Farklı ekipler farklı modüllerin sahibi olabilir:
+- Network ekibi → `modules/network`
+- Güvenlik ekibi → `modules/iam`
+- Backend ekibi → `modules/database`, `modules/compute`
+
+---
+
+## İlk Modülünüzü Yazma
+
+### Modül Dosya Yapısı
+
+```
+modules/
+  database/
+    main.tf       # Kaynaklar
+    variables.tf  # Giriş değişkenleri
+    outputs.tf    # Çıkış değerleri
+    README.md     # Dokümantasyon (önerilir)
+```
+
+### modules/database/variables.tf
+
+```hcl
+variable "proje_id" {
+  type        = string
+  description = "GCP proje ID'si"
+}
+
+variable "bölge" {
+  type        = string
+  description = "GCP bölgesi"
+  default     = "europe-west3"
+}
+
+variable "ortam" {
+  type        = string
+  description = "Deployment ortamı: development, staging, production"
+
+  validation {
+    condition     = contains(["development", "staging", "production"], var.ortam)
+    error_message = "Geçersiz ortam."
+  }
+}
+
+variable "veritabani_versiyon" {
+  type        = string
+  description = "PostgreSQL versiyonu"
+  default     = "POSTGRES_15"
+}
+
+variable "makine_tipi" {
+  type        = string
+  description = "Cloud SQL instance tier"
+  default     = "db-f1-micro"
+}
+```
+
+### modules/database/main.tf
+
+```hcl
+locals {
+  instance_adi = "learnops-db-${var.ortam}"
+  yedek_aktif  = var.ortam == "production"
+}
+
+resource "google_sql_database_instance" "main" {
+  name             = local.instance_adi
+  project          = var.proje_id
+  region           = var.bölge
+  database_version = var.veritabani_versiyon
+
+  settings {
+    tier = var.makine_tipi
+
+    backup_configuration {
+      enabled    = local.yedek_aktif
+      start_time = "02:00"
+    }
+
+    ip_configuration {
+      ipv4_enabled = false  # Private IP only
+    }
+  }
+
+  deletion_protection = var.ortam == "production"
+}
+
+resource "google_sql_database" "learnops" {
+  name     = "learnops"
+  instance = google_sql_database_instance.main.name
+  project  = var.proje_id
+}
+
+resource "random_password" "db_sifresi" {
+  length  = 32
+  special = true
+}
+
+resource "google_sql_user" "app_kullanicisi" {
+  name     = "learnops_app"
+  instance = google_sql_database_instance.main.name
+  password = random_password.db_sifresi.result
+  project  = var.proje_id
+}
+```
+
+### modules/database/outputs.tf
+
+```hcl
+output "instance_baglanti_adi" {
+  description = "Cloud SQL bağlantı adı (Cloud SQL Auth Proxy için)"
+  value       = google_sql_database_instance.main.connection_name
+}
+
+output "veritabani_adi" {
+  description = "Veritabanı adı"
+  value       = google_sql_database.learnops.name
+}
+
+output "kullanici_adi" {
+  description = "Uygulama kullanıcısı adı"
+  value       = google_sql_user.app_kullanicisi.name
+}
+
+output "sifre" {
+  description = "Veritabanı şifresi"
+  value       = random_password.db_sifresi.result
+  sensitive   = true
+}
+```
+
+---
+
+## Modülü Çağırma
+
+```hcl
+# root/main.tf
+
+module "development_veritabani" {
+  source = "./modules/database"    # Yerel modül
+
+  proje_id = var.proje_id
+  ortam    = "development"
+  # Varsayılan değerleri override etmeye gerek yok
+}
+
+module "production_veritabani" {
+  source = "./modules/database"
+
+  proje_id    = var.proje_id
+  ortam       = "production"
+  makine_tipi = "db-standard-2"   # Production için daha güçlü
+}
+
+# Modül output'una erişim
+output "prod_db_baglanti" {
+  value = module.production_veritabani.instance_baglanti_adi
+}
+
+output "prod_db_sifresi" {
+  value     = module.production_veritabani.sifre
+  sensitive = true
+}
+```
+
+---
+
+## Terraform Registry: Hazır Modüller
+
+Sıfırdan modül yazmak zorunda değilsiniz! [registry.terraform.io](https://registry.terraform.io) binlerce doğrulanmış modül barındırır.
+
+```hcl
+# GCP Network modülü — topluluk tarafından yazılmış, test edilmiş
+module "vpc" {
+  source  = "terraform-google-modules/network/google"
+  version = "~> 9.0"
+
+  project_id   = var.proje_id
+  network_name = "learnops-vpc"
+  routing_mode = "GLOBAL"
+
+  subnets = [
+    {
+      subnet_name   = "backend-subnet"
+      subnet_ip     = "10.10.10.0/24"
+      subnet_region = "europe-west3"
+    },
+  ]
+}
+```
+
+> ⚠️ **Önemli:** Public registry modüllerini production'da kullanmadan önce kaynak kodunu inceleyin. Her modül güvenilir değildir. Resmi `terraform-google-modules`, `terraform-aws-modules` organizasyonları güvenilirdir.
+
+---
+
+## Modül Versiyonlama
+
+Modüller Git tag'leri ile versiyonlanır:
+
+```hcl
+# Git tag ile versiyon kilitleme
+module "database" {
+  source  = "git::https://github.com/learnops/terraform-modules.git//database?ref=v1.2.0"
+  # ref = git branch, tag veya commit SHA olabilir
+}
+
+# Registry modülü (versiyon constraint)
+module "vpc" {
+  source  = "terraform-google-modules/network/google"
+  version = ">= 9.0.0, < 10.0.0"
+}
+```
+
+---
+
+## Modül Yapısı Best Practices
+
+### ✅ İyi Modül Tasarımı
+
+```hcl
+# modules/cloud-run-service/variables.tf
+
+# 1. Zorunlu değişkenler — varsayılan değer yok
+variable "servis_adi" {
+  type        = string
+  description = "Cloud Run servis adı"
+}
+
+variable "image" {
+  type        = string
+  description = "Container image URL"
+}
+
+# 2. Opsiyonel değişkenler — iyi varsayılan değerler
+variable "min_instance" {
+  type        = number
+  description = "Minimum instance sayısı"
+  default     = 1
+}
+
+variable "max_instance" {
+  type        = number
+  description = "Maximum instance sayısı"
+  default     = 10
+}
+
+# 3. Tip kısıtlamaları ile güvenlik
+variable "bellek" {
+  type        = string
+  description = "Memory limit (512Mi, 1Gi, 2Gi vb.)"
+  default     = "512Mi"
+
+  validation {
+    condition     = can(regex("^\\d+(Mi|Gi)$", var.bellek))
+    error_message = "Bellek '512Mi' veya '2Gi' formatında olmalıdır."
+  }
+}
+```
+
+### ❌ Kaçınılması Gerekenler
+
+```hcl
+# Çok fazla argüman — modül kullanımını zorlaştırır
+variable "a" {}
+variable "b" {}
+variable "c" {}
+# ... 50 tane daha ...
+
+# Hardcoded değerler — yeniden kullanılabilirliği yok eder
+resource "google_compute_instance" "web" {
+  machine_type = "e2-standard-4"  # Bu değişken olmalı!
+  zone         = "europe-west3-a" # Bu da!
+}
+```
+
+---
+
+## Hands-on: Cloud Run Modülü
+
+**Görev:** LearnOps için yeniden kullanılabilir bir Cloud Run modülü oluşturun.
+
+```
+modules/
+  cloud-run/
+    main.tf      # Cloud Run service + IAM
+    variables.tf
+    outputs.tf
+```
+
+**Gereksinimler:**
+- `servis_adi`, `image`, `ortam` değişkenleri olsun
+- `production`'da min 1 instance, `development`'da 0 olsun
+- Servis URL'i output olarak dönülsün
+
+```hcl
+# Başlangıç şablonu:
+resource "google_cloud_run_v2_service" "main" {
+  name     = var.servis_adi
+  location = var.bölge
+
+  template {
+    scaling {
+      min_instance_count = var.ortam == "production" ? 1 : 0
+      max_instance_count = var.max_instance
+    }
+
+    containers {
+      image = var.image
+
+      resources {
+        limits = {
+          memory = var.bellek
+          cpu    = var.cpu
+        }
+      }
+    }
+  }
+}
+```
+
+---
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+
+- Modülün ne olduğu ve neden gerekli olduğu (DRY, soyutlama, ekip izolasyonu)
+- Modül klasör yapısı: `main.tf`, `variables.tf`, `outputs.tf`
+- Yerel modül yazmayı ve çağırmayı
+- Terraform Registry'den hazır modüller kullanmayı
+- Modül versiyonlamayı (Git tag, Registry constraint)
+- İyi modül tasarımı prensiplerini
+
+Bir sonraki bölümde GCP provider'ı ile gerçek cloud kaynaklarını yönetmeyi öğreneceğiz.

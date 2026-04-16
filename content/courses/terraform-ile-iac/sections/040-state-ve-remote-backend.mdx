@@ -1,0 +1,366 @@
+---
+id: "tf-004-state"
+title: "State Dosyası ve Remote Backend"
+order: 40
+order_index: 40
+---
+
+# State Dosyası ve Remote Backend
+
+Terraform'un en kritik ve en çok yanlış anlaşılan konularından biri **state yönetimi**dir. Yanlış yapılandırılmış bir state, altyapınızı kontrolden çıkarmak anlamına gelebilir. Doğru yapılandırılmış bir state ise ekipler arasında gerçek anlamda işbirliğini mümkün kılar.
+
+---
+
+## State Nedir ve Neden Gereklidir?
+
+Terraform bir kaynak oluşturduğunda, o kaynağın bilgilerini bir **state dosyasında** (`terraform.tfstate`) saklar. Bu dosya Terraform'un "hafızası"dır.
+
+```json
+// terraform.tfstate — basitleştirilmiş örnek
+{
+  "version": 4,
+  "terraform_version": "1.7.5",
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "google_storage_bucket",
+      "name": "assets",
+      "instances": [
+        {
+          "attributes": {
+            "id": "learnops-assets-prod",
+            "name": "learnops-assets-prod",
+            "location": "EU",
+            "self_link": "https://www.googleapis.com/storage/v1/b/learnops-assets-prod"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+State olmadan Terraform şu soruları cevaplayamaz:
+- "Bu bucket zaten var mı?"
+- "Son apply'dan bu yana ne değişti?"
+- "Hangi kaynaklar Terraform tarafından yönetiliyor?"
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   terraform plan                     │
+│                                                     │
+│  .tf dosyaları  ──→  KARŞILAŞTIRMA  ←──  terraform.tfstate
+│  (İstenen hal)                              (Bilinen hal)
+│                           ↓                         │
+│                    Gerçek altyapı                   │
+│                    (Gerçek hal)                     │
+│                           ↓                         │
+│                      EXECUTION PLAN                 │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Local State'in Sorunları
+
+`terraform.tfstate` varsayılan olarak **yerel diske** kaydedilir. Bu birkaç kritik soruna yol açar:
+
+### Problem 1: Ekip Çalışması İmkânsız
+
+```
+Ali: terraform apply → state yerel diskinde
+Ayşe: terraform apply → Ali'nin yaptıklarından haberi yok!
+Sonuç: Duplicate kaynaklar veya çakışma!
+```
+
+### Problem 2: State'in Kaybolma Riski
+
+```
+❌ Geliştiricinin bilgisayarı bozuldu → State dosyası gitti
+❌ Biri yanlışlıkla sildi → State yok
+❌ Farklı makinden çalıştırdı → State bulunamıyor
+```
+
+### Problem 3: Eş Zamanlı Değişiklik Tehlikesi
+
+```
+Ali:  terraform apply başlıyor... (10 saniye sürecek)
+Ayşe: terraform apply başlıyor... (aynı anda!)
+Sonuç: State dosyası bozulabilir (corruption)!
+```
+
+### Problem 4: Hassas Veri
+
+State dosyası şifreler, API anahtarları gibi hassas verileri **düz metin** olarak içerebilir. Git'e commit edilmemelidir:
+
+```bash
+# ASLA YAPMAYIN!
+git add terraform.tfstate
+git commit -m "state dosyasını ekledim"
+# Bu commit şifreleri, token'ları dünyayla paylaşır!
+```
+
+---
+
+## Remote Backend: Çözüm
+
+**Remote backend**, state dosyasını yerel disk yerine merkezi ve güvenli bir konumda saklar.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                      Remote Backend                          │
+│                                                             │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐              │
+│  │   Ali    │    │   Ayşe   │    │  CI/CD   │              │
+│  └────┬─────┘    └────┬─────┘    └────┬─────┘              │
+│       │               │               │                     │
+│       └───────────────┼───────────────┘                     │
+│                       ↓                                     │
+│              ┌─────────────────┐                            │
+│              │  GCS Bucket     │  ← Tek state, merkezi      │
+│              │  terraform.tfstate│  ← Şifreli, versiyonlu  │
+│              └─────────────────┘                            │
+│              ┌─────────────────┐                            │
+│              │  State Locking  │  ← Eş zamanlı koruma       │
+│              └─────────────────┘                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Remote backend'in avantajları:
+- ✅ Ekip üyeleri aynı state'i paylaşır
+- ✅ State lock ile eş zamanlı değişiklik engellenir
+- ✅ Versiyonlama ile state geçmişi korunur
+- ✅ Şifreleme ile hassas veriler korunur
+
+---
+
+## GCS (Google Cloud Storage) Backend
+
+GCP kullanan projeler için en doğal backend seçimi GCS'dir.
+
+### 1. State Bucket Oluşturma
+
+```bash
+# Önce bucket oluşturun (bu işlemi manuel veya bootstrap script ile yapın)
+gsutil mb -p learnops-project \
+          -l EU \
+          -b on \
+          gs://learnops-terraform-state
+
+# Versiyonlamayı aktif et (state recovery için kritik!)
+gsutil versioning set on gs://learnops-terraform-state
+
+# Şifrelemeyi aktif et
+gsutil kms encryption \
+  -k projects/learnops-project/locations/eu/keyRings/terraform/cryptoKeys/state \
+  gs://learnops-terraform-state
+```
+
+> ⚠️ **Önemli:** State bucket'ını Terraform ile yönetmeyin! "Tavuk-yumurta" problemi: state bucket'ını oluşturmak için state gerekir, state için bucket gerekir. Bu kaynağı manuel oluşturun.
+
+### 2. Backend Konfigürasyonu
+
+```hcl
+# backend.tf
+
+terraform {
+  backend "gcs" {
+    bucket = "learnops-terraform-state"
+    prefix = "learnops/production"
+    # ↑ State dosyası: gs://learnops-terraform-state/learnops/production/default.tfstate
+  }
+}
+```
+
+Backend prefix ile farklı ortamlar ayrılır:
+
+```
+gs://learnops-terraform-state/
+├── learnops/
+│   ├── development/
+│   │   └── default.tfstate
+│   ├── staging/
+│   │   └── default.tfstate
+│   └── production/
+│       └── default.tfstate
+```
+
+### 3. Backend'e Geçiş
+
+```bash
+# Backend konfigürasyonu eklendikten sonra
+terraform init -migrate-state
+
+# Terraform sorar:
+# "Do you want to copy existing state to the new backend?" → yes
+```
+
+---
+
+## State Locking
+
+Remote backend'ler **state locking** destekler. Bu, iki kişinin aynı anda `terraform apply` yapmasını engeller:
+
+```bash
+# Ali apply başlatıyor
+Ali $ terraform apply
+# State lock alındı: ID = abc-123-def
+
+# Ayşe aynı anda apply yapmaya çalışıyor
+Ayşe $ terraform apply
+# Error: Error acquiring the state lock
+# Lock Info:
+#   ID:        abc-123-def
+#   Path:      gs://learnops-terraform-state/prod/default.tfstate
+#   Operation: OperationTypeApply
+#   Who:       ali@learnops.io
+#   Created:   2024-01-15 14:22:00 UTC
+#   Info:      
+# 
+# Terraform acquires a state lock to protect the state from being
+# written by multiple users at the same time.
+```
+
+Lock süresi dolmuşsa manuel kaldırabilirsiniz (dikkatli kullanın!):
+
+```bash
+terraform force-unlock <LOCK_ID>
+```
+
+---
+
+## State Komutları
+
+Bazen state dosyasını doğrudan yönetmeniz gerekir:
+
+```bash
+# Mevcut state'i listele
+terraform state list
+
+# Belirli bir kaynağın detayını gör
+terraform state show google_compute_instance.web
+
+# Kaynağı state'ten kaldır (silmeden)
+# Kullanım: Terraform yönetiminden çıkarmak istiyorsunuz ama kaynağı silmiyorsunuz
+terraform state rm google_compute_instance.web
+
+# Kaynağı yeniden import et (mevcut bir kaynağı state'e ekle)
+terraform import google_compute_instance.web projects/learnops/zones/europe-west3-a/instances/web-server
+
+# State'i başka bir adrese taşı (refactor sonrası)
+terraform state mv google_compute_instance.old_name google_compute_instance.new_name
+```
+
+### terraform import: Mevcut Altyapıyı Yönetim Altına Alma
+
+Halihazırda var olan kaynakları Terraform'un yönetimine almak için `import` kullanılır:
+
+```bash
+# 1. Önce .tf dosyasında resource bloğunu yazın
+# 2. Sonra import yapın
+
+terraform import google_storage_bucket.assets learnops-assets-prod
+#                 ↑ .tf'deki referans    ↑ Gerçek kaynak ID'si
+
+# Terraform 1.5+ ile import bloğu (.tf içinde tanımlanabilir)
+import {
+  id = "learnops-assets-prod"
+  to = google_storage_bucket.assets
+}
+```
+
+---
+
+## State Dosyasını Güvende Tutmak
+
+### .gitignore Kuralları
+
+```gitignore
+# State dosyaları — ASLA commit etmeyin
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Hassas değişkenler
+*.tfvars
+!example.tfvars
+```
+
+### State Şifreleme
+
+GCS backend, Google tarafından yönetilen anahtarlarla otomatik şifreler. Daha yüksek güvenlik için CMEK (Customer Managed Encryption Keys) kullanabilirsiniz:
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket                      = "learnops-terraform-state"
+    prefix                      = "learnops/production"
+    encryption_key              = var.state_encryption_key
+    storage_custom_endpoint     = null
+  }
+}
+```
+
+---
+
+## Hands-on: Remote Backend Kurulumu
+
+**Görev:** Önceki bölümlerdeki Terraform kodunuzu remote backend'e taşıyın.
+
+**Adımlar:**
+
+1. GCS bucket oluşturun (simüle etmek için local'i kullanabilirsiniz):
+
+```hcl
+# bootstrap/main.tf — AYRI BİR TERRAFORM PROJESİ
+resource "google_storage_bucket" "terraform_state" {
+  name          = "learnops-terraform-state-${var.proje_id}"
+  location      = "EU"
+  force_destroy = false
+
+  versioning {
+    enabled = true
+  }
+
+  uniform_bucket_level_access = true
+}
+```
+
+2. Ana projenize backend ekleyin:
+
+```hcl
+# backend.tf
+terraform {
+  backend "gcs" {
+    bucket = "learnops-terraform-state-PROJE_ID"
+    prefix = "development"
+  }
+}
+```
+
+3. Migration yapın:
+
+```bash
+terraform init -migrate-state
+```
+
+4. State'in remote'a taşındığını doğrulayın:
+
+```bash
+gsutil ls gs://learnops-terraform-state-PROJE_ID/development/
+```
+
+---
+
+## Özet
+
+Bu bölümde öğrendiklerimiz:
+
+- **State dosyasının** ne olduğu ve neden gerekli olduğu
+- **Local state'in** ekip ortamlarında neden yetersiz kaldığı (ekip çalışması, kayıp riski, güvenlik)
+- **Remote backend**'in (özellikle GCS) nasıl kurulacağı
+- **State locking** ile eş zamanlı değişikliklerin nasıl önlendiği
+- `state list`, `state show`, `state rm`, `terraform import` komutları
+- State dosyasının güvenli tutulması için `.gitignore` kuralları
+
+Bir sonraki bölümde `init → plan → apply → destroy` iş akışını production senaryolarıyla derinlemesine inceleyeceğiz.

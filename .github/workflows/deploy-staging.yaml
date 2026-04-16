@@ -1,0 +1,320 @@
+name: Build, Push & Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main
+      - release
+      - release-1.1.0
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "infrastructure/**"
+      - ".github/workflows/deploy-staging.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # Don't cancel CD on main
+
+env:
+  GCP_REGION: "europe-west3"
+  TF_VERSION: "1.6.0"
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      infrastructure: ${{ steps.filter.outputs.infrastructure }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dorny/paths-filter@v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            infrastructure:
+              - 'infrastructure/**'
+
+  terraform-deploy:
+    name: Deploy Infrastructure with Terraform
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.infrastructure == 'true'
+
+
+    defaults:
+      run:
+        working-directory: infrastructure/staging
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Create terraform.tfvars
+        run: |
+          # Infrastructure-only deploy: always use :latest so we don't rebuild images.
+          # App image updates are handled separately via gcloud run deploy in build jobs.
+          cat > terraform.tfvars <<EOF
+          project_id = "${{ secrets.GCP_PROJECT_ID }}"
+          region = "${{ env.GCP_REGION }}"
+          artifact_registry_region = "${{ env.GCP_REGION }}"
+          github_repo = "${{ github.event.repository.name }}"
+          backend_image = "${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-backend/backend:latest"
+          frontend_image = "${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-frontend/frontend:latest"
+          EOF
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false -out=tfplan
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve -input=false tfplan
+
+      - name: Get Terraform Outputs
+        id: outputs
+        run: |
+          FRONTEND_URL=$(terraform output -raw frontend_url)
+          BACKEND_URL=$(terraform output -raw backend_url)
+          echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
+          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "## Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Application URLs" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend**: [${{ steps.outputs.outputs.frontend_url }}](${{ steps.outputs.outputs.frontend_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend**: [${{ steps.outputs.outputs.backend_url }}](${{ steps.outputs.outputs.backend_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployed Images" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend**: \`${{ needs.build-backend.outputs.BACKEND_IMAGE_BASE }}:${{ needs.build-backend.outputs.BACKEND_VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend**: \`${{ needs.build-frontend.outputs.FRONTEND_IMAGE_BASE }}:${{ needs.build-frontend.outputs.FRONTEND_VERSION }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Environment Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Staging" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ env.GCP_REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed by**: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "## Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The Terraform deployment failed. Check the logs above for details." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Debug Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Step Failed**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Actor**: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+
+  build-backend:
+    name: Build & Push Backend
+    needs: [changes, terraform-deploy]
+    if: |
+      always() &&
+      needs.changes.outputs.backend == 'true' &&
+      (needs.terraform-deploy.result == 'success' || needs.terraform-deploy.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      BACKEND_VERSION: ${{ steps.image-tags.outputs.backend_version }}
+      BACKEND_IMAGE_BASE: ${{ steps.image-tags.outputs.backend_image_base }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Google Cloud Authentication
+        uses: google-github-actions/auth@v2
+        id: auth
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+          token_format: "access_token"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Generate Image Tags and Versions
+        id: image-tags
+        run: |
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          REGION="${{ env.GCP_REGION }}"
+          GITHUB_REPO="${{ github.event.repository.name }}"
+          BACKEND_REPOSITORY="${GITHUB_REPO}-backend"
+          BACKEND_IMAGE_NAME="backend"
+
+          # Read version from backend/.version
+          BACKEND_VERSION=$(grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' backend/.version | tr -d '\r' | xargs)
+          if [ -z "$BACKEND_VERSION" ]; then
+            echo "Error: version file is missing or invalid" >&2
+            exit 1
+          fi
+
+          # Construct image base
+          BACKEND_IMAGE_BASE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${BACKEND_REPOSITORY}/${BACKEND_IMAGE_NAME}"
+
+          echo "backend_version=${BACKEND_VERSION}" >> $GITHUB_OUTPUT
+          echo "backend_image_base=${BACKEND_IMAGE_BASE}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push Backend
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.image-tags.outputs.backend_image_base }}:latest
+            ${{ steps.image-tags.outputs.backend_image_base }}:${{ steps.image-tags.outputs.backend_version }}
+            ${{ steps.image-tags.outputs.backend_image_base }}:sha-${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ vars.BACKEND_SERVICE_NAME || 'backend' }} \
+            --image="${{ steps.image-tags.outputs.backend_image_base }}:sha-${{ github.sha }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --quiet
+
+      - name: Build Summary
+        run: |
+          echo "## Backend Image Built Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: \`${{ steps.image-tags.outputs.backend_image_base }}:${{ steps.image-tags.outputs.backend_version }}\`" >> $GITHUB_STEP_SUMMARY
+
+  build-frontend:
+    name: Build & Push Frontend
+    needs: [changes, terraform-deploy]
+    if: |
+      always() &&
+      needs.changes.outputs.frontend == 'true' &&
+      (needs.terraform-deploy.result == 'success' || needs.terraform-deploy.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      FRONTEND_VERSION: ${{ steps.image-tags.outputs.frontend_version }}
+      FRONTEND_IMAGE_BASE: ${{ steps.image-tags.outputs.frontend_image_base }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Google Cloud Authentication
+        uses: google-github-actions/auth@v2
+        id: auth
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+          token_format: "access_token"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Generate Image Tags and Versions
+        id: image-tags
+        run: |
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          REGION="${{ env.GCP_REGION }}"
+          GITHUB_REPO="${{ github.event.repository.name }}"
+          FRONTEND_REPOSITORY="${GITHUB_REPO}-frontend"
+          FRONTEND_IMAGE_NAME="frontend"
+
+          # Read version from frontend/.version
+          FRONTEND_VERSION=$(grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$' frontend/.version | tr -d '\r' | xargs)
+          if [ -z "$FRONTEND_VERSION" ]; then
+            echo "Error: version file is missing or invalid" >&2
+            exit 1
+          fi
+
+          # Construct image base
+          FRONTEND_IMAGE_BASE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${FRONTEND_REPOSITORY}/${FRONTEND_IMAGE_NAME}"
+
+          echo "frontend_version=${FRONTEND_VERSION}" >> $GITHUB_OUTPUT
+          echo "frontend_image_base=${FRONTEND_IMAGE_BASE}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push Frontend
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.image-tags.outputs.frontend_image_base }}:latest
+            ${{ steps.image-tags.outputs.frontend_image_base }}:${{ steps.image-tags.outputs.frontend_version }}
+            ${{ steps.image-tags.outputs.frontend_image_base }}:sha-${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ vars.FRONTEND_SERVICE_NAME || 'frontend' }} \
+            --image="${{ steps.image-tags.outputs.frontend_image_base }}:sha-${{ github.sha }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --quiet
+
+      - name: Build Summary
+        run: |
+          echo "## Frontend Image Built Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: \`${{ steps.image-tags.outputs.frontend_image_base }}:${{ steps.image-tags.outputs.frontend_version }}\`" >> $GITHUB_STEP_SUMMARY

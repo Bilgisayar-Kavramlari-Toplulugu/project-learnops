@@ -63,6 +63,7 @@ class Question(BaseModel):
       Only returned in submit response showing correct answer to user
     - explanation: Why this answer is correct (shown on result review page)
     - order_index: Question sequence within quiz
+    - is_active: Whether question is active (K-2: faulty questions set to false)
     """
 
     __tablename__ = "questions"
@@ -75,6 +76,7 @@ class Question(BaseModel):
     correct_index: Mapped[int] = mapped_column(Integer, nullable=False)
     explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Relationships
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="questions")

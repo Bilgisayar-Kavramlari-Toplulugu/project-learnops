@@ -1,0 +1,73 @@
+---
+id: "docker-009-best"
+title: "Production Dockerfile İyi Pratikleri"
+order: 90
+order_index: 90
+---
+
+# Production Dockerfile İyi Pratikleri
+
+Bir Dockerfile'in çalışıyor olması tek başına yeterli değildir. Production ortamında çalışan Dockerfile'lar daha güvenli, daha küçük, daha hızlı build olan ve bakımı daha kolay yapılar olmalıdır. Bu bölümde production odaklı Dockerfile best practice'lerini ele alacağız.
+
+## Neden production yaklaşımı farklıdır?
+
+Lokal geliştirme sırasında amaç çoğu zaman hızlı deneme yapmaktır. Production ortamında ise öncelikler değişir:
+
+- Daha küçük image boyutu
+- Daha az güvenlik riski
+- Daha öngörülebilir build süreci
+- Daha net sürüm ve bağımlılık yönetimi
+
+Bu nedenle production Dockerfile yazarken yalnızca "çalışıyor mu?" sorusu yetmez. "Güvenli mi, verimli mi, bakımı kolay mı?" sorularını da sormak gerekir.
+
+## Multi-stage build neden önemlidir?
+
+Multi-stage build, build için gereken araçlarla çalışacak final image'i birbirinden ayırmaya yarar. Örneğin uygulamayı derlemek için daha geniş bir ortam kullanıp, final aşamada yalnızca çalıştırmak için gerekli dosyaları daha küçük bir image içine alabilirsiniz.
+
+Bu yaklaşım şu faydaları sağlar:
+
+- Final image küçülür
+- Gereksiz build araçları production image'ine girmez
+- Güvenlik ve bakım açısından daha temiz sonuç elde edilir
+
+## Minimal base image seçimi
+
+Production tarafında mümkün olduğunca amaca uygun ve küçük base image seçmek iyi bir pratiktir. Çünkü büyük image'ler:
+
+- Daha yavaş taşınır
+- Daha fazla depolama kullanır
+- Daha geniş saldırı yüzeyi oluşturabilir
+
+Ancak çok küçük image seçmek her durumda otomatik olarak en iyi çözüm değildir. Önemli olan, ihtiyaca uygun ve dengeli seçim yapmaktır.
+
+## `COPY` ve `ADD` farkı
+
+Genel kural olarak ihtiyaç yoksa `ADD` yerine `COPY` tercih edilir. Çünkü `COPY` daha açık ve daha öngörülebilir davranır. Production Dockerfile'larda bu tür açıklık önemlidir. Sürpriz davranışlar yerine daha kontrollü adımlar tercih edilmelidir.
+
+## `.dockerignore` neden gereklidir?
+
+Build context içine gereksiz dosyalar girdiğinde image boyutu ve build süresi olumsuz etkilenebilir. Bu nedenle `.git`, log dosyaları, yerel çıktı klasörleri veya gereksiz dokümantasyon dosyaları gibi içerikleri `.dockerignore` ile dışarıda bırakmak iyi bir pratiktir.
+
+Bu yaklaşım:
+
+- Build süresini azaltır
+- Gereksiz dosyaların image'e girmesini önler
+- Daha temiz bir paketleme süreci sağlar
+
+## Non-root user kullanımı
+
+Production ortamında container'ın root kullanıcı ile çalışması güvenlik açısından riskli olabilir. Mümkün olduğunda uygulamayı non-root user ile çalıştırmak daha güvenli bir yaklaşımdır. Bu, "en az yetki" prensibine daha uygundur.
+
+## Katman ve cache düşüncesi
+
+Production Dockerfile yazarken katman sırası da önemlidir. Nadiren değişen adımları daha yukarıda, sık değişen adımları daha aşağıda tutmak cache verimliliğini artırabilir. Bu da hem geliştirme hem de CI tarafında zaman kazandırır.
+
+## Özet
+
+Bu bölümde production odaklı Dockerfile pratiklerini gördük.
+
+- Multi-stage build final image'i küçültür
+- Minimal base image seçimi önemlidir
+- `COPY` çoğu durumda `ADD`'den daha açık bir tercihtir
+- `.dockerignore` build sürecini temizler
+- Non-root user güvenlik açısından daha sağlıklı bir yaklaşımdır

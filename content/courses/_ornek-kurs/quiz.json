@@ -1,0 +1,34 @@
+{
+  "_note": "Eğitim amaçlı şablon. v2.0'da private repo'ya taşınır.",
+  "course_slug": "_ornek-kurs",
+  "pass_threshold": 0.70,
+  "duration_seconds": 1500,
+  "questions": [
+    {
+      "order_index": 1,
+      "is_active": true,
+      "text": "Soru metni buraya gelir. Spesifik senaryo verin, muğlak sormayın.",
+      "options": [
+        {"index": 0, "text": "Doğru cevap"},
+        {"index": 1, "text": "Yaygın hata A"},
+        {"index": 2, "text": "Yaygın hata B"},
+        {"index": 3, "text": "Yaygın hata C"}
+      ],
+      "correct_index": 0,
+      "explanation": "Doğru cevap 0 çünkü... En az 2 cümle yazın. Sadece doğru cevap X'tir yazmak yetmez, NEDEN doğru olduğunu açıklayın."
+    },
+    {
+      "order_index": 2,
+      "is_active": true,
+      "text": "İkinci örnek soru. correct_index dağılımı dengeli olmalı, hepsi 0 olamaz.",
+      "options": [
+        {"index": 0, "text": "Yanlış seçenek"},
+        {"index": 1, "text": "Yanlış seçenek"},
+        {"index": 2, "text": "Doğru cevap"},
+        {"index": 3, "text": "Yanlış seçenek"}
+      ],
+      "correct_index": 2,
+      "explanation": "Bu sorunun cevabı 2 çünkü... Explanation her zaman zorunludur."
+    }
+  ]
+}
