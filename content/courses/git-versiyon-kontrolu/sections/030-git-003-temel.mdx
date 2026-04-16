@@ -1,0 +1,200 @@
+---
+id: "git-003-temel"
+title: "init, add, commit, status, log"
+order: 30
+order_index: 30
+---
+
+# init, add, commit, status, log
+
+Bu bölümde Git'in günlük kullanımının omurgasını oluşturan beş komutu öğreneceksiniz. Bu komutları kavradığınızda Git iş akışının %80'ini yönetebilir hale gelirsiniz.
+
+## Git'in Üç Çalışma Alanı
+
+Bir komutu öğrenmeden önce Git'in iç mantığını kavramak gerekir. Git, değişikliklerinizi üç farklı alanda takip eder:
+
+```
+Working Directory  →  Staging Area (Index)  →  Repository (.git)
+  (Çalışma Alanı)       (Hazırlık Alanı)         (Depo Geçmişi)
+
+  [Dosyaları düzenle]  →  [git add]  →  [git commit]
+```
+
+- **Working Directory:** Dosyalarınızı düzenlediğiniz alan. Değişiklikler henüz Git'e bildirilmemiştir.
+- **Staging Area:** "Bu değişiklikleri bir sonraki commit'e dahil edeceğim" dediğiniz ara alan. Commit öncesi son kontrol noktanızdır.
+- **Repository:** Kalıcı geçmişin tutulduğu `.git` dizini. Bir kez commit edilen değişiklikler burada yaşar.
+
+## git init — Yeni Depo Başlatma
+
+Mevcut bir dizini Git deposuna dönüştürür.
+
+```bash
+mkdir proje-adi
+cd proje-adi
+git init
+# Initialized empty Git repository in /home/kullanici/proje-adi/.git/
+```
+
+Bu komut, dizin içinde gizli bir `.git` klasörü oluşturur. Tüm Git geçmişi, konfigürasyonu ve metadata bu klasördedir. `.git` dizinini silmek, tüm Git geçmişini silmek demektir; proje dosyalarınız kaybolmaz.
+
+## git status — Mevcut Durumu Görme
+
+Çalışma alanınızın ve staging area'nın anlık görüntüsünü verir. En sık başvuracağınız komuttur.
+
+```bash
+git status
+```
+
+Yeni dosya oluşturduğunuzda:
+
+```
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        README.md
+
+nothing added to commit but untracked files present
+```
+
+**Untracked:** Git'in henüz takip etmediği dosyalar. Siz söylemedikçe Git bu dosyaları yok sayar.
+
+## git add — Staging Area'ya Ekleme
+
+Değişiklikleri ya da yeni dosyaları staging area'ya taşır.
+
+```bash
+# Tek dosya ekle
+git add README.md
+
+# Birden fazla dosya ekle
+git add index.html style.css
+
+# Mevcut dizindeki tüm değişiklikleri ekle
+git add .
+
+# İnteraktif seçim (ileri seviye)
+git add -p
+```
+
+`git add .` kullanışlıdır ancak dikkatli olunmalıdır: `.gitignore` ile hariç tutulmayan her şeyi ekler.
+
+`git add` sonrası `git status` çıktısı:
+
+```
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   README.md
+```
+
+**Changes to be committed:** Bu dosyalar bir sonraki `git commit` komutuna dahil edilecek.
+
+## git commit — Değişiklikleri Kaydetme
+
+Staging area'daki tüm değişiklikleri kalıcı olarak depoya yazar.
+
+```bash
+git commit -m "feat: README dosyası oluşturuldu"
+```
+
+```
+[main (root-commit) a1b2c3d] feat: README dosyası oluşturuldu
+ 1 file changed, 3 insertions(+)
+ create mode 100644 README.md
+```
+
+Her commit otomatik olarak şunları içerir: benzersiz bir SHA-1 hash (`a1b2c3d`), yazar adı ve e-posta, zaman damgası, commit mesajı ve bir önceki commit'e referans.
+
+> **İyi bir commit mesajı:** Kısa ve öz bir özet (50 karakter altı), gerekirse boş satır + ayrıntılı açıklama. Neyin değiştiğini değil, **neden** değiştiğini yazın.
+
+Birden fazla satır için editörü açan versiyon:
+
+```bash
+git commit
+# Varsayılan editör açılır, mesajı yazıp kaydedin
+```
+
+## git log — Geçmişi Görüntüleme
+
+Deponun commit geçmişini listeler.
+
+```bash
+git log
+```
+
+```
+commit a1b2c3d4e5f6789012345678901234567890abcd
+Author: Adınız Soyadınız <email@ornek.com>
+Date:   Mon Apr 5 10:00:00 2026 +0300
+
+    feat: README dosyası oluşturuldu
+```
+
+Günlük kullanım için daha okunabilir formatlar:
+
+```bash
+# Kısa özet (tek satır)
+git log --oneline
+# a1b2c3d feat: README dosyası oluşturuldu
+
+# Dal grafiğiyle birlikte
+git log --oneline --graph --all
+
+# Son 5 commit
+git log -5
+
+# Belirli bir dosyanın geçmişi
+git log -- README.md
+```
+
+## Tam İş Akışı: Baştan Sona
+
+```bash
+# 1. Yeni proje başlat
+mkdir git-alistirma && cd git-alistirma
+git init
+
+# 2. Dosya oluştur
+echo "# Git Alıştırması" > README.md
+
+# 3. Durumu kontrol et
+git status
+# → README.md "Untracked files" listesinde
+
+# 4. Staging'e ekle
+git add README.md
+
+# 5. Tekrar kontrol et
+git status
+# → README.md "Changes to be committed" listesinde
+
+# 6. Commit et
+git commit -m "ilk commit: README oluşturuldu"
+
+# 7. Geçmişi gör
+git log --oneline
+# → a1b2c3d ilk commit: README oluşturuldu
+```
+
+## Sık Yapılan Hatalar
+
+| Hata | Açıklama | Çözüm |
+|---|---|---|
+| `git commit` → "nothing to commit" | Staging area boş | Önce `git add` yapın |
+| Yanlış commit mesajı | Son commit'i henüz push etmediyseniz | `git commit --amend -m "yeni mesaj"` |
+| Dosyayı yanlışlıkla staging'e ekledim | | `git restore --staged dosya.txt` |
+| Working directory'deki değişikliği geri al | | `git restore dosya.txt` |
+
+## Özet
+
+```
+git init        → Yeni depo başlat
+git status      → Mevcut durumu gör
+git add         → Staging'e ekle
+git commit -m   → Kaydet
+git log         → Geçmişi gör
+```
+
+Bu beş komut, temel Git iş akışının tamamını oluşturur. Bir sonraki bölümde birden fazla geliştirme hattını yönetmenin yolu olan branch'leri inceleyeceğiz.

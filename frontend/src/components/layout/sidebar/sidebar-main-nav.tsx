@@ -6,14 +6,17 @@ import type { SidebarItem } from "@/types";
 interface SidebarMainNavProps {
   items: SidebarItem[];
   activePath: string;
+  hideLabel?: boolean;
 }
 
-export function SidebarMainNav({ items, activePath }: SidebarMainNavProps) {
+export function SidebarMainNav({ items, activePath, hideLabel }: SidebarMainNavProps) {
   return (
     <div className="space-y-2">
-      <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
-        Ana Menu
-      </p>
+      {!hideLabel && (
+        <p className="px-2 text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
+          Ana Menu
+        </p>
+      )}
       <nav className="space-y-1.5">
         {items.map((item) => {
           const isActive = item.href === activePath;

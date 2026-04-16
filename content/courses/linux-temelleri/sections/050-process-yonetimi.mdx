@@ -1,0 +1,91 @@
+---
+id: "linux-005-process"
+title: "Process Yönetimi: ps, top, kill"
+order: 50
+order_index: 50
+---
+
+# Process Yönetimi: ps, top, kill
+
+Linux'ta çalışan her program bir **süreç** (process) olarak ele alınır ve sisteme benzersiz bir kimlik numarası ile kayıt edilir. Süreçleri izlemek ve yönetmek, sunucu sağlığını korumak için temel bir beceridir.
+
+## Temel Kavramlar
+
+**PID (Process ID):** Her sürece sistem tarafından atanan benzersiz numaradır. Süreçleri yönetmek için PID'e ihtiyaç duyarsınız.
+
+**Daemon:** Arka planda sessizce çalışan servislerdir. Web sunucusu (nginx), veritabanı (postgresql) ve SSH servisi birer daemon örneğidir.
+
+**Zombie:** İşini tamamlamış ancak ebeveyni (parent process) tarafından çıkış kodu okunmadığı için süreç tablosunda yer işgal etmeye devam eden ölü süreçlerdir. Tek başına zararsızdır fakat fazla birikirse sorun çıkarabilir.
+
+## Süreçleri İzleme
+
+```bash
+# Tüm çalışan süreçleri detaylı listele
+ps aux
+
+# Belirli bir süreç adını filtrele
+ps aux | grep nginx
+
+# Sistem kaynaklarını ve süreçleri canlı izle (çıkmak için q)
+top
+
+# top'un daha modern ve renkli alternatifi
+htop
+```
+
+`ps aux` çıktısındaki sütunlar:
+
+| Sütun | Açıklama                          |
+|-------|-----------------------------------|
+| USER  | Süreci başlatan kullanıcı         |
+| PID   | Süreç kimlik numarası             |
+| %CPU  | CPU kullanım yüzdesi              |
+| %MEM  | Bellek kullanım yüzdesi           |
+| STAT  | Süreç durumu (R: çalışıyor, S: uyuyor, Z: zombie) |
+| COMMAND | Çalışan komut                  |
+
+## Süreçleri Sonlandırma
+
+```bash
+# Sürece nazikçe sonlanma sinyali gönder (SIGTERM)
+kill [PID]
+
+# Süreci zorla ve anında sonlandır (SIGKILL — görmezden gelinemez)
+kill -9 [PID]
+
+# Süreç adına göre sonlandır
+killall nginx
+```
+
+> ⚠️ **DİKKAT:** `kill -9` son çaredir. Sürecin temizlik yapmasına (dosyaları kapatma, bağlantıları düzgün sonlandırma) izin vermez. Önce `kill [PID]` deneyin.
+
+## Servis Yönetimi (systemctl)
+
+Modern Linux sistemlerinde daemon'ları yönetmek için `systemctl` kullanılır:
+
+```bash
+# Servis durumunu kontrol et
+systemctl status nginx
+
+# Servisi başlat
+sudo systemctl start nginx
+
+# Servisi durdur
+sudo systemctl stop nginx
+
+# Sistemi açılışta otomatik başlat
+sudo systemctl enable nginx
+
+# Servis loglarını görüntüle
+journalctl -u nginx -f
+```
+
+> 💡 **İpucu:** Bir servisi yeniden başlatmadan önce `systemctl status` ile durumunu kontrol edin. Hata mesajları genellikle burada görünür.
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+- PID, Daemon ve Zombie kavramlarının ne anlama geldiğini
+- `ps aux` ve `top` ile çalışan süreçleri nasıl izleyeceğimizi
+- `kill` ve `kill -9` arasındaki farkı ve ne zaman kullanılacağını
+- `systemctl` ile modern servis yönetimini

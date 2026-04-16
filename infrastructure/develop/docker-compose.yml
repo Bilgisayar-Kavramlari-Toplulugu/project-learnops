@@ -16,13 +16,13 @@ services:
       retries: 5
 
   backend:
-    build: ../backend
+    build: ../../backend
     container_name: learnops_backend
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     env_file:
       - .env
     volumes:
-      - ../backend:/app
+      - ../../backend:/app
       - backend_deps:/usr/local/lib/python3.13/site-packages
     ports:
       - "8000:8080"
@@ -37,13 +37,13 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ../frontend
+    build: ../../frontend
     container_name: learnops_frontend
     command: ["npm", "run", "dev"]
     env_file:
       - .env
     volumes:
-      - ../frontend:/app
+      - ../../frontend:/app
       - frontend_node_modules:/app/node_modules
       - frontend_next:/app/.next
     ports:
