@@ -2,6 +2,11 @@
 # Staging Infrastructure Outputs
 # ===========================
 
+output "frontend_url" {
+  description = "Public-facing frontend URL (custom domain via load balancer)"
+  value       = "https://${var.frontend_domain}"
+}
+
 output "frontend_static_ip" {
   description = "Reserved static IP address for frontend"
   value       = google_compute_global_address.frontend_ip.address
