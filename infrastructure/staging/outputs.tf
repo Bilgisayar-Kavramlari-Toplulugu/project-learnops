@@ -7,6 +7,11 @@ output "frontend_url" {
   value       = "https://${var.frontend_domain}"
 }
 
+output "backend_url" {
+  description = "Backend Cloud Run public URL"
+  value       = google_cloud_run_v2_service.backend.uri
+}
+
 output "frontend_static_ip" {
   description = "Reserved static IP address for frontend"
   value       = google_compute_global_address.frontend_ip.address
