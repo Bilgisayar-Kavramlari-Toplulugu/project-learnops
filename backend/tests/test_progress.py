@@ -14,7 +14,6 @@ def _auth_cookies(user) -> dict:
 
 
 @pytest.fixture
-@pytest.mark.asyncio
 async def test_course(db_session):
     """Create a test course with sections."""
     course = Course(
@@ -42,7 +41,6 @@ async def test_course(db_session):
 
 
 @pytest.fixture
-@pytest.mark.asyncio
 async def enrolled_user(db_session, test_user, test_course):
     """Enroll test user in test course."""
     course, sections = test_course
@@ -97,9 +95,7 @@ class TestProgressEndpoints:
         assert response2.status_code == 200
 
         # Should be the same result
-        data1 = response1.json()
-        data2 = response2.json()
-        assert data1 == data2
+        assert response1.json() == response2.json()
 
     async def test_complete_section_not_enrolled(self, client, test_user, test_course):
         """Test completing section when user is not enrolled."""
