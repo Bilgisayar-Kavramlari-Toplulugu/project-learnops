@@ -7,6 +7,13 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 
 ### ⚙️ Genel
 - **changelog:** Update for v1.1.0 — lerkush ([`e7fd2d7`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/e7fd2d79e403fadaafda14c3ed273bcad972d5e5))
+- **release:** Generate full CHANGELOG.md from v0.2.0 to v1.1.0 — lerkush ([`b5bc571`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b5bc5710c6132c6dd16df7a937932ce0a1da3dfc))
+- **release:** Sync develop to release v1.1.0 — lerkush ([`72ed2bf`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/72ed2bfad4bd922788d42cff1d3fce1f3c8859c7))
+- Merge release v1.1.0 fixes back into develop — lerkush ([`68e43a3`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/68e43a3822d52141af238638794fe14c1d8b67b1))
+
+
+### 🐛 Hata Düzeltmeleri
+- **auth:** Use frontend proxy for GitHub OAuth redirect URI in staging — karalarmehmet ([`dd90812`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/dd908129fe4c24d618335b872a232ba9f357cbba))
 
 
 ## [1.1.0] — 2026-04-15
@@ -30,8 +37,7 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 
 
 ### 🐛 Hata Düzeltmeleri
-- **ci:** Remove branch push from changelog workflow, use GitHub Release (#INF-08) — lerkush ([`dda6609`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/dda6609a8d0a74678663fcecaec71da64db44a3a))
-- **ci:** Add tag flag to latest release notes (#INF-08) — lerkush ([`cf5b6cb`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/cf5b6cb80c29005b85d7c8f61d9868902a78bc04))
+- **auth:** Blacklist refresh token after account deletion (#BE-11) — Shamsia ([`2e6f762`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2e6f762df37b12c7becc127acc80148e3948be44))
 - **backend:** Remove role field from user schema — Alper ([`692cd31`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/692cd3164f477f5db156c9cc9b02ac54e997930c))
 - **backend:** Update accounts endpoint response — Alper ([`a4a1631`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/a4a1631bef8a64383c87e99d4c28cff1306ae9f7))
 - Solve ruff check errors — Alper ([`62502b0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/62502b03ba5162e000d056b974d46eb20d77a722))
@@ -88,6 +94,10 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - **content:** Skip template dirs and update course_id in section UPSERT — karalarmehmet ([`38d5f21`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/38d5f21e8b17e5e484008ffe5442125ceaac2a98))
 
 
+### 💅 Stil
+- **backend:** Format delete account tests (#BE-11) — Shamsia ([`0457cf5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0457cf5cf8ec38c839aa1d0c341e1f76e8890c05))
+
+
 ### 📚 Dokümantasyon
 - **content:** Add content team setup guide and mdx rules (#CNT-01) — lerkush ([`5a26ec3`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5a26ec33c96fb6db5a5069129ad2e357a60a885f))
 - **frontend:** Add TODOs and remove comment-outed code (#FE-09) — Alper Akcan ([`05e8e64`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/05e8e64ad5ad5667443e58be13d55cad26a131a9))
@@ -115,6 +125,7 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 
 
 ### 🚀 Yeni Özellikler
+- **backend:** Add hard delete account endpoint with audit log (#BE-11) — Shamsia ([`70ff7f8`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/70ff7f8302018d338d9609e1d28292aa45970ae7))
 - Add user profile request/response schemas (#20) — Alper ([`a7d534e`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/a7d534ea0741b8dc0e777de0ec8385195e6f7c64))
 - Create a new router for users operations (#20) — Alper ([`c93a265`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c93a26597fd8da17a3a9362d71d4f8f093fa3710))
 - Import the new user router in main.py (#20) — Alper ([`9d76d60`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/9d76d6075198d4279be748489cfa4bf11eb6b01f))
@@ -152,6 +163,13 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - **BE-13:** Add seed_content.py with UPSERT and dry-run support — karalarmehmet ([`d101e33`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d101e33dd6e422cf143ca81dfc9268ff0e36e49b))
 - **content:** Add terraform-ile-iac course 8 sections + quiz (#CNT-07) #183 — lerkush ([`0d65b21`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0d65b21d5633f0be7b93321b4342d596bd4386b1))
 - **content:** Add cicd-kavramlarina-giris sections 1-8 and quiz 15 questions (#CNT-06) — Enes Eren Seven ([`62db6ca`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/62db6caba1b74e04f182d6f12d7b995ebb32a528))
+
+
+## [1.0.0] — 2026-04-03
+
+### 🐛 Hata Düzeltmeleri
+- **ci:** Remove branch push from changelog workflow, use GitHub Release (#INF-08) — lerkush ([`dda6609`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/dda6609a8d0a74678663fcecaec71da64db44a3a))
+- **ci:** Add tag flag to latest release notes (#INF-08) — lerkush ([`cf5b6cb`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/cf5b6cb80c29005b85d7c8f61d9868902a78bc04))
 
 
 ## [0.2.0] — 2026-04-03
@@ -217,13 +235,11 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - **backend:** Update main.py for local auto-migration and health check (#150) — maliuyanik ([`a837743`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/a837743c704f862d32c2e93fa3f932ef21cc6c82))
 - **config:** Improve node_modules check in pre-commit hooks — karalarmehmet ([`5fcbc35`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5fcbc354a1326c7e188c3f51a47d0da064e98b13))
 - **db:** Resolve asyncio.run conflict in alembic env (#BUG-06) — karalarmehmet ([`082d083`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/082d083f7527ab30e4a3582c97a39e10a0f5b5ff))
-- **auth:** Blacklist refresh token after account deletion (#BE-11) — Shamsia ([`2e6f762`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2e6f762df37b12c7becc127acc80148e3948be44))
 - **ci:** Remove always() from changelog job condition (#INF-08) — lerkush ([`a006141`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/a0061416a9cac446e4a70a94126770f07b0d7eac))
 
 
 ### 💅 Stil
 - **middleware:** Fix ruff formatting — belmaaz ([`562d7d4`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/562d7d46c3b4fb99e9a8485dbf2a85aa02a322ae))
-- **backend:** Format delete account tests (#BE-11) — Shamsia ([`0457cf5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0457cf5cf8ec38c839aa1d0c341e1f76e8890c05))
 
 
 ### 🔁 CI/CD
@@ -275,7 +291,6 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - [BE-09] Updat  rate limiting middleware — demir/gulsen ([`58f6ba3`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/58f6ba334927a5a480fa2c94e0863d119011d8fc))
 - Create custom oauth buttons and button container (#17) — Alper ([`734fb17`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/734fb17b648014f80fb4ab7efc9966213b4e633a))
 - Create auth-provider and wrap the layout with it (#19) — Alper ([`6d8b2ae`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/6d8b2ae80828739d903a8a58f7f2e96b9f4b95d6))
-- **backend:** Add hard delete account endpoint with audit log (#BE-11) — Shamsia ([`70ff7f8`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/70ff7f8302018d338d9609e1d28292aa45970ae7))
 
 
 ---
