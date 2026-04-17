@@ -14,6 +14,7 @@ def _auth_cookies(user) -> dict:
 
 
 @pytest.fixture
+@pytest.mark.asyncio
 async def test_course(db_session):
     """Create a test course with sections."""
     course = Course(
@@ -41,6 +42,7 @@ async def test_course(db_session):
 
 
 @pytest.fixture
+@pytest.mark.asyncio
 async def enrolled_user(db_session, test_user, test_course):
     """Enroll test user in test course."""
     course, sections = test_course
@@ -54,6 +56,7 @@ async def enrolled_user(db_session, test_user, test_course):
     return test_user, course, sections, enrollment
 
 
+@pytest.mark.asyncio
 class TestProgressEndpoints:
     """Test progress-related endpoints."""
 
