@@ -6,6 +6,7 @@ from app.dependencies import get_current_user
 from app.models.users import User
 from app.schemas.enrollments import (
     EnrollmentCreateRequest,
+    EnrollmentCourseSummary,
     EnrollmentListResponse,
     EnrollmentResponse,
 )
@@ -17,6 +18,10 @@ from app.services.enrollment_service import (
 )
 
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
+
+
+def _build_course_summary(course) -> EnrollmentCourseSummary:
+    return EnrollmentCourseSummary.model_validate(course)
 
 
 @router.post("", response_model=EnrollmentResponse, status_code=status.HTTP_201_CREATED)
@@ -55,7 +60,7 @@ async def enroll_in_course(
         enrolled_at=enrollment.enrolled_at,
         completed_at=enrollment.completed_at,
         progress_percent=float(enrollment.progress_percent),
-        course=enrollment.course,
+        course=_build_course_summary(enrollment.course),
     )
 
 
@@ -74,7 +79,7 @@ async def get_my_enrollments(
                 enrolled_at=enrollment.enrolled_at,
                 completed_at=enrollment.completed_at,
                 progress_percent=float(enrollment.progress_percent),
-                course=enrollment.course,
+                course=_build_course_summary(enrollment.course),
             )
             for enrollment in enrollments
         ]
