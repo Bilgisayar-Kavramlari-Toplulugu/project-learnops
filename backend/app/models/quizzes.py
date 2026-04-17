@@ -42,10 +42,10 @@ class Quiz(BaseModel):
 
     # Relationships
     course: Mapped["Course"] = relationship("Course", back_populates="quiz")
-    questions: Mapped[list] = relationship(
+    questions: Mapped[list["Question"]] = relationship(
         "Question", back_populates="quiz", cascade="all, delete-orphan"
     )
-    attempts: Mapped[list] = relationship(
+    attempts: Mapped[list["QuizAttempt"]] = relationship(
         "QuizAttempt", back_populates="quiz", cascade="all, delete-orphan"
     )
 
@@ -138,7 +138,7 @@ class QuizAttempt(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="quiz_attempts")
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="attempts")
-    answers: Mapped[list] = relationship(
+    answers: Mapped[list["QuizAttemptAnswer"]] = relationship(
         "QuizAttemptAnswer", back_populates="attempt", cascade="all, delete-orphan"
     )
 

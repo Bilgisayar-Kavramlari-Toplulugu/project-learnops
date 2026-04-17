@@ -15,7 +15,7 @@ from app import (
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
-from app.routers import auth, courses, users
+from app.routers import auth, courses, quizzes, users
 
 logger = logging.getLogger(__name__)
 
@@ -58,19 +58,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+_is_dev = settings.ENVIRONMENT in ("development", "testing")
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SESSION_SECRET,
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
-    same_site="none",  # OAuth callback cross-site redirect requires none
-    https_only=settings.ENVIRONMENT not in ("development"),
+    same_site="lax" if _is_dev else "none",  # lax for HTTP dev, none for HTTPS prod
+    https_only=not _is_dev,
 )
 
 
 app.include_router(auth.router, prefix="/v1")
 app.include_router(users.router, prefix="/v1")
 app.include_router(courses.router, prefix="/v1")
+app.include_router(quizzes.router, prefix="/v1")
 
 
 # Rate Limiting
