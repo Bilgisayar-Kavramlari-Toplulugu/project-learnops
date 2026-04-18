@@ -22,7 +22,8 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
   };
 }
 
-// TODO [Alper-Suleyman] return value will be refactored after the backend enpoints are implemented. This just simulates the API call as it returns an empty array for now to be able to show the empty state in the UI. Once the backend is implemented, this function will fetch the actual enrolled courses of the user.
+// TODO [FE-12]: getEnrolledCourses backend entegrasyonu tamamlandığında
+// gerçek API çağrısıyla değiştirilecek.
 export async function getEnrolledCourses(): Promise<Course[]> {
   return [];
 }
