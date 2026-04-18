@@ -47,7 +47,7 @@ def _auth_header(user_id: str = _FAKE_USER_ID) -> dict:
 
 
 def _override_auth(user_id: str = _FAKE_USER_ID):
-    """get_current_user bağımlılığını verilen user_id döndürecek şekilde 
+    """get_current_user bağımlılığını verilen user_id döndürecek şekilde
     override eder."""
 
     def _dep() -> str:
@@ -137,9 +137,7 @@ async def test_progress_requires_auth(
     client: AsyncClient, two_section_course: CourseWithSections
 ):
     """Token olmadan istek → 401."""
-    resp = await client.get(
-        f"/v1/enrollments/{two_section_course.course.id}/progress"
-    )
+    resp = await client.get(f"/v1/enrollments/{two_section_course.course.id}/progress")
     assert resp.status_code == 401
 
 
