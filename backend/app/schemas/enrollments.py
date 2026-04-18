@@ -41,6 +41,8 @@ class SectionProgressOut(BaseModel):
         bitirmiş
     """
 
+    model_config = ConfigDict(from_attributes=True)
+
     section_id_str: str
     title: str
     order_index: int

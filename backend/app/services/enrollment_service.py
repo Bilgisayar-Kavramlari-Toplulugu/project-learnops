@@ -13,6 +13,8 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
+from app.models.courses import Course, Enrollment, Section, UserProgress
+from app.schemas.enrollments import EnrollmentProgressOut, SectionProgressOut
 
 async def get_published_course_by_id(
     db: AsyncSession,
@@ -83,6 +85,7 @@ async def list_user_enrollments(
 
     result = await db.scalars(query)
     return list(result.all())
+
 
 async def get_enrollment_progress(
     db: AsyncSession,

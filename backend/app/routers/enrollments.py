@@ -12,14 +12,15 @@ from app.deps import get_current_user
 from app.models.courses import Course
 from app.models.users import User
 from app.schemas.enrollments import (
-    EnrollmentCourseSummary,
     EnrollmentCreateRequest,
     EnrollmentListResponse,
     EnrollmentResponse,
     EnrollmentProgressOut,
+    EnrollmentCourseSummary,
 )
 from app.services.enrollment_service import (
     create_enrollment,
+    get_enrollment_progress,
     get_published_course_by_id,
     get_user_enrollment_for_course,
     list_user_enrollments,
