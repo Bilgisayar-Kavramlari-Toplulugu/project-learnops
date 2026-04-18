@@ -5,11 +5,26 @@ import { Course, CourseDetail, CourseListResponse } from "@/types";
 const backendBase = () =>
   (process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
+/**
+ * Backend HTTP hataları için typed error.
+ * Hata mesajının regex ile parse edilmesi yerine `instanceof` ile
+ * status koduna güvenli erişim sağlar.
+ */
+export class BackendError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly path: string,
+  ) {
+    super(`Backend error ${status}: ${path}`);
+    this.name = "BackendError";
+  }
+}
+
 async function serverGet<T>(path: string): Promise<T> {
   const res = await fetch(`${backendBase()}/v1${path}`, {
     next: { revalidate: 60 }, // 60sn ISR — statik içerik sık değişmez
   });
-  if (!res.ok) throw new Error(`Backend error ${res.status}: ${path}`);
+  if (!res.ok) throw new BackendError(res.status, path);
   return res.json() as Promise<T>;
 }
 
@@ -31,8 +46,7 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
   try {
     return await serverGet<CourseDetail>(`/courses/${slug}`);
   } catch (err: unknown) {
-    const status = (err as { message?: string })?.message?.match(/\d+/)?.[0];
-    if (status === "404") return null;
+    if (err instanceof BackendError && err.status === 404) return null;
     throw err; // 5xx → build time'da surface et
   }
 }
