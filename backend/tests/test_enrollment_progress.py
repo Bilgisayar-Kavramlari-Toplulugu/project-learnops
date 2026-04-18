@@ -47,7 +47,8 @@ def _auth_header(user_id: str = _FAKE_USER_ID) -> dict:
 
 
 def _override_auth(user_id: str = _FAKE_USER_ID):
-    """get_current_user bağımlılığını verilen user_id döndürecek şekilde override eder."""
+    """get_current_user bağımlılığını verilen user_id döndürecek şekilde 
+    override eder."""
 
     def _dep() -> str:
         return user_id
