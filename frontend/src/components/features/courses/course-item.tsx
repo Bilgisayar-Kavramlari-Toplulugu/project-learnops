@@ -11,7 +11,7 @@ export default function CourseItem({ course }: { course: Course }) {
     Advanced: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
   };
   const badgeColor =
-    difficultyColors[course.difficulty] ||
+    difficultyColors[course.difficulty ?? ""] ||
     "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
 
   return (

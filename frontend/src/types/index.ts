@@ -50,34 +50,53 @@ export interface DashboardSuggestion {
   icon: LucideIcon;
 }
 
-// ─── Course Listing Types ─────────────────────────────────────────────────────
+// ─── Course Listing Types (BE-14 şemasıyla senkronize) ───────────────────────
 
+// GET /courses → CourseListResponse.items  (CourseListItem şeması)
+// NOT: description intentional olarak yok (FR-07). Liste view'da title üzerinden
+// arama yapılır; description yalnızca detay sayfasında gösterilir (FR-08).
 export interface Course {
+  slug: string;
+  title: string;
+  description?: string | null; // liste response'unda gelmez, tip uyumu için optional
+  category: string | null;
+  difficulty: string | null;
+  duration_minutes: number | null;
+  display_order: number | null;
+}
+
+// GET /courses/{slug} → SectionOut şeması
+// TODO(BE-14): description backend SectionOut şemasına eklenmeli —
+//   kurs detay sayfasında section açıklaması gösteriliyor.
+export interface CourseSection {
+  id: string;
+  section_id_str: string;
+  title: string;
+  order_index: number;
+  description?: string | null;
+}
+
+// GET /courses/{slug} → CourseDetail şeması
+// BLOCKER(BE-14): id backend CourseDetail şemasına eklenmeli —
+//   POST /enrollments { course_id } için zorunlu. Eksik olursa enrollment kırılır.
+export interface CourseDetail {
   id: string;
   slug: string;
   title: string;
-  description: string;
-  category: string;
-  difficulty: string;
-  duration_minutes: number;
-  is_published: boolean;
-  created_at: string;
-}
-
-export interface CourseSection {
-  id: string;
-  course_id: string;
-  title: string;
-  section_id_str: string;
   description: string | null;
-  order_index: number;
-  is_published: boolean;
-  created_at?: string;
-  updated_at?: string;
+  category: string | null;
+  difficulty: string | null;
+  duration_minutes: number | null;
+  display_order: number | null;
+  sections: CourseSection[];
 }
 
-export interface CourseDetail extends Course {
-  sections: CourseSection[];
+// GET /courses paginated response wrapper
+export interface CourseListResponse {
+  items: Course[];
+  page: number;
+  limit: number;
+  total: number;
 }
 
 // ─── Section Progress Types ───────────────────────────────────────────────────

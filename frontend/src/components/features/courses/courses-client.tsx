@@ -21,9 +21,8 @@ export default function CoursesClient({ courses }: { courses: Course[] }) {
 
   const filteredCourses = useMemo(() => {
     return courses.filter((course) => {
-      const matchesSearch =
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchQuery.toLowerCase());
+      // FR-07: liste response'unda description yok (intentional) — title üzerinden arama yapılır.
+      const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = !selectedCategory || course.category === selectedCategory;
       const matchesDifficulty = !selectedDifficulty || course.difficulty === selectedDifficulty;
 
@@ -91,7 +90,7 @@ export default function CoursesClient({ courses }: { courses: Course[] }) {
             >
               <option value="">Tüm Kategoriler</option>
               {allCategories.map((c) => (
-                <option key={c} value={c}>
+                <option key={c ?? ""} value={c ?? ""}>
                   {c}
                 </option>
               ))}
@@ -104,7 +103,7 @@ export default function CoursesClient({ courses }: { courses: Course[] }) {
             >
               <option value="">Tüm Seviyeler</option>
               {allDifficulties.map((d) => (
-                <option key={d} value={d}>
+                <option key={d ?? ""} value={d ?? ""}>
                   {d}
                 </option>
               ))}
@@ -117,7 +116,7 @@ export default function CoursesClient({ courses }: { courses: Course[] }) {
       {filteredCourses.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
           {filteredCourses.map((course) => (
-            <CourseItem key={course.id} course={course} />
+            <CourseItem key={course.slug} course={course} />
           ))}
         </div>
       ) : (
