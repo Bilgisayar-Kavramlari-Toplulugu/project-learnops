@@ -33,6 +33,13 @@ async def start_quiz_attempt(
         db, quiz_id, current_user.id
     )
 
+    logger.info(
+        "Attempt başlatıldı: user_id=%s quiz_id=%s attempt_id=%s",
+        current_user.id,
+        quiz_id,
+        attempt.id,
+    )
+
     # ORM nesneleri commit öncesi erişilip plain dict'e alınır.
     # Commit sonrası session expire ettiğinden Pydantic serialize edemez.
     response_data = {
@@ -44,7 +51,11 @@ async def start_quiz_attempt(
             {
                 "id": q.id,
                 "text": q.text,
-                "options": q.options,
+                # options whitelist: sadece index ve text — ileride eklenen
+                # alanların (örn. correct_index) sızması önlenir (Bulgu #5)
+                "options": [
+                    {"index": o["index"], "text": o["text"]} for o in q.options
+                ],
             }
             for q in randomized_questions
         ],

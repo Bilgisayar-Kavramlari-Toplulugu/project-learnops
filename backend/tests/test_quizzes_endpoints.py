@@ -15,23 +15,81 @@ def _auth_cookies(user: User) -> dict:
 
 @pytest.fixture
 async def test_quiz(db_session: AsyncSession, test_course: Course) -> Quiz:
+    """
+    4 aktif + 1 pasif soru içeren quiz fixture'ı.
+    4 soru ile randomization davranışı gözlemlenebilir.
+    """
     quiz = Quiz(course_id=test_course.id, pass_threshold=0.7, duration_seconds=1200)
     db_session.add(quiz)
     await db_session.flush()
 
-    question = Question(
-        quiz_id=quiz.id,
-        text="Python nedir?",
-        options=[
-            {"index": 0, "text": "Programlama dili"},
-            {"index": 1, "text": "Yılan"},
-            {"index": 2, "text": "Oyun"},
-        ],
-        correct_index=0,
-        order_index=1,
-        is_active=True,
-    )
-    db_session.add(question)
+    questions = [
+        Question(
+            quiz_id=quiz.id,
+            text="Python nedir?",
+            options=[
+                {"index": 0, "text": "Programlama dili"},
+                {"index": 1, "text": "Yılan"},
+                {"index": 2, "text": "Oyun"},
+            ],
+            correct_index=0,
+            explanation="Python, yüksek seviyeli bir programlama dilidir.",
+            order_index=1,
+            is_active=True,
+        ),
+        Question(
+            quiz_id=quiz.id,
+            text="FastAPI hangi dilde yazılmıştır?",
+            options=[
+                {"index": 0, "text": "Go"},
+                {"index": 1, "text": "Python"},
+                {"index": 2, "text": "Rust"},
+            ],
+            correct_index=1,
+            explanation="FastAPI Python ile yazılmış modern bir web framework'üdür.",
+            order_index=2,
+            is_active=True,
+        ),
+        Question(
+            quiz_id=quiz.id,
+            text="HTTP 404 ne anlama gelir?",
+            options=[
+                {"index": 0, "text": "Sunucu hatası"},
+                {"index": 1, "text": "Bulunamadı"},
+                {"index": 2, "text": "Yetkisiz"},
+            ],
+            correct_index=1,
+            explanation="404 Not Found, kaynağın sunucuda bulunamadığını belirtir.",
+            order_index=3,
+            is_active=True,
+        ),
+        Question(
+            quiz_id=quiz.id,
+            text="SQL injection nedir?",
+            options=[
+                {"index": 0, "text": "Performans optimizasyonu"},
+                {"index": 1, "text": "Güvenlik açığı"},
+                {"index": 2, "text": "Veri sıkıştırma"},
+            ],
+            correct_index=1,
+            explanation="SQL injection, zararlı kodun sorguya enjekte edilmesidir.",
+            order_index=4,
+            is_active=True,
+        ),
+        # Pasif soru — response'ta görünmemeli, total_questions'a sayılmamalı
+        Question(
+            quiz_id=quiz.id,
+            text="Bu soru hatalı (pasif)",
+            options=[
+                {"index": 0, "text": "A"},
+                {"index": 1, "text": "B"},
+            ],
+            correct_index=0,
+            order_index=5,
+            is_active=False,
+        ),
+    ]
+    db_session.add_all(questions)
     await db_session.flush()
     return quiz
 
@@ -72,13 +130,18 @@ async def test_create_quiz_attempt_success_and_nf05_check(
 
     # 3. NF-05 Check: Ensure correct_index is NOT exposed
     questions = data["questions"]
-    assert len(questions) == 1
+    # 4 aktif soru var, 1 pasif soru response'ta olmamalı
+    assert len(questions) == 4
     for q in questions:
         assert "correct_index" not in q
         assert "explanation" not in q
         assert "order_index" not in q  # also testing order_index removal
         for option in q["options"]:
             assert "correct_index" not in option
+
+    # total_questions attempt oluşturulurken set edilmeli (Bulgu #2)
+    # Bu değer submit sırasında kullanılacak — snapshot olarak doğru olmalı
+    # (Direkt DB kontrolü entegrasyon testinde yapılabilir)
 
 
 @pytest.mark.asyncio
