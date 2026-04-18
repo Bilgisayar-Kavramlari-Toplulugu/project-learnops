@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { type AxiosError } from "axios";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { SectionSidebar } from "./section-sidebar";
 
 interface SectionActionsProps {
   courseSlug: string;
+  courseId: string;
   currentSectionId: string;
   sections: SectionItem[];
   prevSection: SectionItem | null;
@@ -22,31 +23,38 @@ interface SectionActionsProps {
 
 export function SectionActions({
   courseSlug,
+  courseId,
   currentSectionId,
   sections,
   prevSection,
   nextSection,
   children,
 }: SectionActionsProps) {
-  const { data: progressItems = [], isLoading: progressLoading } = useSectionProgress(courseSlug);
-  const { mutate: markComplete, isPending } = useMarkSectionComplete(courseSlug);
+  const { data: progressItems = [], isLoading: progressLoading } = useSectionProgress(courseId);
+  const { mutate: markComplete, isPending } = useMarkSectionComplete(courseId);
 
-  const [localCompleted, setLocalCompleted] = useState<Set<string>>(new Set());
-
-  const serverCompletedIds = new Set(
+  const completedIds = new Set(
     progressItems.filter((p) => p.completed).map((p) => p.section_id_str),
   );
-  const completedIds = new Set([...serverCompletedIds, ...localCompleted]);
   const isCurrentCompleted = completedIds.has(currentSectionId);
 
   function handleMarkComplete() {
-    setLocalCompleted((prev) => new Set([...prev, currentSectionId]));
     markComplete(currentSectionId, {
       onSuccess: () => {
         toast.success("Bölüm tamamlandı!", { description: "İlerlemeniz kaydedildi." });
       },
-      onError: () => {
-        toast.error("Bölüm kaydedilemedi.", { description: "İlerlemeniz bu oturum için korundu." });
+      onError: (error: unknown) => {
+        const axiosError = error as AxiosError;
+        // 401: api interceptor token refresh + logout yönetir, buraya düşmez.
+        if (axiosError?.response?.status === 403) {
+          toast.error("Bu kursa kayıtlı değilsiniz.", {
+            description: "Kursa kaydolarak ilerlemenizi takip edebilirsiniz.",
+          });
+        } else {
+          toast.error("Bölüm kaydedilemedi.", {
+            description: "İlerlemeniz bu oturum için korundu.",
+          });
+        }
       },
     });
   }

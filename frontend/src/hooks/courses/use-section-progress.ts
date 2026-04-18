@@ -6,20 +6,20 @@ import { queryKeys } from "@/lib/query-keys";
 import type { SectionProgressItem } from "@/types";
 
 // ---------------------------------------------------------------------------
-// GET /enrollments/{courseSlug}/progress  (BE-17)
+// GET /enrollments/{courseId}/progress  (BE-17)
 // Her section'ın completed durumu ve genel progress_percent döner.
 // Backend hazır olana kadar 404/500 → boş array ile graceful fallback.
 // ---------------------------------------------------------------------------
-export function useSectionProgress(courseSlug: string) {
+export function useSectionProgress(courseId: string) {
   return useQuery<SectionProgressItem[]>({
-    queryKey: queryKeys.progress.byCourse(courseSlug),
+    queryKey: queryKeys.progress.byCourse(courseId),
     queryFn: async () => {
-      const { data } = await api.get<SectionProgressItem[]>(`/enrollments/${courseSlug}/progress`);
+      const { data } = await api.get<SectionProgressItem[]>(`/enrollments/${courseId}/progress`);
       return data;
     },
     retry: false,
     staleTime: 1000 * 60 * 5,
-    initialData: [],
+    placeholderData: [],
   });
 }
 
@@ -28,7 +28,7 @@ export function useSectionProgress(courseSlug: string) {
 // Section tamamlandığında progress_percent ve completed_at güncellenir.
 // Optimistic update: backend gelmeden önce UI anında tepki verir.
 // ---------------------------------------------------------------------------
-export function useMarkSectionComplete(courseSlug: string) {
+export function useMarkSectionComplete(courseId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -41,16 +41,16 @@ export function useMarkSectionComplete(courseSlug: string) {
 
     onMutate: async (sectionIdStr: string) => {
       await queryClient.cancelQueries({
-        queryKey: queryKeys.progress.byCourse(courseSlug),
+        queryKey: queryKeys.progress.byCourse(courseId),
       });
 
       const previous = queryClient.getQueryData<SectionProgressItem[]>(
-        queryKeys.progress.byCourse(courseSlug),
+        queryKeys.progress.byCourse(courseId),
       );
 
       // Anında cache'e yaz (optimistic)
       queryClient.setQueryData<SectionProgressItem[]>(
-        queryKeys.progress.byCourse(courseSlug),
+        queryKeys.progress.byCourse(courseId),
         (old = []) => {
           const exists = old.some((p) => p.section_id_str === sectionIdStr);
           if (exists) {
@@ -65,12 +65,14 @@ export function useMarkSectionComplete(courseSlug: string) {
       return { previous };
     },
 
-    // Backend henüz yoksa rollback yapma — UI tepkisi korunsun
+    // Backend henüz yoksa rollback yapma — UI tepkisi korunsun.
+    // TODO(BE-16 stabilize olunca): hata durumunda cache rollback ekle;
+    // aksi hâlde sidebar yanlış completed state göstermeye devam edebilir.
     onError: () => {},
 
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.progress.byCourse(courseSlug),
+        queryKey: queryKeys.progress.byCourse(courseId),
       });
     },
   });

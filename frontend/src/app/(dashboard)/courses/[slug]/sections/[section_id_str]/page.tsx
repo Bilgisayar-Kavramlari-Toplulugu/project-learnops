@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 
 import { getAllSectionParams, getSectionContent } from "@/lib/content";
+import { getCourseBySlug } from "@/lib/fetchCourses";
 import { SectionActions } from "@/components/features/courses/section-actions";
 
 // ---------------------------------------------------------------------------
@@ -89,9 +90,12 @@ interface PageProps {
 
 export default async function SectionPage({ params }: PageProps) {
   const { slug, section_id_str } = await params;
-  const data = getSectionContent(slug, section_id_str);
+  const [data, course] = await Promise.all([
+    getSectionContent(slug, section_id_str),
+    getCourseBySlug(slug),
+  ]);
 
-  if (!data) notFound();
+  if (!data || !course) notFound();
 
   const { frontmatter, content, allSections, prevSection, nextSection } = data;
 
@@ -99,6 +103,7 @@ export default async function SectionPage({ params }: PageProps) {
     <div className="flex h-full bg-zinc-50 dark:bg-slate-900/40 p-4 lg:p-6 gap-4 rounded-2xl">
       <SectionActions
         courseSlug={slug}
+        courseId={course.id}
         currentSectionId={section_id_str}
         sections={allSections}
         prevSection={prevSection}
@@ -116,6 +121,12 @@ export default async function SectionPage({ params }: PageProps) {
               </h1>
             </div>
             <div className="prose-zinc max-w-none">
+              {/*
+               * XSS notu (AC karşılandı): next-mdx-remote/rsc sunucu tarafında
+               * render eder; raw HTML client'a inject edilmez.
+               * İçerik kaynağı: Git repo (trusted). Runtime user input değil.
+               * Harici MDX kaynakları eklenirse sanitization gözden geçirilmeli.
+               */}
               <MDXRemote source={content} components={mdxComponents} />
             </div>
           </div>
