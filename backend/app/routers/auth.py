@@ -70,10 +70,10 @@ def _linkedin_redirect_uri(request: Request) -> str:
 
 
 def _github_redirect_uri(request: Request) -> str:
-    base_url = (
-        (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
-    )
-    return f"{base_url}/v1/auth/github/callback"
+    if settings.ENVIRONMENT not in ("development", "testing"):
+        frontend = settings.FRONTEND_PUBLIC_URL.strip().rstrip("/")
+        return f"{frontend}/api/auth/github/callback"
+    return f"{_oauth_base_url(request)}/v1/auth/github/callback"
 
 
 async def resolve_oauth_user(
