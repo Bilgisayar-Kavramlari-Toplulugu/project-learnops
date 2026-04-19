@@ -7,7 +7,6 @@ import { CourseDetail } from "@/types";
 import { useProfile } from "@/hooks/profile/use-profile";
 import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
-import { api } from "@/lib/api";
 
 export default function CourseDetailClient({ course }: { course: CourseDetail }) {
   const router = useRouter();
