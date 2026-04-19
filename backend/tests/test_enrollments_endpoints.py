@@ -82,6 +82,22 @@ async def test_post_enrollments_course_not_found_returns_404(
 
 
 @pytest.mark.asyncio
+async def test_post_enrollments_unpublished_course_returns_404(
+    client: AsyncClient,
+    test_user,
+    test_unpublished_course,
+):
+    resp = await client.post(
+        "/v1/enrollments",
+        json={"course_id": str(test_unpublished_course.id)},
+        cookies=_auth_cookies(str(test_user.id)),
+    )
+
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Course not found"
+
+
+@pytest.mark.asyncio
 async def test_get_enrollments_returns_user_enrollments(
     client: AsyncClient,
     db_session,
@@ -109,6 +125,20 @@ async def test_get_enrollments_returns_user_enrollments(
     assert data["items"][0]["course_id"] == str(test_course.id)
     assert data["items"][0]["progress_percent"] == 25.0
     assert data["items"][0]["course"]["slug"] == test_course.slug
+
+
+@pytest.mark.asyncio
+async def test_get_enrollments_returns_empty_list(
+    client: AsyncClient,
+    test_user,
+):
+    resp = await client.get(
+        "/v1/enrollments",
+        cookies=_auth_cookies(str(test_user.id)),
+    )
+
+    assert resp.status_code == 200
+    assert resp.json() == {"items": []}
 
 
 @pytest.mark.asyncio
