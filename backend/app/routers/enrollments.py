@@ -184,7 +184,7 @@ async def get_progress(
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
+            detail="Bu işleme yetkiniz yok: Geçersiz kullanıcı kimliği",
         )
 
     if progress is None:

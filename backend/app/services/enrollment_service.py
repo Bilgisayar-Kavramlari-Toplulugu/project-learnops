@@ -82,6 +82,8 @@ async def list_user_enrollments(
     return list(result.all())
 
 
+
+
 async def get_enrollment_progress(
     db: AsyncSession,
     user_id: str,

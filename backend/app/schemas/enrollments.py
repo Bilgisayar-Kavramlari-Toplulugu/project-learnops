@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 
+
 class EnrollmentCreateRequest(BaseModel):
     course_id: UUID
 
@@ -68,8 +69,6 @@ class SectionProgressOut(BaseModel):
     completed: UserProgress.completed alanından — True ise kullanıcı bu section'ı
         bitirmiş
     """
-
-    model_config = ConfigDict(from_attributes=True)
 
     section_id_str: str
     title: str
