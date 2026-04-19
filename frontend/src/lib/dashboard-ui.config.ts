@@ -51,11 +51,7 @@ export const dashboardSidebarItems: SidebarItem[] = [
   {
     label: "Kurslarım",
     href: routes.myCourses,
-<<<<<<< HEAD
-    icon: BookOpen,
-=======
     icon: BookOpenCheck,
->>>>>>> 887e81d68c7209921b0d85b9ba269a0d2726a58f
   },
 
   {
