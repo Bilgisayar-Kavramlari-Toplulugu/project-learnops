@@ -46,7 +46,8 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
   try {
     return await serverGet<CourseDetail>(`/courses/${slug}`);
   } catch (err: unknown) {
-    if (err instanceof BackendError && err.status === 404) return null;
-    throw err; // 5xx → build time'da surface et
+    // Build sırasında backend yoksa veya 404/5xx gelirse çökme, null dön.
+    console.error("Build-time fetch failed for slug:", slug, err);
+    return null;
   }
 }
