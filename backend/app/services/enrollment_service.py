@@ -1,6 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -105,7 +106,13 @@ async def get_enrollment_progress(
     Returns:
         EnrollmentProgressOut or None (enrollment bulunamazsa)
     """
-    parsed_user_id = uuid.UUID(user_id)
+    try:
+        parsed_user_id = uuid.UUID(user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Oturum doğrulaması başarısız: Geçersiz kullanıcı kimliği",
+        )
 
     # 1. Enrollment'ı bul
     enrollment_result = await db.scalar(

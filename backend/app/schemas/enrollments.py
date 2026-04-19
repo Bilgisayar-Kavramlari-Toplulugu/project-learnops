@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class EnrollmentCreateRequest(BaseModel):
@@ -41,8 +41,6 @@ class SectionProgressOut(BaseModel):
     completed: UserProgress.completed alanından — True ise kullanıcı bu section'ı
         bitirmiş
     """
-
-    model_config = ConfigDict(from_attributes=True)
 
     section_id_str: str
     title: str
