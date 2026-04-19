@@ -50,13 +50,15 @@ async def create_enrollment(
         await db.rollback()
         raise ValueError("duplicate_enrollment")
 
-    await db.refresh(enrollment)
     enrollment_with_course = await db.scalar(
         select(Enrollment)
         .options(selectinload(Enrollment.course))
         .where(Enrollment.id == enrollment.id)
     )
-    return enrollment_with_course or enrollment
+    if enrollment_with_course is None:
+        raise RuntimeError("Enrollment not found after flush")
+
+    return enrollment_with_course
 
 
 async def list_user_enrollments(
