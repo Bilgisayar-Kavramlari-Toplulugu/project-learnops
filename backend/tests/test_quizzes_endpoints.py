@@ -1,9 +1,12 @@
+from uuid import uuid4
+
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.courses import Course, Enrollment
-from app.models.quizzes import Question, Quiz
+from app.models.quizzes import Question, Quiz, QuizAttempt
 from app.models.users import User
 from app.services.jwt_service import create_access_token
 
@@ -95,6 +98,61 @@ async def test_quiz(db_session: AsyncSession, test_course: Course) -> Quiz:
 
 
 @pytest.mark.asyncio
+async def test_create_quiz_attempt_quiz_not_found_returns_404(
+    client: AsyncClient, test_user: User
+):
+    fake_uuid = uuid4()
+    resp = await client.post(
+        f"/v1/quizzes/{fake_uuid}/attempts", cookies=_auth_cookies(test_user)
+    )
+    assert resp.status_code == 404
+    assert resp.json()["detail"] == "Quiz bulunamadı"
+
+
+@pytest.fixture
+async def quiz_with_no_active_questions(
+    db_session: AsyncSession, test_course: Course
+) -> Quiz:
+    """Tüm soruları pasif olan quiz fixture'ı."""
+    quiz = Quiz(course_id=test_course.id, pass_threshold=0.7, duration_seconds=600)
+    db_session.add(quiz)
+    await db_session.flush()
+
+    question = Question(
+        quiz_id=quiz.id,
+        text="Pasif soru",
+        options=[{"index": 0, "text": "A"}, {"index": 1, "text": "B"}],
+        correct_index=0,
+        order_index=1,
+        is_active=False,
+    )
+    db_session.add(question)
+    await db_session.flush()
+    return quiz
+
+
+@pytest.mark.asyncio
+async def test_create_quiz_attempt_no_active_questions_returns_400(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    test_user: User,
+    quiz_with_no_active_questions: Quiz,
+):
+    enrollment = Enrollment(
+        user_id=test_user.id, course_id=quiz_with_no_active_questions.course_id
+    )
+    db_session.add(enrollment)
+    await db_session.commit()
+
+    resp = await client.post(
+        f"/v1/quizzes/{quiz_with_no_active_questions.id}/attempts",
+        cookies=_auth_cookies(test_user),
+    )
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Bu quizde aktif soru bulunmuyor"
+
+
+@pytest.mark.asyncio
 async def test_create_quiz_attempt_no_enrollment_returns_403(
     client: AsyncClient, test_user: User, test_quiz: Quiz
 ):
@@ -139,9 +197,12 @@ async def test_create_quiz_attempt_success_and_nf05_check(
         for option in q["options"]:
             assert "correct_index" not in option
 
-    # total_questions attempt oluşturulurken set edilmeli (Bulgu #2)
-    # Bu değer submit sırasında kullanılacak — snapshot olarak doğru olmalı
-    # (Direkt DB kontrolü entegrasyon testinde yapılabilir)
+    # total_questions attempt oluşturulurken set edilmeli (snapshot davranışı)
+    attempt_in_db = await db_session.scalar(
+        select(QuizAttempt).where(QuizAttempt.quiz_id == test_quiz.id)
+    )
+    assert attempt_in_db is not None
+    assert attempt_in_db.total_questions == 4  # 4 aktif soru, 1 pasif sayılmaz
 
 
 @pytest.mark.asyncio

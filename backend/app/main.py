@@ -58,14 +58,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-_is_dev = settings.ENVIRONMENT in ("development", "testing")
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.SESSION_SECRET,
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
-    same_site="lax" if _is_dev else "none",  # lax for HTTP dev, none for HTTPS prod
-    https_only=not _is_dev,
+    # same_site="none": OAuth callback cross-site redirect gerektirdiği için
+    # tüm ortamlarda "none" kullanılır.
+    # https_only: Yalnızca "development" ortamında False. "testing" ve üzeri
+    # tüm ortamlar (staging, production, CI/CD) HTTPS üzerinden çalıştığından
+    # session cookie'si yalnızca HTTPS üzerinden iletilir. Testler
+    # TestClient/httpx üzerinden çalıştığında secure flag strict enforce
+    # edilmez; bu nedenle testing ortamında https_only=True bırakmak güvenlidir.
+    same_site="none",
+    https_only=settings.ENVIRONMENT not in ("development"),
 )
 
 

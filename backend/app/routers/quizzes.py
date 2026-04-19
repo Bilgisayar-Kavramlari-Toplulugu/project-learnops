@@ -23,7 +23,7 @@ async def start_quiz_attempt(
     quiz_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> dict:
+) -> QuizAttemptResponse:
     """
     Kullanıcı için belirtilen quiz üzerinde yeni bir deneme (attempt) başlatır.
     Sorular karıştırılmış (randomized) olarak döner.
@@ -54,7 +54,7 @@ async def start_quiz_attempt(
                 # options whitelist: sadece index ve text — ileride eklenen
                 # alanların (örn. correct_index) sızması önlenir (Bulgu #5)
                 "options": [
-                    {"index": o["index"], "text": o["text"]} for o in q.options
+                    {"index": o.get("index"), "text": o.get("text")} for o in q.options
                 ],
             }
             for q in randomized_questions

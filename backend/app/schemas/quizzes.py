@@ -13,6 +13,12 @@ class QuestionOut(BaseModel):
     """
     Client'a dönülecek soru şeması.
     GÜVENLİK (NF-05): correct_index KESİNLİKLE DÖNÜLMEZ.
+
+    NOT — MVP §9.1 ile bilinçli sapma:
+    Spec'te response'un 'order' alanı içereceği belirtilmiştir.
+    Ancak sorular randomize sırayla döndüğünden order_index açıklanırsa
+    client orijinal sıraya geri döndürebilir ve randomization anlamsız hale gelir.
+    Bu nedenle order_index response'a dahil edilmemiştir. MVP §9.1 güncellenmelidir.
     """
 
     id: UUID
