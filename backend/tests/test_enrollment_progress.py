@@ -153,6 +153,26 @@ async def test_progress_invalid_token_returns_401(
     assert resp.status_code == 401
 
 
+@pytest.mark.asyncio
+async def test_progress_accessible_via_cookie(
+    client: AsyncClient,
+    enrollment: Enrollment,
+    enrolled_user: User,
+    two_section_course: CourseWithSections,
+):
+    """access_token çerezi ile Bearer header olmadan ilerleme alınabilmeli."""
+    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    try:
+        resp = await client.get(
+            f"/v1/enrollments/{two_section_course.course.id}/progress",
+            # Authorization header yok, sadece çerez
+            cookies={"access_token": "fake-cookie-token"},
+        )
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+    assert resp.status_code == 200
+
+
 # ---------------------------------------------------------------------------
 # 404 tests
 # ---------------------------------------------------------------------------

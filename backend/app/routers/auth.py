@@ -173,7 +173,9 @@ async def google_login(request: Request):
             value=state,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="none",
+            samesite="lax"
+            if settings.ENVIRONMENT in ("development", "testing")
+            else "none",
             max_age=600,
         )
         return response
@@ -379,7 +381,9 @@ async def linkedin_login(request: Request):
             value=state,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="lax",
+            samesite="lax"
+            if settings.ENVIRONMENT in ("development", "testing")
+            else "none",
             max_age=600,
         )
         return response
@@ -605,8 +609,10 @@ async def github_login(request: Request):
             key="oauth_state",
             value=state,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
-            samesite="lax",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
+            samesite="lax"
+            if settings.ENVIRONMENT in ("development", "testing")
+            else "none",
             max_age=600,
         )
         return response
@@ -767,7 +773,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
@@ -775,7 +781,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
