@@ -21,7 +21,6 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-
     op.add_column(
         "questions",
         sa.Column(
