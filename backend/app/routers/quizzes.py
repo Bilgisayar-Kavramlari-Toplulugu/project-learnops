@@ -12,7 +12,13 @@ from app.exceptions.access_denied import AccessDeniedError
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
 from app.models.users import User
-from app.schemas.quizzes import QuestionOptionOut, QuestionOut, QuizAttemptResponse, QuizAttemptDetail, QuizAttemptListItem
+from app.schemas.quizzes import (
+    QuestionOptionOut,
+    QuestionOut,
+    QuizAttemptResponse,
+    QuizAttemptDetail,
+    QuizAttemptListItem,
+)
 from app.services.quiz_service import (
     create_quiz_attempt,
     get_quiz_attempt_by_id,
