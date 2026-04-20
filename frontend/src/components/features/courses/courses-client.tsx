@@ -5,7 +5,17 @@ import CourseItem from "@/components/features/courses/course-item";
 import { Course } from "@/types";
 import { Search, SlidersHorizontal, BookOpen, XCircle } from "lucide-react";
 
-export default function CoursesClient({ courses }: { courses: Course[] }) {
+interface CoursesClientProps {
+  courses: Course[];
+  title?: string;
+  subtitle?: string;
+}
+
+export default function CoursesClient({ 
+  courses, 
+  title = "Tüm Kurslar", 
+  subtitle = "Yeni beceriler keşfetmek için eğitimlerimize göz atın." 
+}: CoursesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
@@ -48,10 +58,10 @@ export default function CoursesClient({ courses }: { courses: Course[] }) {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
-                Tüm Kurslar
+                {title}
               </h1>
               <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
-                Yeni beceriler keşfetmek için eğitimlerimize göz atın.
+                {subtitle}
               </p>
             </div>
           </div>

@@ -1,6 +1,8 @@
 import { getEnrolledCourses } from "@/lib/fetchCourses";
 import WrapperContainer from "@/components/features/dashboard/wrapper-container";
 import CoursesClient from "@/components/features/courses/courses-client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default async function MyCoursesPage() {
   const courses = await getEnrolledCourses();
@@ -10,7 +12,10 @@ export default async function MyCoursesPage() {
       <WrapperContainer>
         <div className="flex flex-col items-center justify-center gap-4 py-20">
           <h2 className="text-2xl font-semibold text-gray-700">Henüz kayıtlı kursunuz yok</h2>
-          <p className="text-gray-500">Kurslara göz atmak ve kayıt olmak için ana sayfaya gidin.</p>
+          <p className="text-gray-500 mb-6">Kurslara göz atmak ve kayıt olmak için kurslar sayfasını ziyaret edin.</p>
+          <Button asChild>
+            <Link href="/courses">Kurslara Göz At</Link>
+          </Button>
         </div>
       </WrapperContainer>
     );
@@ -18,7 +23,11 @@ export default async function MyCoursesPage() {
 
   return (
     <WrapperContainer>
-      <CoursesClient courses={courses} />
+      <CoursesClient 
+        courses={courses} 
+        title="Kayıtlı Kurslarım"
+        subtitle="Kayıt olduğunuz kursları yönetin ve öğrenmeye devam edin."
+      />
     </WrapperContainer>
   );
 }
