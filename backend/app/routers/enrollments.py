@@ -108,7 +108,13 @@ async def get_progress(
         current_user: JWT'den çözümlenen kullanıcı ID'si (str)
         db: Async DB oturumu
     """
-    progress = await get_enrollment_progress(db, current_user, course_id)
+    try:
+        progress = await get_enrollment_progress(db, current_user, course_id)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+        )
 
     if progress is None:
         raise HTTPException(
