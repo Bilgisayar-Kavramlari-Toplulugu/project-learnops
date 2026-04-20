@@ -4,7 +4,6 @@ import random
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +11,12 @@ from sqlalchemy.orm import selectinload
 
 from app.models.courses import Enrollment
 from app.models.quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
+
+from app.exceptions.access_denied import AccessDeniedError
+from app.exceptions.not_found import EntityNotFoundError
+from app.exceptions.validation import ValidationError
+
+from fastapi import HTTPException, status
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +108,6 @@ async def create_quiz_attempt(
 
     return attempt, active_questions, quiz
 
-
 async def get_quiz_attempt_by_id(
     db: AsyncSession, attempt_id: UUID, user_id: UUID
 ) -> QuizAttempt:
@@ -119,21 +123,13 @@ async def get_quiz_attempt_by_id(
     attempt = result.scalar_one_or_none()
 
     if not attempt:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Quiz attempt not found"
-        )
+        raise EntityNotFoundError("Quiz attempt not found")
 
     if attempt.user_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have access to this quiz attempt",
-        )
+        raise AccessDeniedError("You do not have access to this quiz attempt")
 
     if attempt.submitted_at is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Quiz attempt is not completed yet",
-        )
+        raise ValidationError("Quiz attempt is not completed yet")
 
     return attempt
 
