@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from starlette.middleware.sessions import SessionMiddleware
 
-from alembic import command
+from alembic import command  # type: ignore
 from app import models as _models  # noqa: F401
 from app.config import settings
 from app.database import get_db

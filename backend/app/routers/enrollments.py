@@ -9,6 +9,7 @@ from app.database import get_db
 
 from app.deps import get_current_user
 
+from app.models.courses import Course
 from app.models.users import User
 from app.schemas.enrollments import (
     EnrollmentCourseSummary,
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def _build_course_summary(course) -> EnrollmentCourseSummary:
+def _build_course_summary(course: Course) -> EnrollmentCourseSummary:
     return EnrollmentCourseSummary.model_validate(course)
 
 
