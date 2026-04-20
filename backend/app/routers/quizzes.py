@@ -56,8 +56,8 @@ async def start_quiz_attempt(
                 # alanların (örn. correct_index) sızması önlenir (NF-05)
                 options=[
                     QuestionOptionOut(
-                        index=o.get("index"),
-                        text=o.get("text"),
+                        index=o["index"],
+                        text=o["text"],
                     )
                     for o in q.options
                 ],

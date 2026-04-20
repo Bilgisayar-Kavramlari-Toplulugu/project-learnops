@@ -29,7 +29,9 @@ class QuestionOut(BaseModel):
 class QuizAttemptResponse(BaseModel):
     """
     Quiz attempt başlatıldığında dönülecek response.
-    Router plain dict döndürdüğü için from_attributes gerekmez.
+    Router doğrudan QuizAttemptResponse(...) instance'ı döndürür;
+    ORM nesnesi commit öncesi Pydantic modeline alındığından
+    from_attributes gerekmez.
     """
 
     id: UUID
