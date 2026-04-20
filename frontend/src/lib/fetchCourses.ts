@@ -21,3 +21,8 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
     sections: mockSections,
   };
 }
+// TODO [FE-12]: getEnrolledCourses backend entegrasyonu tamamlandığında
+// gerçek API çağrısıyla değiştirilecek.
+export async function getEnrolledCourses(): Promise<Course[]> {
+  return [];
+}

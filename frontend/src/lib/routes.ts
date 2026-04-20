@@ -3,5 +3,6 @@ export const routes = {
   login: "/login",
   dashboard: "/dashboard",
   courses: "/courses",
+  myCourses: "/my-courses",
   profile: "/profile",
 } as const;
