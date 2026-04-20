@@ -1,6 +1,4 @@
-import logging
 import uuid
-
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,11 +10,11 @@ from app.deps import get_current_user
 from app.models.courses import Course
 from app.models.users import User
 from app.schemas.enrollments import (
+    EnrollmentCourseSummary,
     EnrollmentCreateRequest,
     EnrollmentListResponse,
-    EnrollmentResponse,
     EnrollmentProgressOut,
-    EnrollmentCourseSummary,
+    EnrollmentResponse,
 )
 from app.services.enrollment_service import (
     create_enrollment,
@@ -29,7 +27,6 @@ from app.services.enrollment_service import (
 
 
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
-logger = logging.getLogger(__name__)
 
 
 
@@ -111,10 +108,6 @@ async def get_progress(
     Her section'ın completed durumu ve genel progress_percent içerir.
     Enrollment bulunamazsa 404 döner.
 
-    Args:
-        course_id: Kurs UUID'si (path parametresi)
-        current_user: JWT'den çözümlenen kullanıcı ID'si (str)
-        db: Async DB oturumu
     """
     try:
         progress = await get_enrollment_progress(db, current_user, course_id)
