@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.models.courses import Course
 from app.models.users import User
 from app.schemas.enrollments import (
     EnrollmentCourseSummary,
@@ -20,7 +21,7 @@ from app.services.enrollment_service import (
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
 
 
-def _build_course_summary(course) -> EnrollmentCourseSummary:
+def _build_course_summary(course: Course) -> EnrollmentCourseSummary:
     return EnrollmentCourseSummary.model_validate(course)
 
 
