@@ -65,8 +65,8 @@ app.add_middleware(
     max_age=3600,  # 1 saat
     # development'ta SameSite=None; Secure=False ile geçersiz olur
     # (browser spesifikasyonu gereği) → lax kullan
-    same_site="lax" if settings.ENVIRONMENT == "development" else "none",
-    https_only=settings.ENVIRONMENT not in ("development"),
+    same_site="lax" if settings.ENVIRONMENT in ("development", "testing") else "none",
+    https_only=settings.ENVIRONMENT not in ("development", "testing"),
 )
 
 
