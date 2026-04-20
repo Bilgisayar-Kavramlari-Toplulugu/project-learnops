@@ -13,7 +13,7 @@ from app import models as _models  # noqa: F401
 from app.config import settings
 from app.database import get_db
 from app.middleware.rate_limiting import RateLimiterMiddleware
-from app.routers import auth, courses, enrollments, progress, users
+from app.routers import auth, courses, enrollments, progress, quizzes, users
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +71,7 @@ app.include_router(users.router, prefix="/v1")
 app.include_router(courses.router, prefix="/v1")
 app.include_router(progress.router, prefix="/v1")
 app.include_router(enrollments.router, prefix="/v1")
+app.include_router(quizzes.router, prefix="/v1")
 
 
 # Rate Limiting
