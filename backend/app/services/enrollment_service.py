@@ -11,6 +11,7 @@ import uuid
 from app.models.courses import Course, Enrollment, Section, UserProgress
 from app.schemas.enrollments import EnrollmentProgressOut, SectionProgressOut
 
+
 async def get_published_course_by_id(
     db: AsyncSession,
     course_id: UUID,

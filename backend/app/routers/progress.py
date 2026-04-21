@@ -21,7 +21,5 @@ async def complete_section(
     db: AsyncSession = Depends(get_db),
 ):
     return await progress_service.mark_section_complete(
-        db=db,
-        user_id=current_user.id,
-        section_id_str=section_id_str
+        db=db, user_id=current_user.id, section_id_str=section_id_str
     )

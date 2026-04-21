@@ -11,12 +11,7 @@ from app.models.courses import Enrollment, Section, UserProgress
 logger = getLogger(__name__)
 
 
-
-async def mark_section_complete(
-        db: AsyncSession,
-        user_id: UUID,
-        section_id_str: str
-):
+async def mark_section_complete(db: AsyncSession, user_id: UUID, section_id_str: str):
     """
     Bir bölümü tamamlanmış olarak işaretleyin ve ders ilerlemesini güncelleyin.
 
@@ -174,6 +169,5 @@ async def mark_section_complete(
         logger.error(f"Error marking section complete: {e}", exc_info=True)
         await db.rollback()  # Tüm değişiklikleri geri al
         raise HTTPException(
-            status_code=500,
-            detail="Bölüm tamamlanması sırasında hata oluştu"
+            status_code=500, detail="Bölüm tamamlanması sırasında hata oluştu"
         )
