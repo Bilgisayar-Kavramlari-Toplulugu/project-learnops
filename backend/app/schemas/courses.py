@@ -27,6 +27,7 @@ class CourseListItem(BaseModel):
 class CourseDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: UUID
     slug: str
     title: str
     description: Optional[str] = None

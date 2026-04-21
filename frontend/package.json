@@ -29,7 +29,9 @@
     "react-dom": "19.2.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "zustand": "^5.0.11"
+    "zustand": "^5.0.11",
+    "next-mdx-remote": "^5.0.0",
+    "gray-matter": "^4.0.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
