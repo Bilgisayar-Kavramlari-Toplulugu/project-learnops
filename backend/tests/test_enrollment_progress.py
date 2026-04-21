@@ -137,9 +137,7 @@ async def test_progress_requires_auth(
     client: AsyncClient, two_section_course: CourseWithSections
 ):
     """Token olmadan istek → 401."""
-    resp = await client.get(
-        f"/v1/enrollments/{two_section_course.course.id}/progress"
-    )
+    resp = await client.get(f"/v1/enrollments/{two_section_course.course.id}/progress")
     assert resp.status_code == 401
 
 
