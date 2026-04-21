@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 from uuid import UUID
 
@@ -5,8 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
-import uuid
 
 from app.models.courses import Course, Enrollment, Section, UserProgress
 from app.schemas.enrollments import EnrollmentProgressOut, SectionProgressOut
@@ -81,7 +80,6 @@ async def list_user_enrollments(
 
     result = await db.scalars(query)
     return list(result.all())
-
 
 
 async def get_enrollment_progress(
