@@ -19,10 +19,10 @@ from app.services.enrollment_service import (
     get_published_course_by_id,
     get_user_enrollment_for_course,
     list_user_enrollments,
+    get_enrollment_progress,
 )
 
 router = APIRouter(prefix="/enrollments", tags=["enrollments"])
-
 
 def _build_course_summary(course: Course) -> EnrollmentCourseSummary:
     return EnrollmentCourseSummary.model_validate(course)

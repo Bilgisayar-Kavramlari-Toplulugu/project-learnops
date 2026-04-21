@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
-
 from pydantic import BaseModel, ConfigDict
-
 
 class EnrollmentCreateRequest(BaseModel):
     course_id: UUID
