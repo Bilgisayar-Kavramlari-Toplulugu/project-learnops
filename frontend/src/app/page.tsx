@@ -1,7 +1,7 @@
 import LandingPage from "@/components/features/landing/landing-page";
-import { getLandingCourses } from "@/lib/fetchLandingCourses";
+import { getCourses } from "@/lib/fetchCourses";
 
 export default async function Home() {
-  const feed = await getLandingCourses();
-  return <LandingPage feed={feed} />;
+  const courses = await getCourses();
+  return <LandingPage courses={courses} />;
 }
