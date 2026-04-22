@@ -31,13 +31,13 @@ export function SectionCompletion({
 
   const handleCompletionSuccess = (
     completedAt: string,
-    progressPercent: number,
+    updatedProgressPercent: number,
     courseCompletedAt: string | null,
   ) => {
     // Update progress with the server values
     const updatedProgress: CourseProgress = {
       ...courseProgress,
-      progress_percent: progressPercent,
+      progress_percent: updatedProgressPercent,
       // Use server-provided course completion timestamp, never client time
       completed_at: courseCompletedAt ?? courseProgress.completed_at,
       sections: courseProgress.sections.map((section) =>
@@ -69,15 +69,9 @@ export function SectionCompletion({
         {/* Progress Text */}
         <div className="flex items-center justify-between mt-3">
           <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-            {courseProgress.sections.filter((s) => s.completed).length} /{" "}
+            {courseProgress.sections.filter((s) => s.completed).length} / {" "}
             {courseProgress.sections.length} bölüm tamamlandı
           </p>
-          {courseProgress.completed_at && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs font-bold">
-              <Award className="w-3.5 h-3.5" />
-              Tamamlandı
-            </span>
-          )}
         </div>
       </div>
 
