@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_current_user
 from app.main import app
 from app.models.courses import Course
-from app.models.quizzes import QuizAttempt
+from app.models.quizzes import Quiz, QuizAttempt
 from app.models.users import User
 
 # ---------------------------------------------------------------------------
@@ -41,9 +41,6 @@ async def other_user(db_session: AsyncSession) -> User:
 
 @pytest.fixture
 async def sample_quiz_id(db_session: AsyncSession) -> uuid.UUID:
-    """Raw SQL is ONLY used here because the 'quizzes' table is missing 'updated_at'
-    which BaseModel expects. This sidesteps the schema mismatch.
-    """
     course = Course(
         slug=f"quiz-test-course-{uuid.uuid4().hex[:6]}",
         title="Quiz Test Course",
@@ -52,18 +49,15 @@ async def sample_quiz_id(db_session: AsyncSession) -> uuid.UUID:
     db_session.add(course)
     await db_session.flush()
 
-    quiz_id = uuid.uuid4()
-    await db_session.execute(
-        text(
-            """
-            INSERT INTO quizzes (id, course_id, pass_threshold, duration_seconds)
-            VALUES (:id, :c_id, 0.70, 1200)
-            """
-        ),
-        {"id": str(quiz_id), "c_id": str(course.id)},
+    quiz = Quiz(
+        id=uuid.uuid4(),
+        course_id=course.id,
+        pass_threshold=0.70,
+        duration_seconds=1200,
     )
+    db_session.add(quiz)
     await db_session.flush()
-    return quiz_id
+    return quiz.id
 
 
 # ---------------------------------------------------------------------------

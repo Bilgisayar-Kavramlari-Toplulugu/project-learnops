@@ -3,7 +3,7 @@ from uuid import UUID
 
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -104,9 +104,14 @@ async def list_quiz_attempts(
     quiz_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    limit: int = Query(
+        default=20, ge=1, le=100, description="Maximum number of attempts to return"
+    ),
 ):
     """
     Get the history of completed quiz attempts for a specific quiz.
     """
-    attempts = await get_quiz_attempts_by_quiz_id(db, quiz_id, current_user.id)
+    attempts = await get_quiz_attempts_by_quiz_id(
+        db, quiz_id, current_user.id, limit=limit
+    )
     return attempts
