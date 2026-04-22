@@ -16,6 +16,10 @@ interface ProgressBarProps {
    */
   showCompletionBadge?: boolean;
   /**
+   * Show completion message if 100%
+   */
+  showCompletionMessage?: boolean;
+  /**
    * Optional label text
    */
   label?: string;
@@ -83,6 +87,7 @@ export function ProgressBar({
   percent,
   showPercent = true,
   showCompletionBadge = true,
+  showCompletionMessage = false,
   label,
   className = "",
   color = "indigo",
@@ -92,7 +97,7 @@ export function ProgressBar({
   const colorStyle = colorStyles[color];
   const sizeStyle = sizeStyles[size];
   const isComplete = percent >= 100;
-  const displayPercent = Math.min(Math.round(percent), 100);
+  const displayPercent = Math.max(0, Math.min(Math.round(percent), 100));
 
   return (
     <div className={className}>
@@ -126,6 +131,11 @@ export function ProgressBar({
 
       {/* Progress bar */}
       <div
+        role="progressbar"
+        aria-valuenow={displayPercent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={label ?? "Kurs ilerleme çubuğu"}
         className={`w-full ${colorStyle.container} rounded-full overflow-hidden shadow-inner ${sizeStyle.container}`}
       >
         <div
@@ -137,7 +147,7 @@ export function ProgressBar({
       </div>
 
       {/* Completion message */}
-      {showCompletionBadge && isComplete && (
+      {showCompletionMessage && isComplete && (
         <p className={`text-center font-semibold mt-2 ${colorStyle.text} ${sizeStyle.label}`}>
           Tebrikler! Tamamladınız! 🎉
         </p>

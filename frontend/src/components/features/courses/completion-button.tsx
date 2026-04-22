@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
@@ -31,6 +31,10 @@ export function CompletionButton({
 }: CompletionButtonProps) {
   const [isCompleting, setIsCompleting] = useState(false);
   const [completed, setCompleted] = useState(isCompleted);
+
+  useEffect(() => {
+    setCompleted(isCompleted);
+  }, [isCompleted]);
 
   const sizeClasses = {
     sm: "px-3 py-1.5 text-xs",
@@ -93,12 +97,13 @@ export function CompletionButton({
 
   return (
     <button
+      type="button"
       onClick={handleComplete}
       disabled={isDisabled}
       className={`inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all ${
         fullWidth ? "w-full" : ""
       } ${sizeClasses[size]} ${variantClasses[variant]} ${
-        isDisabled ? "opacity-50 cursor-not-allowed" : ""
+        isCompleting ? "opacity-50 cursor-not-allowed" : ""
       } ${className}`}
     >
       {isCompleting ? (

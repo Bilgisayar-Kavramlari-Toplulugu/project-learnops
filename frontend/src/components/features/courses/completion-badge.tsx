@@ -17,7 +17,7 @@ export function CompletionBadge({
   showIcon = true,
   className = "",
 }: CompletionBadgeProps) {
-  if (!isCompleted && !completedAt) {
+  if (!isCompleted) {
     return null;
   }
 
