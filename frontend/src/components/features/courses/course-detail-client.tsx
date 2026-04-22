@@ -1,7 +1,10 @@
 "use client";
 
-import { Clock, Signal, Tag, CheckCircle2, ChevronLeft, BookOpen } from "lucide-react";
+import { useState } from "react";
+import { Clock, Signal, Tag, CheckCircle2, ChevronLeft, BookOpen, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { type AxiosError } from "axios";
+import { toast } from "sonner";
 import { CourseDetail } from "@/types";
 
 import { useProfile } from "@/hooks/profile/use-profile";
@@ -10,20 +13,38 @@ import { routes } from "@/lib/routes";
 
 export default function CourseDetailClient({ course }: { course: CourseDetail }) {
   const router = useRouter();
+  const [isEnrolling, setIsEnrolling] = useState(false);
 
   const { data: user } = useProfile();
+
   const handleEnroll = async () => {
     if (!user) {
       router.replace(routes.login);
       return;
     }
-    // Sonraki Storyde Eklenecek şu an aktif değil
-    // try {
-    //   await api.post("/enrollments", { course_id: course.id });
-    //   // Başarılı olursa yönlendirme vs.
-    // } catch (error) {
-    //   console.error("Kayıt başarısız", error);
-    // }
+
+    setIsEnrolling(true);
+    try {
+      await api.post("/enrollments", { course_id: course.id });
+      toast.success("Kursa kaydoldunuz!", { description: "İlk bölüme yönlendiriliyorsunuz." });
+      const firstSection = course.sections
+        ?.slice()
+        .sort((a, b) => a.order_index - b.order_index)[0];
+      if (firstSection) {
+        router.push(routes.section(course.slug, firstSection.section_id_str));
+      }
+    } catch (error) {
+      const status = (error as AxiosError)?.response?.status;
+      if (status === 409) {
+        toast.info("Bu kursa zaten kayıtlısınız.", {
+          description: "Kaldığınız yerden devam edebilirsiniz.",
+        });
+      } else {
+        toast.error("Kayıt başarısız.", { description: "Lütfen tekrar deneyin." });
+      }
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
   const difficultyColors: Record<string, string> = {
@@ -32,7 +53,7 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
     Advanced: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
   };
   const badgeColor =
-    difficultyColors[course.difficulty] ||
+    difficultyColors[course.difficulty ?? ""] ||
     "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
 
   const sortedSections = [...(course.sections || [])].sort((a, b) => a.order_index - b.order_index);
@@ -136,10 +157,15 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
 
           <button
             onClick={handleEnroll}
-            className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg py-4 px-4 rounded-2xl transition-all shadow-xl shadow-indigo-600/20 hover:shadow-indigo-600/40 active:scale-[0.98]"
+            disabled={isEnrolling}
+            className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold text-lg py-4 px-4 rounded-2xl transition-all shadow-xl shadow-indigo-600/20 hover:shadow-indigo-600/40 active:scale-[0.98]"
           >
-            <CheckCircle2 className="w-6 h-6" />
-            Hemen Kaydol
+            {isEnrolling ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-6 h-6" />
+            )}
+            {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
           </button>
 
           <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
