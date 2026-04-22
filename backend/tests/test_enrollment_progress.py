@@ -20,7 +20,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.deps import get_current_user
+from app.deps import get_current_user_id
 from app.main import app
 from app.models.courses import Course, Enrollment, Section, UserProgress
 from app.models.users import User
@@ -161,7 +161,9 @@ async def test_progress_accessible_via_cookie(
     two_section_course: CourseWithSections,
 ):
     """access_token çerezi ile Bearer header olmadan ilerleme alınabilmeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
@@ -169,7 +171,7 @@ async def test_progress_accessible_via_cookie(
             cookies={"access_token": "fake-cookie-token"},
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
     assert resp.status_code == 200
 
 
@@ -185,13 +187,15 @@ async def test_progress_no_enrollment_returns_404(
     enrolled_user: User,
 ):
     """Kullanıcının enrollment kaydı yoksa → 404."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 404
     assert "bulunamadı" in resp.json()["detail"].lower()
@@ -203,12 +207,14 @@ async def test_progress_nonexistent_course_returns_404(
     enrolled_user: User,
 ):
     """Var olmayan course_id → enrollment bulunamaz → 404."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     fake_id = uuid.uuid4()
     try:
         resp = await client.get(f"/v1/enrollments/{fake_id}/progress")
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 404
 
@@ -226,13 +232,15 @@ async def test_progress_returns_200_with_enrollment(
     two_section_course: CourseWithSections,
 ):
     """Enrollment varsa → 200."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
 
@@ -245,13 +253,15 @@ async def test_progress_response_shape(
     two_section_course: CourseWithSections,
 ):
     """Response body beklenen alanları içermeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     data = resp.json()
@@ -270,13 +280,15 @@ async def test_progress_sections_count(
     two_section_course: CourseWithSections,
 ):
     """sections listesi kursun section sayısıyla eşleşmeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert len(resp.json()["sections"]) == 2
@@ -290,13 +302,15 @@ async def test_progress_section_fields(
     two_section_course: CourseWithSections,
 ):
     """Her section öğesi section_id_str, title, order_index, completed içermeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     section = resp.json()["sections"][0]
@@ -319,13 +333,15 @@ async def test_progress_sections_ordered_by_order_index(
     two_section_course: CourseWithSections,
 ):
     """sections listesi order_index ASC sıralı gelmeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     order_indices = [s["order_index"] for s in resp.json()["sections"]]
@@ -345,13 +361,15 @@ async def test_progress_no_user_progress_all_false(
     two_section_course: CourseWithSections,
 ):
     """UserProgress kaydı olmayan section'lar completed=False dönmeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert all(s["completed"] is False for s in resp.json()["sections"])
@@ -375,13 +393,15 @@ async def test_progress_completed_section_returns_true(
     db_session.add(user_prog)
     await db_session.flush()
 
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     sections = resp.json()["sections"]
@@ -413,13 +433,15 @@ async def test_progress_all_sections_completed(
         )
     await db_session.flush()
 
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert all(s["completed"] is True for s in resp.json()["sections"])
@@ -443,13 +465,15 @@ async def test_progress_incomplete_user_progress_record(
     )
     await db_session.flush()
 
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     s1 = next(s for s in resp.json()["sections"] if s["order_index"] == 1)
@@ -477,13 +501,15 @@ async def test_progress_percent_reflects_enrollment(
     db_session.add(enr)
     await db_session.flush()
 
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert resp.json()["progress_percent"] == pytest.approx(50.0)
@@ -497,13 +523,15 @@ async def test_progress_completed_at_none_when_not_finished(
     two_section_course: CourseWithSections,
 ):
     """Kurs bitmemişse completed_at None dönmeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert resp.json()["completed_at"] is None
@@ -527,13 +555,15 @@ async def test_progress_completed_at_set_when_finished(
     db_session.add(enr)
     await db_session.flush()
 
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert resp.json()["completed_at"] is not None
@@ -547,13 +577,15 @@ async def test_progress_course_id_in_response(
     two_section_course: CourseWithSections,
 ):
     """Response'daki course_id path parametresindeki kurs ID'siyle eşleşmeli."""
-    app.dependency_overrides[get_current_user] = _override_auth(str(enrolled_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(
+        str(enrolled_user.id)
+    )
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 200
     assert resp.json()["course_id"] == str(two_section_course.course.id)
@@ -579,12 +611,12 @@ async def test_progress_other_user_cannot_see_enrollment(
     db_session.add(other_user)
     await db_session.flush()
 
-    app.dependency_overrides[get_current_user] = _override_auth(str(other_user.id))
+    app.dependency_overrides[get_current_user_id] = _override_auth(str(other_user.id))
     try:
         resp = await client.get(
             f"/v1/enrollments/{two_section_course.course.id}/progress",
         )
     finally:
-        app.dependency_overrides.pop(get_current_user, None)
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     assert resp.status_code == 404

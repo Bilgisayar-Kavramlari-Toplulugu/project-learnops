@@ -8,7 +8,7 @@ from app.services.jwt_service import decode_token
 security = HTTPBearer(auto_error=False)
 
 
-def get_current_user(
+def get_current_user_id(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> str:

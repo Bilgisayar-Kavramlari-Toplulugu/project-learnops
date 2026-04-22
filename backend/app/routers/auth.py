@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.core.security import encrypt_token
 from app.database import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user_id
 from app.models.users import OAuthAccount, User
 from app.schemas.auth import (
     AccountConflictResponse,
@@ -936,7 +936,7 @@ async def logout(request: Request):
 async def merge_accounts_endpoint(
     request: MergeAccountRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: str = Depends(get_current_user),
+    current_user: str = Depends(get_current_user_id),
 ):
     try:
         user, providers = await merge_oauth_accounts(

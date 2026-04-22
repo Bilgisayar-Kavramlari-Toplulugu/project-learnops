@@ -1,4 +1,3 @@
-import uuid
 from typing import List, Optional
 from uuid import UUID
 
@@ -84,8 +83,8 @@ async def list_user_enrollments(
 
 async def get_enrollment_progress(
     db: AsyncSession,
-    user_id: str,
-    course_id: uuid.UUID,
+    user_id: UUID,
+    course_id: UUID,
 ) -> Optional[EnrollmentProgressOut]:
     """Kullanıcının enrollment kaydını ve tüm section'ların tamamlanma durumunu döner.
 
@@ -105,15 +104,10 @@ async def get_enrollment_progress(
     Returns:
         EnrollmentProgressOut or None (enrollment bulunamazsa)
     """
-    try:
-        parsed_user_id = uuid.UUID(user_id)
-    except ValueError:
-        raise ValueError("Geçersiz kullanıcı kimliği")
-
     # 1. Enrollment'ı bul
     enrollment_result = await db.scalar(
         select(Enrollment).where(
-            Enrollment.user_id == parsed_user_id,
+            Enrollment.user_id == user_id,
             Enrollment.course_id == course_id,
         )
     )
@@ -134,12 +128,12 @@ async def get_enrollment_progress(
 
     progress_result = await db.scalars(
         select(UserProgress).where(
-            UserProgress.user_id == parsed_user_id,
+            UserProgress.user_id == user_id,
             UserProgress.section_id.in_(section_ids),
         )
     )
     # section_id → completed lookup tablosu
-    progress_map: dict[uuid.UUID, bool] = {
+    progress_map: dict[UUID, bool] = {
         p.section_id: p.completed for p in progress_result.all()
     }
 
