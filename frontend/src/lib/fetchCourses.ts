@@ -51,3 +51,10 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
     return null;
   }
 }
+// TODO [FE-12]: getEnrolledCourses backend entegrasyonu tamamlandığında
+// gerçek API çağrısıyla değiştirilecek.
+// TODO [Backend Integration]: try/catch eklenecek, hata durumunda error boundary
+// veya fallback UI tanımlanmalı. Bu bir bloker olacak — entegrasyon sprint'ine gelince gözden geçirilmeli.
+export async function getEnrolledCourses(): Promise<Course[]> {
+  return [];
+}

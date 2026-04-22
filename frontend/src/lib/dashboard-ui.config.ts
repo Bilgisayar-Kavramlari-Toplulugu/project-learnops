@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Container,
+  BookOpenCheck,
   House,
   ShieldCheck,
   TerminalSquare,
@@ -43,9 +44,14 @@ export const dashboardSidebarItems: SidebarItem[] = [
     icon: House,
   },
   {
-    label: "Kurslar",
+    label: "Tüm Kurslar",
     href: routes.courses,
     icon: BookOpen,
+  },
+  {
+    label: "Kurslarım",
+    href: routes.myCourses,
+    icon: BookOpenCheck,
   },
   {
     label: "Profil",
