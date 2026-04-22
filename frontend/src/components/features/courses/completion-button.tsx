@@ -9,7 +9,13 @@ import { api } from "@/lib/api";
 interface CompletionButtonProps {
   sectionIdStr: string;
   isCompleted?: boolean;
-  onSuccess?: (completedAt: string, progressPercent: number) => void;
+  /**
+   * Called when section completion succeeds
+   * @param completedAt - Section completion timestamp from server
+   * @param progressPercent - Updated course progress percentage
+   * @param courseCompletedAt - Course completion timestamp if course is now fully completed, null otherwise
+   */
+  onSuccess?: (completedAt: string, progressPercent: number, courseCompletedAt: string | null) => void;
   onError?: (error: unknown) => void;
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -67,6 +73,7 @@ export function CompletionButton({
         onSuccess(
           response.data.completed_at,
           response.data.course_progress_percent,
+          response.data.course_completed_at ?? null,
         );
       }
 

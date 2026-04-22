@@ -23,15 +23,23 @@ export function SectionCompletion({
   const sectionProgress = courseProgress.sections.find(
     (s) => s.section_id_str === sectionIdStr,
   );
+  // Parentttan gelen isCompleted prop'u, sectionProgress.completed durumunu override eder. 
+  // Bu, parent component'lerin gerektiğinde tamamlanma durumunu kontrol etmesine olanak tanır . 
+  // Eğer isCompleted prop'u sağlanmazsa, sectionProgress.completed değeri kullanılır. 
   const isCurrentCompleted = isCompleted ?? sectionProgress?.completed ?? false;
   const progressPercent = courseProgress.progress_percent;
 
-  const handleCompletionSuccess = (completedAt: string, progressPercent: number) => {
-    // Update progress with the response data
+  const handleCompletionSuccess = (
+    completedAt: string,
+    progressPercent: number,
+    courseCompletedAt: string | null,
+  ) => {
+    // Update progress with the server values
     const updatedProgress: CourseProgress = {
       ...courseProgress,
       progress_percent: progressPercent,
-      completed_at: progressPercent >= 100 ? new Date().toISOString() : courseProgress.completed_at,
+      // Use server-provided course completion timestamp, never client time
+      completed_at: courseCompletedAt ?? courseProgress.completed_at,
       sections: courseProgress.sections.map((section) =>
         section.section_id_str === sectionIdStr
           ? {
@@ -54,7 +62,7 @@ export function SectionCompletion({
           percent={progressPercent}
           label="Kurs İlerlemesi"
           color="indigo"
-          showCompletionBadge={!!courseProgress.completed_at}
+          showCompletionBadge={false}
           showCompletionMessage={false}
         />
 
