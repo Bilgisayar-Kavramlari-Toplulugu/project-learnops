@@ -1,10 +1,7 @@
-import { routes } from "@/lib/routes";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import LandingPage from "@/components/features/landing/landing-page";
+import { getLandingCourses } from "@/lib/fetchLandingCourses";
 
 export default async function Home() {
-  const cookieStore = await cookies();
-  const hasSession = cookieStore.has("access_token");
-
-  redirect(hasSession ? routes.dashboard : routes.login);
+  const feed = await getLandingCourses();
+  return <LandingPage feed={feed} />;
 }
