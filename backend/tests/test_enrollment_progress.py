@@ -41,11 +41,6 @@ class CourseWithSections(NamedTuple):
 _FAKE_USER_ID = str(uuid.uuid4())
 
 
-def _auth_header(user_id: str = _FAKE_USER_ID) -> dict:
-    """get_current_user override ile uyumlu; header değeri önemli değil."""
-    return {"Authorization": f"Bearer fake-token-for-{user_id}"}
-
-
 def _override_auth(user_id: str = _FAKE_USER_ID):
     """get_current_user bağımlılığını verilen user_id döndürecek şekilde
     override eder."""
