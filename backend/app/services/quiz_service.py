@@ -38,9 +38,10 @@ async def get_quiz_attempt_by_id(
 
 
 async def get_quiz_attempts_by_quiz_id(
-    db: AsyncSession, quiz_id: uuid.UUID, user_id: uuid.UUID
+    db: AsyncSession, quiz_id: uuid.UUID, user_id: uuid.UUID, limit: int = 20
 ) -> Sequence[QuizAttempt]:
     """Gets all completed quiz attempts for a user on a specific quiz."""
+    # TODO: Add cursor-based pagination when attempt counts grow significantly
     stmt = (
         select(QuizAttempt)
         .where(
@@ -49,6 +50,7 @@ async def get_quiz_attempts_by_quiz_id(
             QuizAttempt.submitted_at.is_not(None),
         )
         .order_by(QuizAttempt.started_at.desc())
+        .limit(limit)
     )
     result = await db.execute(stmt)
     return result.scalars().all()

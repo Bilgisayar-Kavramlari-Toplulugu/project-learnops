@@ -31,7 +31,6 @@ class QuizAttemptDetail(BaseModel):
 
     id: UUID
     quiz_id: UUID
-    user_id: UUID
     started_at: datetime
     submitted_at: datetime
     score: int
@@ -46,7 +45,6 @@ class QuizAttemptListItem(BaseModel):
 
     id: UUID
     quiz_id: UUID
-    user_id: UUID
     started_at: datetime
     submitted_at: datetime
     score: int
