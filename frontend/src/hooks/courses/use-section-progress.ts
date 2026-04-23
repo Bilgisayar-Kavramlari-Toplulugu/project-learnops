@@ -10,13 +10,15 @@ import type { SectionProgressItem } from "@/types";
 // Her section'ın completed durumu ve genel progress_percent döner.
 // Backend hazır olana kadar 404/500 → boş array ile graceful fallback.
 // ---------------------------------------------------------------------------
-export function useSectionProgress(courseId: string) {
+export function useSectionProgress(courseId?: string) {
   return useQuery<SectionProgressItem[]>({
-    queryKey: queryKeys.progress.byCourse(courseId),
+    queryKey: queryKeys.progress.byCourse(courseId ?? ""),
     queryFn: async () => {
+      if (!courseId) return [];
       const { data } = await api.get<SectionProgressItem[]>(`/enrollments/${courseId}/progress`);
       return data;
     },
+    enabled: Boolean(courseId),
     retry: false,
     staleTime: 1000 * 60 * 5,
     placeholderData: [],
@@ -28,11 +30,14 @@ export function useSectionProgress(courseId: string) {
 // Section tamamlandığında progress_percent ve completed_at güncellenir.
 // Optimistic update: backend gelmeden önce UI anında tepki verir.
 // ---------------------------------------------------------------------------
-export function useMarkSectionComplete(courseId: string) {
+export function useMarkSectionComplete(courseId?: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (sectionIdStr: string) => {
+      if (!courseId) {
+        throw new Error("Course ID is required to mark section complete.");
+      }
       const { data } = await api.post<SectionProgressItem>(
         `/progress/sections/${sectionIdStr}/complete`,
       );
@@ -40,6 +45,10 @@ export function useMarkSectionComplete(courseId: string) {
     },
 
     onMutate: async (sectionIdStr: string) => {
+      if (!courseId) {
+        return { previous: undefined };
+      }
+
       await queryClient.cancelQueries({
         queryKey: queryKeys.progress.byCourse(courseId),
       });
@@ -71,6 +80,8 @@ export function useMarkSectionComplete(courseId: string) {
     onError: () => {},
 
     onSettled: () => {
+      if (!courseId) return;
+
       queryClient.invalidateQueries({
         queryKey: queryKeys.progress.byCourse(courseId),
       });
