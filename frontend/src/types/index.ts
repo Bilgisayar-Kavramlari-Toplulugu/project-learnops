@@ -105,3 +105,21 @@ export interface SectionProgressItem {
   section_id_str: string;
   completed: boolean;
 }
+
+export interface SectionProgress {
+  id: string;
+  section_id_str: string;
+  title: string;
+  order_index: number;
+  completed: boolean;
+  completed_at: string | null;
+}
+
+export interface CourseProgress {
+  course_id: string;
+  course_slug: string;
+  enrolled_at: string;
+  completed_at: string | null;
+  progress_percent: number;
+  sections: SectionProgress[];
+}

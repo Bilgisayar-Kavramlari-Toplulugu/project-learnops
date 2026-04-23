@@ -25,7 +25,7 @@ export function DashboardShell({
   return (
     <div className="min-h-dvh">
       <div className="mx-auto flex min-h-dvh w-full max-w-[1600px]">
-        <aside className="hidden w-[286px] shrink-0 px-2 py-3 lg:block">
+        <aside className="hidden w-[286px] shrink-0 px-2 py-3 md:block">
           <div className="sticky top-3">
             <AppSidebar items={sidebarItems} activePath={activePath} />
           </div>
@@ -37,9 +37,9 @@ export function DashboardShell({
               <Sheet>
                 <SheetTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon-sm"
-                    className="rounded-xl text-slate-600 hover:bg-blue-50 lg:hidden"
+                    className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-blue-50 md:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
                   >
                     <Menu className="size-5" />
                   </Button>
