@@ -13,6 +13,6 @@ export function useCourseDetail(slug: string) {
       return data;
     },
     enabled: Boolean(slug),
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: Infinity,
   });
 }
