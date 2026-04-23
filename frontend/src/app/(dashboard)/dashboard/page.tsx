@@ -1,36 +1,56 @@
+// app/dashboard/page.tsx - useProfile tamamen çıktı
 "use client";
 
-import { CalendarDays, LayoutDashboard } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
-const todayLabel = new Intl.DateTimeFormat("tr-TR", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-}).format(new Date());
+import { CourseProgressCard } from "@/components/features/dashboard/course-progress-card";
+import { DashboardSkeleton } from "@/components/features/dashboard/dashboard-skeleton";
+import { EmptyCoursesState } from "@/components/features/dashboard/empty-courses-state";
+import { StatsSummary } from "@/components/features/dashboard/stats-summary";
+import { WelcomeHeader } from "@/components/features/dashboard/welcome-header";
+import { Button } from "@/components/ui/button";
+import { useDashboard } from "@/hooks/dashboard/use-dashboard";
 
 export default function DashboardPage() {
-  return (
-    <section className="mx-auto w-full max-w-6xl space-y-4">
-      <header className="rounded-2xl border border-blue-100/80 bg-white/85 px-4 py-3 shadow-sm shadow-blue-100/40 dark:border-slate-700 dark:bg-slate-900/75 dark:shadow-black/20">
-        <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
-          <LayoutDashboard className="size-4 text-blue-600 dark:text-sky-400" />
-          Dashboard Genel Bakış
-        </p>
-        <p className="mt-2 inline-flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <CalendarDays className="size-3.5" />
-          {todayLabel}
-        </p>
-      </header>
+  const { userName, stats, courses, isLoading, isError, isEmpty, errorMessage, refetch } =
+    useDashboard();
 
-      <div className="min-h-[62vh] rounded-3xl border border-dashed border-blue-200/90 bg-white/65 px-6 py-8 dark:border-slate-700 dark:bg-slate-900/55">
-        <div className="max-w-2xl space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            Task Alanı
-          </h1>
-          <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Bu alan dashboard içeriği için hazır.
-          </p>
-        </div>
+  if (isLoading) return <DashboardSkeleton />;
+
+  if (isError) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 rounded-3xl border border-red-100 bg-red-50/50 p-8 text-center dark:border-red-900/30 dark:bg-red-950/20">
+        <p className="text-sm font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
+        <Button
+          onClick={() => refetch()}
+          variant="outline"
+          className="rounded-xl border-red-200 text-red-700 hover:bg-red-100"
+        >
+          <RefreshCw className="mr-2 size-4" />
+          Tekrar Dene
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="mx-auto w-full max-w-6xl space-y-6">
+      <WelcomeHeader userName={userName} courseCount={courses.length} />
+      <StatsSummary items={stats} />
+
+      <div className="space-y-4">
+        <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          Devam Eden Kurslar
+        </h3>
+        {isEmpty ? (
+          <EmptyCoursesState />
+        ) : (
+          <div className="grid gap-5 xl:grid-cols-2">
+            {courses.map((course) => (
+              <CourseProgressCard key={course.course_id} course={course} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
