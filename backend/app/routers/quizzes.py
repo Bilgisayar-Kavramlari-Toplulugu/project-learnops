@@ -1,6 +1,4 @@
 import logging
-from uuid import UUID
-
 from typing import List
 from uuid import UUID
 
@@ -16,9 +14,9 @@ from app.models.users import User
 from app.schemas.quizzes import (
     QuestionOptionOut,
     QuestionOut,
-    QuizAttemptResponse,
     QuizAttemptDetail,
     QuizAttemptListItem,
+    QuizAttemptResponse,
 )
 from app.services.quiz_service import (
     create_quiz_attempt,

@@ -1,22 +1,20 @@
-from typing import Sequence
 import logging
 import random
 from datetime import datetime, timezone
+from typing import Sequence
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.courses import Enrollment
-from app.models.quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
-
 from app.exceptions.access_denied import AccessDeniedError
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
-
-from fastapi import HTTPException, status
+from app.models.courses import Enrollment
+from app.models.quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +105,7 @@ async def create_quiz_attempt(
     )
 
     return attempt, active_questions, quiz
+
 
 async def get_quiz_attempt_by_id(
     db: AsyncSession, attempt_id: UUID, user_id: UUID

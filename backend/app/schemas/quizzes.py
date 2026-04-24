@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+
 class QuestionOptionOut(BaseModel):
     index: int
     text: str
@@ -39,7 +40,6 @@ class QuizAttemptResponse(BaseModel):
     started_at: datetime
     duration_seconds: int
     questions: list[QuestionOut]
-
 
 
 class QuestionBasic(BaseModel):
