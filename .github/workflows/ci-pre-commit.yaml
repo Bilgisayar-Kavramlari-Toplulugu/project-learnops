@@ -1,0 +1,56 @@
+name: "CI - pre-commit"
+
+env:
+    PYTHON_VERSION: "3.13.11"
+    NODE_VERSION: "22"
+    POETRY_VERSION: "2.3.2"
+
+on:
+    pull_request:
+        branches:
+            - develop
+            - release
+            - main
+    workflow_dispatch:
+
+jobs:
+    pre-commit:
+        name: pre-commit
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v6
+
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+                  cache-dependency-path: frontend/package-lock.json
+
+            - name: Install Poetry
+              run: pipx install poetry==${{ env.POETRY_VERSION }}
+
+            - name: Install pre-commit
+              run: pip install pre-commit
+
+            - name: Cache pre-commit
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pre-commit
+                  key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+                  restore-keys: |
+                      pre-commit-${{ runner.os }}-
+
+            - name: Install backend dependencies
+              working-directory: backend
+              run: poetry install --no-interaction --no-ansi
+
+            - name: Install frontend dependencies
+              working-directory: frontend
+              run: npm ci
+
+            - name: Run pre-commit
+              run: pre-commit run --all-files
