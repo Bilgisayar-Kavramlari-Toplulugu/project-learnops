@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.core.security import encrypt_token
 from app.database import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user_id
 from app.models.users import OAuthAccount, User
 from app.schemas.auth import (
     AccountConflictResponse,
@@ -70,10 +70,10 @@ def _linkedin_redirect_uri(request: Request) -> str:
 
 
 def _github_redirect_uri(request: Request) -> str:
-    base_url = (
-        (settings.BACKEND_PUBLIC_URL or str(request.base_url)).strip().rstrip("/")
-    )
-    return f"{base_url}/v1/auth/github/callback"
+    if settings.ENVIRONMENT not in ("development", "testing"):
+        frontend = settings.FRONTEND_PUBLIC_URL.strip().rstrip("/")
+        return f"{frontend}/api/auth/github/callback"
+    return f"{_oauth_base_url(request)}/v1/auth/github/callback"
 
 
 async def resolve_oauth_user(
@@ -936,7 +936,7 @@ async def logout(request: Request):
 async def merge_accounts_endpoint(
     request: MergeAccountRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: str = Depends(get_current_user),
+    current_user: str = Depends(get_current_user_id),
 ):
     try:
         user, providers = await merge_oauth_accounts(

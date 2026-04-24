@@ -45,9 +45,6 @@ locals {
   # Direct Cloud Run URLs (stable, deterministic — used for internal service-to-service calls)
   backend_run_url  = "https://${var.backend_service_name}-${data.google_project.project.number}.${var.region}.run.app"
   frontend_run_url = "https://${var.frontend_service_name}-${data.google_project.project.number}.${var.region}.run.app"
-  # Public-facing URLs: backend uses direct Cloud Run URL, frontend uses static IP load balancer
-  backend_public_url  = local.backend_run_url
-  frontend_public_url = "https://${var.frontend_domain}"
 }
 
 # ===========================
@@ -244,10 +241,6 @@ resource "google_cloud_run_v2_service" "backend" {
   location = var.region
 
   template {
-    annotations = {
-      "deploy-time" = timestamp()
-    }
-
     service_account = google_service_account.backend_runtime.email
 
     vpc_access {
@@ -421,18 +414,33 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
-        name  = "BACKEND_PUBLIC_URL"
-        value = local.backend_public_url
+        name = "BACKEND_PUBLIC_URL"
+        value_source {
+          secret_key_ref {
+            secret  = var.secret_backend_public_url
+            version = "latest"
+          }
+        }
       }
 
       env {
         name  = "FRONTEND_PUBLIC_URL"
-        value = local.frontend_public_url
+        value_source {
+          secret_key_ref {
+            secret  = var.secret_frontend_public_url
+            version = "latest"
+          }
+        }
       }
 
       env {
         name  = "ALLOWED_ORIGINS"
-        value = local.frontend_public_url
+        value_source {
+          secret_key_ref {
+            secret  = var.secret_frontend_public_url
+            version = "latest"
+          }
+        }
       }
 
       resources {
@@ -528,10 +536,6 @@ resource "google_cloud_run_v2_service" "frontend" {
   location = var.region
 
   template {
-    annotations = {
-      "deploy-time" = timestamp()
-    }
-
     service_account = google_service_account.frontend_runtime.email
 
     containers {
