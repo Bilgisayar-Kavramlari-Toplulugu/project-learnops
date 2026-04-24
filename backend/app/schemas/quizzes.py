@@ -1,7 +1,61 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+# ---------------------------------------------------------------------------
+# Submit Request Şemaları
+# ---------------------------------------------------------------------------
+
+
+class SubmitAnswerItem(BaseModel):
+    """Tek bir soruya verilen cevabı temsil eder.
+    selected_index=None → soru cevapsız bırakıldı (süre doldu vb.)
+    selected_index >= 0 olmalı; üst sınır servis katmanında
+    (soruya özel options uzunluğuna göre) kontrol edilir.
+    """
+
+    question_id: UUID
+    selected_index: int | None = Field(default=None, ge=0)
+
+
+class QuizSubmitRequest(BaseModel):
+    """POST /quiz-attempts/{id}/submit request body."""
+
+    answers: list[SubmitAnswerItem]
+
+
+# ---------------------------------------------------------------------------
+# Submit Response Şemaları
+# ---------------------------------------------------------------------------
+
+
+class AnswerResultItem(BaseModel):
+    """Submit sonrası her soru için döndürülen sonuç.
+    GÜVENLİK (NF-05): correct_index YALNIZCA submit sonrası açılır.
+    """
+
+    question_id: UUID
+    selected_index: int | None
+    correct_index: int
+    is_correct: bool
+    explanation: str | None = None
+
+
+class QuizSubmitResponse(BaseModel):
+    """POST /quiz-attempts/{id}/submit response body."""
+
+    attempt_id: UUID
+    score: int
+    total_questions: int
+    passed: bool
+    time_spent_secs: int
+    answers: list[AnswerResultItem]
+
+
+# ---------------------------------------------------------------------------
+# Attempt Response Şemaları
+# ---------------------------------------------------------------------------
 
 
 class QuestionOptionOut(BaseModel):
