@@ -9,11 +9,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.models.courses import Enrollment
+from app.models.quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
+
 from app.exceptions.access_denied import AccessDeniedError
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
-from app.models.quizzes import QuizAttempt, QuizAttemptAnswer
-
 
 from fastapi import HTTPException, status
 
