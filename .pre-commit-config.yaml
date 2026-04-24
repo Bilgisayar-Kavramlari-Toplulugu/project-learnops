@@ -32,7 +32,7 @@ repos:
     hooks:
       - id: eslint
         name: eslint
-        entry: npm --prefix frontend exec eslint --fix --
+        entry: npm --prefix frontend run lint -- --fix
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
 
@@ -51,7 +51,7 @@ repos:
 
       - id: tsc
         name: tsc --noEmit
-        entry: npm --prefix frontend exec tsc -- --noEmit
+        entry: npm --prefix frontend run type-check
         language: system
         files: ^frontend/.*\.(ts|tsx)$
         pass_filenames: false
