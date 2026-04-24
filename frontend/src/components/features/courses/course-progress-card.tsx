@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Trophy, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { type CourseDetail, type CourseProgress } from "@/types";
 import { routes } from "@/lib/routes";
@@ -28,7 +28,7 @@ export default function CourseProgressCard({
   const totalSections = sortedSections.length;
   const completedCount = courseProgress.sections.filter((s) => s.completed).length;
   const progressPercent = courseProgress.progress_percent;
-  const isCompleted = courseProgress.completed_at !== null;
+  const isCompleted = courseProgress.completed_at != null;
 
   const targetSection =
     sortedSections.find((section) =>
@@ -51,21 +51,14 @@ export default function CourseProgressCard({
                 {course.title}
               </h3>
               {course.category && (
-                <span className={`inline-flex items-center text-xs font-semibold rounded-full border px-3 py-1 ${categoryColor}`}>
+                <span className={cn(
+                  "inline-flex items-center text-xs font-semibold rounded-full border px-3 py-1",
+                  categoryColor
+                )}>
                   {course.category}
                 </span>
               )}
             </div>
-
-            {/* Tamamlanma Rozeti */}
-            {isCompleted && (
-              <div className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl">
-                <Trophy className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                  Tamamlandı
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Progress Bar */}
@@ -75,7 +68,7 @@ export default function CourseProgressCard({
                 {completedCount} / {totalSections} Bölüm
               </span>
               <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                {progressPercent}%
+                {Math.round(progressPercent)}%
               </span>
             </div>
             <ProgressBar
