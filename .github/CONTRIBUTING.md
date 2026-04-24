@@ -117,7 +117,7 @@ cp .env.example .env
 docker compose up --build
 
 # İlk kurulumda içerikleri seed et
-docker compose exec backend python backend/scripts/seed_content.py --env development
+docker compose exec backend python scripts/seed_content.py --env development
 ```
 
 ### 3️⃣ Branch Oluşturun
@@ -741,7 +741,7 @@ cp .env.example .env
 docker compose up --build
 
 # Seed content on first setup
-docker compose exec backend python backend/scripts/seed_content.py --env development
+docker compose exec backend python scripts/seed_content.py --env development
 ```
 
 ### 3️⃣ Create a Branch
