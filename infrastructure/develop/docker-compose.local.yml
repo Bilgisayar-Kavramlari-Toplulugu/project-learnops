@@ -1,5 +1,0 @@
-services:
-  backend:
-    build: ../../backend
-    volumes:
-      - ../../backend:/app
