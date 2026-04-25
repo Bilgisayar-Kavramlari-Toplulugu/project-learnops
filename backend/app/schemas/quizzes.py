@@ -11,8 +11,8 @@ from pydantic import BaseModel, Field
 class SubmitAnswerItem(BaseModel):
     """Tek bir soruya verilen cevabı temsil eder.
     selected_index=None → soru cevapsız bırakıldı (süre doldu vb.)
-    selected_index >= 0 olmalı; üst sınır servis katmanında
-    (soruya özel options uzunluğuna göre) kontrol edilir.
+    Alt sınır (>= 0) bu şema tarafından (ge=0), üst sınır (< options uzunluğu)
+    servis katmanında kontrol edilir.
     """
 
     question_id: UUID

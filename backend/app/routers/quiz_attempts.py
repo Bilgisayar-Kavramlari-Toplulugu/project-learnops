@@ -39,16 +39,6 @@ async def submit_quiz(
         submitted_answers=body.answers,
     )
 
-    await db.commit()
-
-    logger.info(
-        "Submit tamamlandı: user_id=%s attempt_id=%s score=%d/%d",
-        current_user.id,
-        attempt_id,
-        result["score"],
-        result["total_questions"],
-    )
-
     response = QuizSubmitResponse(
         attempt_id=result["attempt_id"],
         score=result["score"],
@@ -66,5 +56,7 @@ async def submit_quiz(
             for a in result["answers"]
         ],
     )
+
+    await db.commit()
 
     return response

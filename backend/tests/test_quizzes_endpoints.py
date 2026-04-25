@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
@@ -739,47 +738,3 @@ async def test_submit_after_question_deactivation_uses_actual_count(
     # DB'deki total_questions da response ile tutarlı olmalı
     await db_session.refresh(enrolled_attempt)
     assert enrolled_attempt.total_questions == 3
-
-
-@pytest.mark.skip(
-    reason=(
-        "Mevcut test infra dependency_override ile tüm request'lere AYNI db_session'ı "
-        "sağlıyor; bu nedenle (1) asyncio.gather ile paralel HTTP istekleri "
-        "AsyncSession'ı concurrent kullanır ve SQLAlchemy hatası atabilir, "
-        "(2) with_for_update() aynı transaction içinde gerçek satır kilidi gibi "
-        "davranmaz (SAVEPOINT izolasyonu nedeniyle). Gerçek race condition "
-        "testi için request başına bağımsız session/connection veren integration "
-        "test altyapısı gerekir. İdempotency (sıralı iki submit → 409) zaten "
-        "test_submit_attempt_already_submitted_returns_409 ile kapsanıyor."
-    )
-)
-@pytest.mark.asyncio
-async def test_submit_attempt_concurrent_requests_only_one_succeeds(
-    client: AsyncClient,
-    test_user: User,
-    enrolled_attempt: QuizAttempt,
-):
-    """
-    Eş zamanlı submit (race condition) koruması:
-    Aynı attempt için iki paralel submit gönderildiğinde, row-level lock
-    (with_for_update) ve submitted_at idempotency kontrolü sayesinde
-    yalnızca biri 200, diğeri 409 dönmelidir.
-    """
-    url = f"/v1/quiz-attempts/{enrolled_attempt.id}/submit"
-    cookies = _auth_cookies(test_user)
-    payload = {"answers": []}
-
-    resp1, resp2 = await asyncio.gather(
-        client.post(url, json=payload, cookies=cookies),
-        client.post(url, json=payload, cookies=cookies),
-    )
-
-    statuses = sorted([resp1.status_code, resp2.status_code])
-    assert statuses == [200, 409], (
-        f"Beklenen [200, 409], alınan {statuses} "
-        f"(resp1={resp1.status_code}, resp2={resp2.status_code})"
-    )
-
-    # Başarılı olan "tamamlandı", diğeri "zaten tamamlandı" mesajı dönmeli
-    conflict_resp = resp1 if resp1.status_code == 409 else resp2
-    assert conflict_resp.json()["detail"] == "Bu attempt zaten tamamlandı"
