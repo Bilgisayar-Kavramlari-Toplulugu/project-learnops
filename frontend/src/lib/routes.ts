@@ -7,4 +7,5 @@ export const routes = {
   profile: "/profile",
   courseDetail: (slug: string) => `/courses/${slug}`,
   section: (slug: string, sectionIdStr: string) => `/courses/${slug}/sections/${sectionIdStr}`,
+  quiz: (slug: string) => `/courses/${slug}/quiz`,
 } as const;
