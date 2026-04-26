@@ -27,7 +27,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # server_default=1200 kaldır — ALTER TABLE quizzes ALTER COLUMN duration_seconds DROP DEFAULT
+    # server_default=1200 kaldır —
+    # ALTER TABLE quizzes ALTER COLUMN duration_seconds DROP DEFAULT
     op.alter_column(
         "quizzes",
         "duration_seconds",
