@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home, History } from "lucide-react";
 
 interface AnswerResult {
   question_id: string;
+  question_text: string;
   selected_index: number | null;
   correct_index: number;
   is_correct: boolean;
   explanation: string | null;
+  options: string[];
 }
 
 interface QuizResultScreenProps {
@@ -20,6 +22,7 @@ interface QuizResultScreenProps {
   answers: AnswerResult[];
   onRetry?: () => void;
   onBackToCourse?: () => void;
+  onViewHistory?: () => void;
 }
 
 // Renk şeması (story'den) — hex kodları
@@ -53,7 +56,7 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
-function getAnswerStyle(isCorrect: boolean | null, selectedIndex: number | null) {
+function getAnswerStyle(isCorrect: boolean, selectedIndex: number | null) {
   if (selectedIndex === null) {
     return COLORS.unanswered;
   }
@@ -61,7 +64,7 @@ function getAnswerStyle(isCorrect: boolean | null, selectedIndex: number | null)
 }
 
 export function QuizResultScreen({
-  attemptId,
+  attemptId: _attemptId,
   score,
   totalQuestions,
   passed,
@@ -69,6 +72,7 @@ export function QuizResultScreen({
   answers,
   onRetry,
   onBackToCourse,
+  onViewHistory,
 }: QuizResultScreenProps) {
   const router = useRouter();
 
@@ -219,11 +223,23 @@ export function QuizResultScreen({
                     </span>
                   </div>
 
+                  {/* Soru metni */}
+                  <p className="mt-1 text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
+                    {answer.question_text}
+                  </p>
+
+                  {/* Cevapsız durumunda not */}
+                  {answer.selected_index === null && (
+                    <p className="mt-2 text-sm text-[#854D0E] dark:text-[#FACC15]">
+                      Süre dolmadan önce bu soruya cevap verilemedi.
+                    </p>
+                  )}
+
                   {/* Yanlış cevap durumunda doğru cevabı göster */}
                   {!answer.is_correct && answer.selected_index !== null && (
                     <p className="mt-2 text-sm text-[#991B1B] dark:text-[#FCA5A5]">
                       <span className="font-semibold">Doğru cevap: </span>
-                      {answer.correct_index + 1}. seçenek
+                      {answer.options[answer.correct_index]}
                     </p>
                   )}
 
@@ -256,6 +272,15 @@ export function QuizResultScreen({
           <Home className="h-4 w-4" />
           Kursa Dön
         </button>
+        {onViewHistory && (
+          <button
+            onClick={onViewHistory}
+            className="inline-flex items-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-4 py-2.5 text-sm font-bold text-[#374151] hover:bg-[#F3F4F6] dark:border-[#4B5563] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:hover:bg-[#374151]"
+          >
+            <History className="h-4 w-4" />
+            Geçmiş Denemeler
+          </button>
+        )}
       </div>
     </div>
   );
