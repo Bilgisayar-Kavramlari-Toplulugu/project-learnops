@@ -1,6 +1,6 @@
 """feat(db): remove server_default from quizzes.duration_seconds (#BE-21)
 
-Revision ID: 007_remove_duration_seconds_default
+Revision ID: 007_rm_duration_default
 Revises: 006_add_uq_attempt_question
 Create Date: 2026-04-27 00:00:00.000000
 
@@ -20,17 +20,14 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "007_remove_duration_seconds_default"
+revision = "007_rm_duration_default"
 down_revision = "006_add_uq_attempt_question"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
-    # server_default=1200 kaldır.
-    # existing_type ve existing_nullable belirtilmezse Alembic mevcut değerleri
-    # PostgreSQL'den okuyamaz; ALTER TABLE ... ALTER COLUMN ... DROP DEFAULT
-    # yeterlidir.
+    # server_default=1200 kaldır — ALTER TABLE quizzes ALTER COLUMN duration_seconds DROP DEFAULT
     op.alter_column(
         "quizzes",
         "duration_seconds",
