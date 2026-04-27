@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.exceptions.access_denied import AccessDeniedError
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
 from app.models.users import User
@@ -89,8 +88,6 @@ async def get_quiz_attempt(
         return attempt
     except EntityNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except AccessDeniedError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -101,7 +98,7 @@ async def list_quiz_attempts(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     limit: int = Query(
-        default=20, ge=1, le=100, description="Maximum number of attempts to return"
+        default=20, ge=1, le=100, description="Döndürülecek maksimum deneme sayısı"
     ),
 ):
     """

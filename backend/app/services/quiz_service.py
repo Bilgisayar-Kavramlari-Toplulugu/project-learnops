@@ -11,7 +11,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.exceptions.access_denied import AccessDeniedError
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
 from app.models.courses import Enrollment
@@ -298,7 +297,7 @@ async def submit_quiz_attempt(
 async def get_quiz_attempt_by_id(
     db: AsyncSession, attempt_id: UUID, user_id: UUID
 ) -> QuizAttempt:
-    """Gets a detailed quiz attempt."""
+    """Ayrıntılı quiz denemesi bilgilerini (sorular ve cevaplarla birlikte) döndürür."""
     stmt = (
         select(QuizAttempt)
         .options(
@@ -312,11 +311,15 @@ async def get_quiz_attempt_by_id(
     if not attempt:
         raise EntityNotFoundError("Quiz attempt not found")
 
+    # Sahiplik kontrolü — 404 dönerek attempt varlığını sızdırmıyoruz (IDOR koruması)
     if attempt.user_id != user_id:
-        raise AccessDeniedError("You do not have access to this quiz attempt")
+        raise EntityNotFoundError("Quiz attempt not found")
 
     if attempt.submitted_at is None:
         raise ValidationError("Quiz attempt is not completed yet")
+
+    # Cevapları ait oldukları sorunun order_index'ine göre sırala
+    attempt.answers.sort(key=lambda a: a.question.order_index)
 
     return attempt
 
@@ -324,7 +327,7 @@ async def get_quiz_attempt_by_id(
 async def get_quiz_attempts_by_quiz_id(
     db: AsyncSession, quiz_id: UUID, user_id: UUID, limit: int = 20
 ) -> Sequence[QuizAttempt]:
-    """Gets all completed quiz attempts for a user on a specific quiz."""
+    """Kullanıcının belirli bir quize ait tamamlanmış geçmiş denemelerini döndürür."""
     # TODO: Add cursor-based pagination when attempt counts grow significantly
     stmt = (
         select(QuizAttempt)

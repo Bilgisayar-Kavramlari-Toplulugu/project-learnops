@@ -84,7 +84,7 @@ async def test_get_quiz_attempt_forbidden(
     other_user: User,
     sample_quiz_id: uuid.UUID,
 ):
-    """Başkasının attempt'ine erişim -> 403."""
+    """Başkasının attempt'ine erişim -> 404 (IDOR koruması)."""
     attempt = QuizAttempt(
         user_id=quiz_user.id,
         quiz_id=sample_quiz_id,
@@ -101,7 +101,7 @@ async def test_get_quiz_attempt_forbidden(
     app.dependency_overrides[get_current_user] = lambda: other_user
     try:
         resp = await client.get(f"/v1/quiz-attempts/{attempt.id}")
-        assert resp.status_code == 403
+        assert resp.status_code == 404
     finally:
         app.dependency_overrides.clear()
 
@@ -127,6 +127,70 @@ async def test_get_quiz_attempt_not_completed(
     try:
         resp = await client.get(f"/v1/quiz-attempts/{attempt.id}")
         assert resp.status_code == 400
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_get_quiz_attempt_success(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    quiz_user: User,
+    sample_quiz_id: uuid.UUID,
+):
+    """Geçerli bir attempt istendiğinde 200 döner ve içerik doğru serialize edilir."""
+    from app.models.quizzes import Question, QuizAttemptAnswer
+
+    question = Question(
+        quiz_id=sample_quiz_id,
+        text="Test Soru",
+        options=[{"index": 0, "text": "A"}, {"index": 1, "text": "B"}],
+        correct_index=0,
+        order_index=1,
+    )
+    db_session.add(question)
+    await db_session.flush()
+
+    attempt = QuizAttempt(
+        user_id=quiz_user.id,
+        quiz_id=sample_quiz_id,
+        started_at=datetime.now(timezone.utc),
+        submitted_at=datetime.now(timezone.utc),
+        score=1,
+        total_questions=1,
+        passed=True,
+        time_spent_secs=10,
+    )
+    db_session.add(attempt)
+    await db_session.flush()
+
+    answer = QuizAttemptAnswer(
+        attempt_id=attempt.id,
+        question_id=question.id,
+        selected_index=0,
+        is_correct=True,
+    )
+    db_session.add(answer)
+    await db_session.flush()
+
+    app.dependency_overrides[get_current_user] = lambda: quiz_user
+    try:
+        resp = await client.get(f"/v1/quiz-attempts/{attempt.id}")
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert data["id"] == str(attempt.id)
+        assert data["score"] == 1
+        assert data["passed"] is True
+
+        assert "answers" in data
+        assert len(data["answers"]) == 1
+
+        ans = data["answers"][0]
+        assert ans["is_correct"] is True
+        assert ans["selected_index"] == 0
+        assert ans["question"]["text"] == "Test Soru"
+        assert ans["question"]["correct_index"] == 0
     finally:
         app.dependency_overrides.clear()
 
