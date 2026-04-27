@@ -139,7 +139,14 @@ export function QuizResultScreen({
               {percentage}%
             </div>
             <div className="text-sm text-[#6B7280] dark:text-[#9CA3AF]">
-              {score} / {totalQuestions} doğru
+              {score}/{totalQuestions} doğru
+            </div>
+            <div className="mt-1 text-xs font-medium">
+              {passed ? (
+                <span className="text-[#16A34A] dark:text-[#4ADE80]">Geçti ✓</span>
+              ) : (
+                <span className="text-[#DC2626] dark:text-[#F87171]">Kaldı ✗</span>
+              )}
             </div>
           </div>
         </div>
@@ -223,6 +230,14 @@ export function QuizResultScreen({
                   {/* Soru metni */}
                   <p className="mt-1 text-sm font-medium text-[#111827] dark:text-[#F9FAFB]">
                     {answer.question_text}
+                  </p>
+
+                  {/* Kullanıcının cevabı (vurgulanmış) */}
+                  <p className="mt-2 text-sm text-[#4B5563] dark:text-[#D1D5DB]">
+                    <span className="font-medium">Senin cevabın: </span>
+                    {answer.selected_index !== null
+                      ? answer.options[answer.selected_index]
+                      : "Cevap verilmedi"}
                   </p>
 
                   {/* Cevapsız durumunda not */}

@@ -1,14 +1,14 @@
+"use client";
+
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { QuizResultScreen } from "@/components/quiz/quiz-result-screen";
+import { useEffect, useState } from "react";
 
-interface ResultsPageProps {
-  params: Promise<{ quizId: string }>;
-  searchParams: Promise<{ attemptId?: string }>;
-}
-
-// API'den gelen yanıt yapısı
 interface AnswerResultItem {
   question_id: string;
+  question_text: string;
+  options: { index: number; text: string }[];
   selected_index: number | null;
   correct_index: number;
   is_correct: boolean;
@@ -24,13 +24,12 @@ interface QuizSubmitResponse {
   answers: AnswerResultItem[];
 }
 
-// Frontend'in ihtiyaç duyduğu genişletilmiş yapı
-interface AnswerResult extends AnswerResultItem {
-  question_text: string;
+interface AnswerResult extends Omit<AnswerResultItem, "options"> {
   options: string[];
 }
 
 interface QuizResultData {
+  attemptId: string;
   score: number;
   totalQuestions: number;
   passed: boolean;
@@ -38,81 +37,140 @@ interface QuizResultData {
   answers: AnswerResult[];
 }
 
-async function getQuizResults(attemptId: string): Promise<QuizResultData | null> {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+type LoadingState = "loading" | "success" | "error" | "not-found";
 
-  try {
-    const response = await fetch(`${API_URL}/api/quiz-attempts/${attemptId}/results`, {
-      cache: "no-store",
-      credentials: "include",
-    });
+export default function ResultsPage() {
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const quizId = params.quizId as string;
+  const attemptId = searchParams.get("attemptId");
 
-    if (!response.ok) {
-      console.error("Failed to fetch quiz results:", response.status);
-      return null;
+  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
+  const [resultData, setResultData] = useState<QuizResultData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!attemptId) {
+      setLoadingState("not-found");
+      return;
     }
 
-    const data: QuizSubmitResponse = await response.json();
+    async function fetchResults() {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    // Backend'den gelen veriyi frontend formatına dönüştür
-    // NOT: question_text ve options backend'den gelmiyor,
-    // bu veriler quiz başlangıcında alınan questions listesinden gelmeli
-    const answers: AnswerResult[] = data.answers.map((answer) => ({
-      ...answer,
-      question_text: `Soru ${answer.question_id.slice(0, 8)}`,
-      options: ["Seçenek A", "Seçenek B", "Seçenek C", "Seçenek D"],
-    }));
+      try {
+        const response = await fetch(`${API_URL}/quiz-attempts/${attemptId}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
 
-    return {
-      score: data.score,
-      totalQuestions: data.total_questions,
-      passed: data.passed,
-      timeSpentSecs: data.time_spent_secs,
-      answers,
-    };
-  } catch (error) {
-    console.error("Error fetching quiz results:", error);
-    return null;
-  }
-}
+        if (!response.ok) {
+          if (response.status === 401) {
+            router.push("/login");
+            return;
+          }
+          if (response.status === 403) {
+            setError("Bu sonuçlara erişim yetkiniz yok.");
+            setLoadingState("error");
+            return;
+          }
+          if (response.status === 404) {
+            setLoadingState("not-found");
+            return;
+          }
+          setError("Sonuçlar yüklenirken bir hata oluştu.");
+          setLoadingState("error");
+          return;
+        }
 
-export default async function ResultsPage({ params, searchParams }: ResultsPageProps) {
-  const { quizId } = await params;
-  const { attemptId } = await searchParams;
+        const data: QuizSubmitResponse = await response.json();
 
-  if (!attemptId) {
-    notFound();
-  }
+        // Backend'den gelen veriyi frontend formatına dönüştür
+        const answers: AnswerResult[] = data.answers.map((answer) => ({
+          question_id: answer.question_id,
+          question_text: answer.question_text,
+          selected_index: answer.selected_index,
+          correct_index: answer.correct_index,
+          is_correct: answer.is_correct,
+          explanation: answer.explanation,
+          options: answer.options.map((o) => o.text),
+        }));
 
-  const resultData = await getQuizResults(attemptId);
+        setResultData({
+          attemptId: data.attempt_id,
+          score: data.score,
+          totalQuestions: data.total_questions,
+          passed: data.passed,
+          timeSpentSecs: data.time_spent_secs,
+          answers,
+        });
+        setLoadingState("success");
+      } catch (err) {
+        console.error("Error fetching quiz results:", err);
+        setError("Sonuçlar yüklenirken bir hata oluştu.");
+        setLoadingState("error");
+      }
+    }
 
-  if (!resultData) {
-    notFound();
-  }
+    fetchResults();
+  }, [attemptId, router]);
 
-  // Callback'leri router üzerinden geç
   const handleRetry = () => {
-    // Quiz sayfasına geri dön
-    window.location.href = `/quiz/${quizId}`;
+    router.push(`/quiz/${quizId}`);
   };
 
   const handleBackToCourse = () => {
-    // Kurs sayfasına geri dön
-    window.location.href = `/courses/${quizId}`;
+    router.push(`/courses/${quizId}`);
   };
 
   const handleViewHistory = () => {
-    // Geçmiş denemeler sayfasına git
-    window.location.href = `/quiz/${quizId}/history`;
+    router.push(`/quiz/${quizId}/history`);
   };
 
+  // Loading state
+  if (loadingState === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#4F46E5]" />
+          <p className="mt-4 text-sm text-[#6B7280]">Sonuçlar yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not found state
+  if (loadingState === "not-found") {
+    notFound();
+  }
+
+  // Error state
+  if (loadingState === "error") {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="max-w-md text-center">
+          <p className="text-lg font-semibold text-[#991B1B]">Hata</p>
+          <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata oluştu."}</p>
+          <button
+            onClick={handleRetry}
+            className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
+          >
+            Quiz'e Geri Dön
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state
   return (
     <QuizResultScreen
-      score={resultData.score}
-      totalQuestions={resultData.totalQuestions}
-      passed={resultData.passed}
-      timeSpentSecs={resultData.timeSpentSecs}
-      answers={resultData.answers}
+      score={resultData!.score}
+      totalQuestions={resultData!.totalQuestions}
+      passed={resultData!.passed}
+      timeSpentSecs={resultData!.timeSpentSecs}
+      answers={resultData!.answers}
       onRetry={handleRetry}
       onBackToCourse={handleBackToCourse}
       onViewHistory={handleViewHistory}
