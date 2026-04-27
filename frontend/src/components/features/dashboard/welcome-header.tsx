@@ -1,6 +1,7 @@
 import { CalendarDays, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
 
 const todayLabel = new Intl.DateTimeFormat("tr-TR", {
   day: "2-digit",
@@ -11,9 +12,10 @@ const todayLabel = new Intl.DateTimeFormat("tr-TR", {
 interface WelcomeHeaderProps {
   userName: string;
   courseCount: number;
+  avatarType: string | null;
 }
 
-export function WelcomeHeader({ userName, courseCount }: WelcomeHeaderProps) {
+export function WelcomeHeader({ userName, courseCount, avatarType }: WelcomeHeaderProps) {
   return (
     <section className="rounded-[28px] border border-blue-100/80 bg-white/85 p-5 shadow-sm shadow-blue-100/40 backdrop-blur sm:p-6 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-black/20">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -25,6 +27,10 @@ export function WelcomeHeader({ userName, courseCount }: WelcomeHeaderProps) {
             <Sparkles className="size-3.5" />
             Dashboard
           </Badge>
+          <div className="flex items-center gap-2">
+            <InitialsAvatar name={userName} avatarType={avatarType} />
+          </div>
+
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
               Merhaba, {userName}

@@ -56,7 +56,7 @@ export function CourseProgressCard({ course }: CourseProgressCardProps) {
           <Link
             href={
               course.last_section_id_str
-                ? `/courses/${course.slug}/sections/${course.last_section_id_str}` // kaldığı yerden devam
+                ? `/courses/${course.slug}/${course.last_section_id_str}` // kaldığı yerden devam
                 : `/courses/${course.slug}`
             }
           >

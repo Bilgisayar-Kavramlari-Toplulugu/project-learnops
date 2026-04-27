@@ -49,18 +49,6 @@ export interface DashboardSuggestion {
   level: string;
   icon: LucideIcon;
 }
-export interface DashboardCourseProgress {
-  course_id: string;
-  course_slug: string;
-  course_title: string;
-  course_category: string | null;
-  course_difficulty: string | null;
-  duration_minutes: number | null;
-  last_activity_at: string | null;
-  progress_percent: number;
-  completed_sections: number;
-  total_sections: number;
-}
 export interface DashboardInProgressCourse {
   course_id: string;
   title: string;
@@ -104,14 +92,7 @@ export interface DashboardStatSummaryItem {
   label: string;
   description?: string | null;
 }
-export interface DashboardOverviewResponse {
-  stats: {
-    enrolled_courses: number;
-    completed_courses: number;
-    average_progress_percent: number;
-  };
-  courses: DashboardCourseProgress[];
-}
+
 // GET /courses/{slug} → SectionOut şeması
 // TODO(BE-14): description backend SectionOut şemasına eklenmeli —
 //   kurs detay sayfasında section açıklaması gösteriliyor.

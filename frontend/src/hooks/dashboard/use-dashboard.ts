@@ -60,9 +60,9 @@ export function useDashboard() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: queryKeys.dashboard.overview(),
     queryFn: getDashboardSummary,
-    staleTime: 2 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   const stats = useMemo(() => buildStats(data), [data]);
@@ -85,6 +85,7 @@ export function useDashboard() {
     isError,
     isEmpty: !isLoading && !isError && courses.length === 0,
     errorMessage: error ? getErrorMessage(error) : undefined,
+    avatarType: data?.avatar_type ?? null,
     refetch,
   };
 }

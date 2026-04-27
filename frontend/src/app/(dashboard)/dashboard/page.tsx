@@ -10,12 +10,32 @@ import { StatsSummary } from "@/components/features/dashboard/stats-summary";
 import { WelcomeHeader } from "@/components/features/dashboard/welcome-header";
 import { Button } from "@/components/ui/button";
 import { useDashboard } from "@/hooks/dashboard/use-dashboard";
-
+import { useEffect, useState } from "react";
+import { LastQuizResult } from "@/components/features/dashboard/last-quiz-result";
 export default function DashboardPage() {
-  const { userName, stats, courses, isLoading, isError, isEmpty, errorMessage, refetch } =
-    useDashboard();
-
-  if (isLoading) return <DashboardSkeleton />;
+  const [showSkeleton, setShowSkeleton] = useState(true);
+  const {
+    userName,
+    stats,
+    courses,
+    isLoading,
+    lastQuizResult,
+    isError,
+    isEmpty,
+    errorMessage,
+    avatarType,
+    refetch,
+  } = useDashboard();
+  useEffect(() => {
+    if (!isLoading) {
+      setShowSkeleton(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowSkeleton(true), 300);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+  if (isLoading && showSkeleton) return <DashboardSkeleton />;
+  if (isLoading && !showSkeleton) return null;
 
   if (isError) {
     return (
@@ -35,8 +55,10 @@ export default function DashboardPage() {
 
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6">
-      <WelcomeHeader userName={userName} courseCount={courses.length} />
+      <WelcomeHeader userName={userName} courseCount={courses.length} avatarType={avatarType} />
       <StatsSummary items={stats} />
+      {/* sınav sonucu null gelirse gözükmesin*/}
+      {lastQuizResult && <LastQuizResult result={lastQuizResult} />}
 
       <div className="space-y-4">
         <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
