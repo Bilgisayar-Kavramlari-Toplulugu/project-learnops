@@ -1,7 +1,7 @@
-import LandingPage from "@/components/features/landing/landing-page";
-import { getCourses } from "@/lib/fetchCourses";
+export const dynamic = "force-static";
 
-export default async function Home() {
-  const courses = await getCourses();
-  return <LandingPage courses={courses} />;
+import LandingPage from "@/components/features/landing/landing-page";
+
+export default function Home() {
+  return <LandingPage />;
 }

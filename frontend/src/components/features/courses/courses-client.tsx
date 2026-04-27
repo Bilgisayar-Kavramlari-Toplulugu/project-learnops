@@ -11,10 +11,10 @@ interface CoursesClientProps {
   subtitle?: string;
 }
 
-export default function CoursesClient({ 
-  courses, 
-  title = "Tüm Kurslar", 
-  subtitle = "Yeni beceriler keşfetmek için eğitimlerimize göz atın." 
+export default function CoursesClient({
+  courses,
+  title = "Tüm Kurslar",
+  subtitle = "Yeni beceriler keşfetmek için eğitimlerimize göz atın.",
 }: CoursesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -59,9 +59,7 @@ export default function CoursesClient({
               <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
                 {title}
               </h1>
-              <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
-                {subtitle}
-              </p>
+              <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{subtitle}</p>
             </div>
           </div>
 

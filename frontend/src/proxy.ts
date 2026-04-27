@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 const STATIC_FILE_PATTERN = /\.[^/]+$/;
+const publicPaths = ["/", "/login"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const token = request.cookies.get("access_token");
 
   if (
     pathname.startsWith("/api") ||
@@ -13,6 +14,14 @@ export function proxy(request: NextRequest) {
     STATIC_FILE_PATTERN.test(pathname)
   ) {
     return NextResponse.next();
+  }
+  if (publicPaths.includes(pathname) && token) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Protected path + unauthenticated → login
+  if (!publicPaths.includes(pathname) && !token) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   const requestHeaders = new Headers(request.headers);
@@ -26,5 +35,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
