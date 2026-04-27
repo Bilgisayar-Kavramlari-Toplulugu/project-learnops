@@ -46,21 +46,9 @@ export default function ResultsPage() {
   const quizId = params.quizId as string;
   const attemptId = searchParams.get("attemptId");
 
-  const [loadingState, setLoadingState] = useState<LoadingState>("loading");
+  const [loadingState, setLoadingState] = useState<LoadingState>(attemptId ? "loading" : "not-found");
   const [resultData, setResultData] = useState<QuizResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // Early return for missing attemptId - no need for effect
-  if (!attemptId && loadingState === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#4F46E5]" />
-          <p className="mt-4 text-sm text-[#6B7280]">Sonuçlar yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     if (!attemptId) {
@@ -127,6 +115,18 @@ export default function ResultsPage() {
     fetchResults();
   }, [attemptId, router]);
 
+  // Early return for loading state
+  if (loadingState === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#4F46E5]" />
+          <p className="mt-4 text-sm text-[#6B7280]">Sonuçlar yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   const handleRetry = () => {
     router.push(`/quiz/${quizId}`);
   };
@@ -162,7 +162,7 @@ export default function ResultsPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="max-w-md text-center">
           <p className="text-lg font-semibold text-[#991B1B]">Hata</p>
-          <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata tespit edildi ."}</p>
+          <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata tespit edildi."}</p>
           <button
             onClick={handleRetry}
             className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
