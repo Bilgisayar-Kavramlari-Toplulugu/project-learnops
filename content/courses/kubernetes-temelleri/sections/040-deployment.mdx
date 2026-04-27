@@ -46,7 +46,7 @@ spec:
         image: nginx:1.25
 ```
 
-> ⚠️ **Neden ReplicaSet Doğrudan Kullanmıyoruz?**  
+> ⚠️ **Neden ReplicaSet Doğrudan Kullanmıyoruz?**
 > ReplicaSet, image güncellemeyi veya rolling update'i desteklemez. Bu yüzden neredeyse her zaman **Deployment** üzerinden kullanılır.
 
 ---
@@ -81,17 +81,17 @@ metadata:
     app: nginx
 spec:
   replicas: 3                    # Kaç pod olsun?
-  
+
   selector:                      # Hangi pod'ları yönet?
     matchLabels:
       app: nginx
-  
+
   strategy:                      # Güncelleme stratejisi
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1                # Güncelleme sırasında max kaç fazla pod olabilir?
       maxUnavailable: 0          # Güncelleme sırasında max kaç pod çevrimdışı olabilir?
-  
+
   template:                      # Pod şablonu (metadata + spec)
     metadata:
       labels:
