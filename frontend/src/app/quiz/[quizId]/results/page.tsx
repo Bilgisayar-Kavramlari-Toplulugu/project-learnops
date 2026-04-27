@@ -15,12 +15,13 @@ interface AnswerResultItem {
   explanation: string | null;
 }
 
-interface QuizSubmitResponse {
+interface QuizAttemptDetailResponse {
   attempt_id: string;
   score: number;
-  total_questions: number;
+  total: number; 
   passed: boolean;
-  time_spent_secs: number;
+  time_spent_seconds?: number;
+  course_slug?: string; 
   answers: AnswerResultItem[];
 }
 
@@ -29,11 +30,11 @@ interface AnswerResult extends Omit<AnswerResultItem, "options"> {
 }
 
 interface QuizResultData {
-  attemptId: string;
   score: number;
   totalQuestions: number;
   passed: boolean;
   timeSpentSecs: number;
+  courseSlug: string | null;
   answers: AnswerResult[];
 }
 
@@ -53,9 +54,9 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!attemptId) return;
 
-    const fetchResults = async () => {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
+    async function fetchResults() {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      
       try {
         const response = await fetch(`${API_URL}/quiz-attempts/${attemptId}`, {
           cache: "no-store",
@@ -63,23 +64,19 @@ export default function ResultsPage() {
         });
 
         if (!response.ok) {
-          if (response.status === 401) {
-            router.push("/login");
-            return;
-          }
+          if (response.status === 401) return router.push("/login");
           if (response.status === 403) {
             setError("Bu sonuçlara erişim yetkiniz yok.");
-            setLoadingState("error");
-            return;
+            return setLoadingState("error");
           }
-          if (response.status === 404) {
-            setLoadingState("not-found");
-            return;
-          }
-          throw new Error("API Hatası");
+          if (response.status === 404) return setLoadingState("not-found");
+          throw new Error("Fetch error");
         }
 
-        const data: QuizSubmitResponse = await response.json();
+        const data: QuizAttemptDetailResponse = await response.json();
+
+        const totalQs = data.total ?? 0;
+        const timeSpent = data.time_spent_seconds ?? 0;
 
         const answers: AnswerResult[] = data.answers.map((answer) => ({
           ...answer,
@@ -87,11 +84,11 @@ export default function ResultsPage() {
         }));
 
         setResultData({
-          attemptId: data.attempt_id,
           score: data.score,
-          totalQuestions: data.total_questions,
+          totalQuestions: totalQs,
           passed: data.passed,
-          timeSpentSecs: data.time_spent_secs,
+          timeSpentSecs: timeSpent,
+          courseSlug: data.course_slug || null,
           answers,
         });
         setLoadingState("success");
@@ -100,15 +97,18 @@ export default function ResultsPage() {
         setError("Sonuçlar yüklenirken bir hata oluştu.");
         setLoadingState("error");
       }
-    };
+    }
 
     fetchResults();
-  }, [attemptId, router]); // quizId buraya eklenebilir ama stabil kalacağı varsayılırsa bu yeterli.
+  }, [attemptId, router]);
 
-  // Handlers (Gereksiz render'ı önlemek için useCallback eklenebilir ama şu anki hali de hatalı değil)
+  // Handlers
   const handleRetry = () => router.push(`/quiz/${quizId}`);
-  const handleBackToCourse = () => router.push(`/courses/${quizId}`);
-  const handleViewHistory = () => router.push(`/quiz/${quizId}/history`);
+  
+  const handleBackToCourse = () => {
+    const target = resultData?.courseSlug || quizId; 
+    router.push(`/courses/${target}`);
+  };
 
   // Loading UI
   if (loadingState === "loading") {
@@ -123,9 +123,7 @@ export default function ResultsPage() {
   }
 
   // Not Found
-  if (loadingState === "not-found") {
-    notFound();
-  }
+  if (loadingState === "not-found") notFound();
 
   // Error UI
   if (loadingState === "error" || !resultData) {
@@ -133,7 +131,7 @@ export default function ResultsPage() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="max-w-md text-center">
           <p className="text-lg font-semibold text-[#991B1B]">Hata</p>
-          <p className="mt-2 text-sm text-[#4B5563]">{error || "Verilere ulaşılamadı."}</p>
+          <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata tespit edildi."}</p>
           <button
             onClick={handleRetry}
             className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
@@ -155,7 +153,6 @@ export default function ResultsPage() {
       answers={resultData.answers}
       onRetry={handleRetry}
       onBackToCourse={handleBackToCourse}
-      onViewHistory={handleViewHistory}
     />
   );
 }
