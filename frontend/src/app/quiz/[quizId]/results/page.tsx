@@ -139,7 +139,7 @@ export default function ResultsPage() {
   };
 
   // Loading state
-  if (loadingState === "loading") {
+  if (loadingState == "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
