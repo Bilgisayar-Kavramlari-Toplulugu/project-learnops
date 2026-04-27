@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home, History } from "lucide-react";
 
+// onViewHistory — Geçmiş Denemeler sayfası Sprint X'te scope'a alındığında aktive edilecek
+
 interface AnswerResult {
   question_id: string;
   question_text: string;
@@ -77,7 +79,7 @@ export function QuizResultScreen({
   const correctCount = answers.filter((a) => a.is_correct).length;
   const incorrectCount = answers.filter((a) => !a.is_correct && a.selected_index !== null).length;
   const unansweredCount = answers.filter((a) => a.selected_index === null).length;
-  const percentage = Math.round((score / totalQuestions) * 100);
+  const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
 
   const handleRetry = () => {
     if (onRetry) {
@@ -156,7 +158,7 @@ export function QuizResultScreen({
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-[#6B7280]" />
             <span className="text-sm font-medium text-[#374151] dark:text-[#D1D5DB]">
-              Süre: {formatTime(timeSpentSecs)}
+              Süre: {timeSpentSecs && timeSpentSecs > 0 ? formatTime(timeSpentSecs) : "—"}
             </span>
           </div>
           <div className="flex items-center gap-2">

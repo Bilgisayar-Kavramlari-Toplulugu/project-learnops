@@ -75,8 +75,15 @@ export default function ResultsPage() {
 
         const data: QuizAttemptDetailResponse = await response.json();
 
-        const totalQs = data.total ?? 0;
-        const timeSpent = data.time_spent_seconds ?? 0;
+        // Guard: total 0 veya eksikse hata olarak işle
+        const totalQs = data.total;
+        if (!totalQs || totalQs <= 0) {
+          setError("Geçersiz quiz verisi alındı.");
+          setLoadingState("error");
+          return;
+        }
+
+        const timeSpent = data.time_spent_seconds ?? null;
 
         const answers: AnswerResult[] = data.answers.map((answer) => ({
           ...answer,
@@ -87,7 +94,7 @@ export default function ResultsPage() {
           score: data.score,
           totalQuestions: totalQs,
           passed: data.passed,
-          timeSpentSecs: timeSpent,
+          timeSpentSecs: timeSpent ?? 0,
           courseSlug: data.course_slug || null,
           answers,
         });
@@ -106,8 +113,12 @@ export default function ResultsPage() {
   const handleRetry = () => router.push(`/quiz/${quizId}`);
   
   const handleBackToCourse = () => {
-    const target = resultData?.courseSlug || quizId; 
-    router.push(`/courses/${target}`);
+    // course_slug backend'den gelmezse kurs listesine yönlendir
+    if (resultData?.courseSlug) {
+      router.push(`/courses/${resultData.courseSlug}`);
+    } else {
+      router.push("/courses");
+    }
   };
 
   // Loading UI
