@@ -51,11 +51,9 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!attemptId) {
-      return;
-    }
+    if (!attemptId) return;
 
-    async function fetchResults() {
+    const fetchResults = async () => {
       const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
       try {
@@ -78,21 +76,13 @@ export default function ResultsPage() {
             setLoadingState("not-found");
             return;
           }
-          setError("Sonuçlar yüklenirken bir hata olustu.");
-          setLoadingState("error");
-          return;
+          throw new Error("API Hatası");
         }
 
         const data: QuizSubmitResponse = await response.json();
 
-        // Backend'den gelen veriyi frontend formatına dönüştür
         const answers: AnswerResult[] = data.answers.map((answer) => ({
-          question_id: answer.question_id,
-          question_text: answer.question_text,
-          selected_index: answer.selected_index,
-          correct_index: answer.correct_index,
-          is_correct: answer.is_correct,
-          explanation: answer.explanation,
+          ...answer,
           options: answer.options.map((o) => o.text),
         }));
 
@@ -107,14 +97,20 @@ export default function ResultsPage() {
         setLoadingState("success");
       } catch (err) {
         console.error("Error fetching quiz results:", err);
-        setError("Sonuçlar yüklenirken bir hata olustu.");
+        setError("Sonuçlar yüklenirken bir hata oluştu.");
         setLoadingState("error");
       }
-    }
+    };
 
     fetchResults();
-  }, [attemptId, router]);
+  }, [attemptId, router]); // quizId buraya eklenebilir ama stabil kalacağı varsayılırsa bu yeterli.
 
+  // Handlers (Gereksiz render'ı önlemek için useCallback eklenebilir ama şu anki hali de hatalı değil)
+  const handleRetry = () => router.push(`/quiz/${quizId}`);
+  const handleBackToCourse = () => router.push(`/courses/${quizId}`);
+  const handleViewHistory = () => router.push(`/quiz/${quizId}/history`);
+
+  // Loading UI
   if (loadingState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -126,42 +122,18 @@ export default function ResultsPage() {
     );
   }
 
-  const handleRetry = () => {
-    router.push(`/quiz/${quizId}`);
-  };
-
-  const handleBackToCourse = () => {
-    router.push(`/courses/${quizId}`);
-  };
-
-  const handleViewHistory = () => {
-    router.push(`/quiz/${quizId}/history`);
-  };
-
-  // Loading state
-  if (loadingState == "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#4F46E5]" />
-          <p className="mt-4 text-sm text-[#6B7280]">Sonuçlar yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Not found state
+  // Not Found
   if (loadingState === "not-found") {
     notFound();
   }
 
-  // Error state
-  if (loadingState === "error") {
+  // Error UI
+  if (loadingState === "error" || !resultData) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="max-w-md text-center">
           <p className="text-lg font-semibold text-[#991B1B]">Hata</p>
-          <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata tespit edildi."}</p>
+          <p className="mt-2 text-sm text-[#4B5563]">{error || "Verilere ulaşılamadı."}</p>
           <button
             onClick={handleRetry}
             className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
@@ -173,14 +145,14 @@ export default function ResultsPage() {
     );
   }
 
-  // Success state
+  // Success UI
   return (
     <QuizResultScreen
-      score={resultData!.score}
-      totalQuestions={resultData!.totalQuestions}
-      passed={resultData!.passed}
-      timeSpentSecs={resultData!.timeSpentSecs}
-      answers={resultData!.answers}
+      score={resultData.score}
+      totalQuestions={resultData.totalQuestions}
+      passed={resultData.passed}
+      timeSpentSecs={resultData.timeSpentSecs}
+      answers={resultData.answers}
       onRetry={handleRetry}
       onBackToCourse={handleBackToCourse}
       onViewHistory={handleViewHistory}
