@@ -115,7 +115,6 @@ export default function ResultsPage() {
     fetchResults();
   }, [attemptId, router]);
 
-  // Early return for loading state
   if (loadingState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -167,7 +166,7 @@ export default function ResultsPage() {
             onClick={handleRetry}
             className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
           >
-            Quiz'e Geri Dön
+            Quiz&apos;e Geri Dön
           </button>
         </div>
       </div>
