@@ -26,14 +26,18 @@ export default function DashboardPage() {
     avatarType,
     refetch,
   } = useDashboard();
+
   useEffect(() => {
-    if (!isLoading) {
-      setShowSkeleton(false);
-      return;
-    }
-    const timer = setTimeout(() => setShowSkeleton(true), 300);
+    const timer = setTimeout(
+      () => {
+        setShowSkeleton(isLoading);
+      },
+      isLoading ? 300 : 0,
+    ); // false için delay yok, true için 300ms
+
     return () => clearTimeout(timer);
   }, [isLoading]);
+
   if (isLoading && showSkeleton) return <DashboardSkeleton />;
   if (isLoading && !showSkeleton) return null;
 
