@@ -293,6 +293,7 @@ async def submit_quiz_attempt(
         "time_spent_secs": time_spent_secs,
         "answers": answer_results,
     }
+
 async def get_quiz_attempt_by_id(
     db: AsyncSession, attempt_id: UUID, user_id: UUID
 ) -> QuizAttempt:
