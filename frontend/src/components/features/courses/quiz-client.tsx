@@ -85,6 +85,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const hasSubmittedRef = useRef(false); // Çift submit önleyici
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ─── Submit Mutation ──────────────────────────────────────────────────────
   const { mutate: submitQuiz, isPending: isSubmitting } = useMutation({
@@ -93,6 +94,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
       return data;
     },
     onSuccess: (data) => {
+      if (intervalRef.current) clearInterval(intervalRef.current); // Sonuç gelince timer'ı durdur
       hasSubmittedRef.current = true; // Başarılı gönderimde kilitle
       setQuizResult(data);
     },
@@ -153,11 +155,11 @@ export default function QuizClient({ slug }: QuizClientProps) {
 
     // setTimeout(0): ilk değeri bir sonraki event loop tick'te hesapla
     const initTimer = setTimeout(tick, 0);
-    const intervalId = setInterval(tick, 1000);
+    intervalRef.current = setInterval(tick, 1000);
 
     return () => {
       clearTimeout(initTimer);
-      clearInterval(intervalId);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [session]); // answers değişiminde interval yeniden başlamaz
 
@@ -216,6 +218,9 @@ export default function QuizClient({ slug }: QuizClientProps) {
 
         {/* Geri Sayım */}
         <div
+          role="timer"
+          aria-label={`Kalan süre: ${remaining !== null ? formatTime(remaining) : "yükleniyor"}`}
+          aria-live="off"
           className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-mono font-semibold transition-colors ${
             isTimeCritical
               ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
