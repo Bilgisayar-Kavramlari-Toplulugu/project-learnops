@@ -74,7 +74,14 @@ export default function ResultsPage() {
 
         const data: QuizAttemptDetailResponse = await response.json();
 
-        const totalQs = data.total ?? 0;
+        // Guard: total 0 veya eksikse hata olarak işle
+        const totalQs = data.total;
+        if (!totalQs || totalQs <= 0) {
+          setError("Geçersiz quiz verisi alındı.");
+          setLoadingState("error");
+          return;
+        }
+
         const timeSpent = data.time_spent_seconds ?? 0;
 
         const answers: AnswerResult[] = data.answers.map((answer) => ({

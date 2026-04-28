@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home, History } from "lucide-react";
 
-// onViewHistory — Geçmiş Denemeler sayfası Sprint X'te scope'a alındığında aktive edilecek
+// onViewHistory — BE-20 (Sprint 6) tamamlandı. Frontend sayfası FE-24 (Sprint 7)
+// kapsamında aktive edilecek.
 
 interface AnswerResult {
   question_id: string;
