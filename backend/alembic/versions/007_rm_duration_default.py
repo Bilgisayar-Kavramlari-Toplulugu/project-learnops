@@ -10,6 +10,12 @@ Değişiklik:
   DB varsayılanına düşülmez.
   (beginner: 1500s, intermediate: 2000s, advanced: 2500s)
 
+Not — questions.is_active:
+  Bu kolonun migration'ı bu dosyada değil, 003_add_is_active_to_questions.py
+  (develop) içindedir. quizzes.py modelindeki server_default=sql_text('true')
+  değişikliği yalnızca ORM tutarlılığı için yapılmıştır; şema değişikliği
+  gerektirmez (kolon DB'de zaten mevcuttur).
+
 Downgrade:
 - server_default=1200 geri eklenir.
   Mevcut satırlarda değer zaten açıkça yazılı olduğundan veri kaybı olmaz.
@@ -41,11 +47,13 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # Geri alınırsa server_default=1200'ü yeniden ekle.
+    # upgrade() sonrası duration_seconds'ta server_default yoktur;
+    # existing_server_default=None bu durumu beyan eder.
     op.alter_column(
         "quizzes",
         "duration_seconds",
         existing_type=sa.Integer(),
         existing_nullable=False,
-        server_default=sa.text("1200"),
+        existing_server_default=None,  # upgrade() sonrası durum
+        server_default=sa.text("1200"),  # geri ekle
     )

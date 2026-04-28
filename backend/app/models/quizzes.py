@@ -50,7 +50,10 @@ class Quiz(BaseModel):
         UUID(as_uuid=True), ForeignKey("courses.id", ondelete="CASCADE"), unique=True
     )
     pass_threshold: Mapped[Decimal] = mapped_column(
-        Numeric(3, 2), nullable=False, default=Decimal("0.70")
+        Numeric(3, 2),
+        nullable=False,
+        default=Decimal("0.70"),
+        server_default=sql_text("0.70"),  # DB-level default for direct SQL inserts
     )
     duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
 
