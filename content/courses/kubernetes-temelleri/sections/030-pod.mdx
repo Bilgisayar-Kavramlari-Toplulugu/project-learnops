@@ -32,7 +32,7 @@ Pod, Kubernetes'te **deploy edilebilen en küçük birim**dir. Bir veya daha faz
          Çalıştığı Node
 ```
 
-> 💡 **Neden Container'ı Doğrudan Deploy Etmiyoruz?**  
+> 💡 **Neden Container'ı Doğrudan Deploy Etmiyoruz?**
 > Pod soyutlaması; multi-container pattern'leri (sidecar, ambassador, adapter), paylaşımlı ağ ve storage, ve lifecycle yönetimini çok daha temiz hale getirir.
 
 ---
@@ -134,7 +134,7 @@ Memory Birimi:
   G  = Gigabyte
 ```
 
-**Requests:** Scheduler'ın pod'u yerleştirirken dikkate aldığı minimum kaynak miktarı.  
+**Requests:** Scheduler'ın pod'u yerleştirirken dikkate aldığı minimum kaynak miktarı.
 **Limits:** Container'ın aşamayacağı maksimum kaynak miktarı. CPU throttle edilir, Memory aşılırsa OOMKilled olur.
 
 ---

@@ -11,4 +11,8 @@ export const queryKeys = {
     all: ["progress"] as const,
     byCourse: (slug: string) => [...queryKeys.progress.all, slug] as const,
   },
+  quiz: {
+    all: ["quiz"] as const,
+    session: (courseId: string) => [...queryKeys.quiz.all, "session", courseId] as const,
+  },
 };

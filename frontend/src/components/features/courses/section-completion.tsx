@@ -20,12 +20,10 @@ export function SectionCompletion({
   isCompleted,
   className = "",
 }: SectionCompletionProps) {
-  const sectionProgress = courseProgress.sections.find(
-    (s) => s.section_id_str === sectionIdStr,
-  );
-  // Parentttan gelen isCompleted prop'u, sectionProgress.completed durumunu override eder. 
-  // Bu, parent component'lerin gerektiğinde tamamlanma durumunu kontrol etmesine olanak tanır . 
-  // Eğer isCompleted prop'u sağlanmazsa, sectionProgress.completed değeri kullanılır. 
+  const sectionProgress = courseProgress.sections.find((s) => s.section_id_str === sectionIdStr);
+  // Parentttan gelen isCompleted prop'u, sectionProgress.completed durumunu override eder.
+  // Bu, parent component'lerin gerektiğinde tamamlanma durumunu kontrol etmesine olanak tanır .
+  // Eğer isCompleted prop'u sağlanmazsa, sectionProgress.completed değeri kullanılır.
   const isCurrentCompleted = isCompleted ?? sectionProgress?.completed ?? false;
   const progressPercent = courseProgress.progress_percent;
 
@@ -69,7 +67,7 @@ export function SectionCompletion({
         {/* Progress Text */}
         <div className="flex items-center justify-between mt-3">
           <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-            {courseProgress.sections.filter((s) => s.completed).length} / {" "}
+            {courseProgress.sections.filter((s) => s.completed).length} /{" "}
             {courseProgress.sections.length} bölüm tamamlandı
           </p>
         </div>
@@ -87,9 +85,7 @@ export function SectionCompletion({
         <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 p-4 rounded-2xl border-2 border-dashed border-emerald-300 dark:border-emerald-700/50 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Award className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <p className="font-bold text-emerald-900 dark:text-emerald-100">
-              Kursu Tamamladınız!
-            </p>
+            <p className="font-bold text-emerald-900 dark:text-emerald-100">Kursu Tamamladınız!</p>
           </div>
           <p className="text-xs text-emerald-700 dark:text-emerald-300">
             Tebrikler! Tüm bölümleri başarıyla tamamladınız.
@@ -114,14 +110,10 @@ export function SectionCompletion({
             >
               <div
                 className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  section.completed
-                    ? "bg-emerald-500"
-                    : "bg-zinc-300 dark:bg-zinc-600"
+                  section.completed ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-600"
                 }`}
               >
-                {section.completed && (
-                  <CheckCircle2 className="w-3 h-3 text-white" />
-                )}
+                {section.completed && <CheckCircle2 className="w-3 h-3 text-white" />}
               </div>
               <span
                 className={`flex-1 text-xs font-semibold ${

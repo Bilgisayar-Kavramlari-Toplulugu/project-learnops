@@ -1,14 +1,26 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.dependencies import get_current_user
+from app.exceptions.not_found import EntityNotFoundError
+from app.exceptions.validation import ValidationError
 from app.models.users import User
-from app.schemas.quizzes import AnswerResultItem, QuizSubmitRequest, QuizSubmitResponse
-from app.services.quiz_service import submit_quiz_attempt
+from app.schemas.quizzes import (
+    AnswerResultItem,
+    QuizAttemptDetail,
+    QuizAttemptListItem,
+    QuizSubmitRequest,
+    QuizSubmitResponse,
+)
+from app.services.quiz_service import (
+    get_quiz_attempt_by_id,
+    get_quiz_attempts_by_quiz_id,
+    submit_quiz_attempt,
+)
 
 router = APIRouter(prefix="/quiz-attempts", tags=["quiz-attempts"])
 logger = logging.getLogger(__name__)
@@ -60,3 +72,39 @@ async def submit_quiz(
     await db.commit()
 
     return response
+
+
+@router.get("/{attempt_id}", response_model=QuizAttemptDetail)
+async def get_quiz_attempt(
+    attempt_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Tamamlanmış bir quiz denemesinin detaylı sonuçlarını döner.
+    """
+    try:
+        attempt = await get_quiz_attempt_by_id(db, attempt_id, current_user.id)
+        return attempt
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("", response_model=list[QuizAttemptListItem])
+async def list_quiz_attempts(
+    quiz_id: UUID = Query(..., description="Geçmiş sorgulanan quiz ID'si"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    limit: int = Query(
+        default=20, ge=1, le=100, description="Döndürülecek maksimum deneme sayısı"
+    ),
+):
+    """
+    Kullanıcının belirli bir quiz için geçmiş denemelerini listeler.
+    """
+    attempts = await get_quiz_attempts_by_quiz_id(
+        db, quiz_id, current_user.id, limit=limit
+    )
+    return attempts
