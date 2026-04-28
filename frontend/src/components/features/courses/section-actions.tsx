@@ -36,7 +36,9 @@ export function SectionActions({
   const { mutate: markComplete, isPending } = useMarkSectionComplete(courseId);
 
   const completedIds = new Set(
-    progressItems.filter((progressItem) => progressItem.completed).map((item) => item.section_id_str),
+    progressItems
+      .filter((progressItem) => progressItem.completed)
+      .map((item) => item.section_id_str),
   );
   const isCurrentCompleted = completedIds.has(currentSectionId);
   const isButtonDisabled = !courseId || isCurrentCompleted || isPending;

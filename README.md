@@ -64,7 +64,7 @@ cd infrastructure/develop
 docker compose up --build
 ```
 
-> **Not:** `.env` dosyası proje kökünde oluşur (`project-learnops/.env`).  
+> **Not:** `.env` dosyası proje kökünde oluşur (`project-learnops/.env`).
 > Docker Compose bu dosyayı otomatik olarak okur; başka bir yere taşımayın.
 
 Servisler ayağa kalktıktan sonra:
@@ -317,7 +317,7 @@ cd infrastructure/develop
 docker compose up --build
 ```
 
-> **Note:** The `.env` file is created at the project root (`project-learnops/.env`).  
+> **Note:** The `.env` file is created at the project root (`project-learnops/.env`).
 > Docker Compose reads it automatically — do not move it elsewhere.
 
 Once running:
