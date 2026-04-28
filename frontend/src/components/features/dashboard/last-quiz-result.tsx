@@ -28,7 +28,7 @@ export function LastQuizResult({ result }: LastQuizResultProps) {
 
           <p className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {result.score}
-            <span className="text-lg text-slate-400">/ 100</span>
+            <span className="text-lg text-slate-400">/ {result.total}</span>
           </p>
 
           <div className="flex items-center gap-2">

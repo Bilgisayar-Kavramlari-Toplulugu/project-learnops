@@ -13,7 +13,7 @@ import { useDashboard } from "@/hooks/dashboard/use-dashboard";
 import { useEffect, useState } from "react";
 import { LastQuizResult } from "@/components/features/dashboard/last-quiz-result";
 export default function DashboardPage() {
-  const [showSkeleton, setShowSkeleton] = useState(true);
+  const [showSkeleton, setShowSkeleton] = useState(false);
   const {
     userName,
     stats,
