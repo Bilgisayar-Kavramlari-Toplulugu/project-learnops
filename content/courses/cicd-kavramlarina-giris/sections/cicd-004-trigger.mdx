@@ -13,21 +13,21 @@ Bir workflow dosyasının en başında yer alan on: bölümü, GitHub'a "Hangi d
 
 En temel tetikleyicidir. Bilgisayarındaki yerel kodları GitHub sunucusuna gönderdiğin (**push** yaptığın) an devreye girer. Genellikle her küçük değişiklikte testlerin çalışması istenen projelerde kullanılır.
 
-* **Neden Kullanılır?** Hataları sıcağı sıcağına, daha kodun mürekkebi kurumadan yakalamak için.  
+* **Neden Kullanılır?** Hataları sıcağı sıcağına, daha kodun mürekkebi kurumadan yakalamak için.
 * **İpucu:** Sadece belirli dallarda (örneğin sadece main) çalışması için filtreleyebilirsin. Böylece her ufak denemende tüm sistem ayağa kalkmaz.
 
 ## **2\. pull\_request: "Kapıdaki Gardiyan"**
 
 Ekip çalışmalarının veya profesyonel projelerin can damarıdır. Bir geliştirici, kendi yazdığı kodu projenin ana dalıyla birleştirmek istediğinde (**PR** açtığında) çalışır.
 
-* **Neden Kullanılır?** "Kodu birleştirmeden önce kontrol et, eğer testlerden geçmezse birleştirmeye izin verme" demek için. Bu, ana projenin bozulmasını engelleyen en güçlü güvenlik önlemidir.  
+* **Neden Kullanılır?** "Kodu birleştirmeden önce kontrol et, eğer testlerden geçmezse birleştirmeye izin verme" demek için. Bu, ana projenin bozulmasını engelleyen en güçlü güvenlik önlemidir.
 * **Kritik Nokta:** Kodun birleşmiş halini (*merge result*) test eder, böylece birleşme sonrası bir çakışma olup olmayacağını önceden görürsün.
 
 ## **3\. schedule: "Zamanı Gelince Çalış\!"**
 
 Bu tetikleyici bir eyleme değil, tamamen zamana bağlıdır. Projenin arkasında kurulu bir alarm saati varmış gibi düşünebilirsin. **"Cron syntax"** adı verilen özel bir dizilimle ayarlanır.
 
-* **Neden Kullanılır?** Gece yarısı otomatik yedek almak, her sabah bağımlılıkların güncelliğini kontrol etmek veya her saat başı bir veri raporu (örneğin IoT cihazlarından gelen verilerin özeti) oluşturmak için harikadır.  
+* **Neden Kullanılır?** Gece yarısı otomatik yedek almak, her sabah bağımlılıkların güncelliğini kontrol etmek veya her saat başı bir veri raporu (örneğin IoT cihazlarından gelen verilerin özeti) oluşturmak için harikadır.
 * **Örnek:** cron: '0 0 \* \* \*' yazarsan, işlemin her gece tam 00:00'da çalışır.
 
 ### **Özet Karşılaştırma Tablosu**

@@ -127,9 +127,67 @@ export interface CourseListResponse {
   total: number;
 }
 
+// ─── Quiz Types ───────────────────────────────────────────────────────────────
+
+export interface QuizOption {
+  id: string;
+  text: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  options: QuizOption[];
+}
+
+// GET /courses/{courseId}/quiz response
+export interface QuizSession {
+  session_id: string;
+  course_id: string;
+  started_at: string; // ISO 8601 — timer her mount'ta buradan hesaplanır
+  duration_seconds: number; // Toplam sınav süresi (backend'den gelir)
+  questions: QuizQuestion[];
+}
+
+export interface QuizAnswer {
+  question_id: string;
+  selected_option_id: string; // Cevaplanmamış sorular payload'a dahil edilmez (quiz-client.tsx filter)
+}
+
+// POST /courses/{courseId}/quiz/submit payload
+export interface QuizSubmitPayload {
+  session_id: string;
+  answers: QuizAnswer[];
+}
+
+// POST /courses/{courseId}/quiz/submit response
+export interface QuizResult {
+  score: number;
+  total: number;
+  passed: boolean;
+}
+
 // ─── Section Progress Types ───────────────────────────────────────────────────
 
 export interface SectionProgressItem {
   section_id_str: string;
   completed: boolean;
+}
+
+export interface SectionProgress {
+  id: string;
+  section_id_str: string;
+  title: string;
+  order_index: number;
+  completed: boolean;
+  completed_at: string | null;
+}
+
+export interface CourseProgress {
+  course_id: string;
+  course_slug: string;
+  enrolled_at: string;
+  completed_at: string | null;
+  progress_percent: number;
+  sections: SectionProgress[];
 }

@@ -4,7 +4,16 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, Text, text
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -42,10 +51,10 @@ class Quiz(BaseModel):
 
     # Relationships
     course: Mapped["Course"] = relationship("Course", back_populates="quiz")
-    questions: Mapped[list] = relationship(
+    questions: Mapped[list["Question"]] = relationship(
         "Question", back_populates="quiz", cascade="all, delete-orphan"
     )
-    attempts: Mapped[list] = relationship(
+    attempts: Mapped[list["QuizAttempt"]] = relationship(
         "QuizAttempt", back_populates="quiz", cascade="all, delete-orphan"
     )
 
@@ -138,7 +147,7 @@ class QuizAttempt(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="quiz_attempts")
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="attempts")
-    answers: Mapped[list] = relationship(
+    answers: Mapped[list["QuizAttemptAnswer"]] = relationship(
         "QuizAttemptAnswer", back_populates="attempt", cascade="all, delete-orphan"
     )
 
@@ -163,6 +172,9 @@ class QuizAttemptAnswer(Base):
     """
 
     __tablename__ = "quiz_attempt_answers"
+    __table_args__ = (
+        UniqueConstraint("attempt_id", "question_id", name="uq_attempt_question"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
