@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
@@ -12,7 +13,9 @@ from sqlalchemy import (
     Numeric,
     Text,
     UniqueConstraint,
-    text,
+)
+from sqlalchemy import (
+    text as sql_text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -46,8 +49,8 @@ class Quiz(BaseModel):
     course_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("courses.id", ondelete="CASCADE"), unique=True
     )
-    pass_threshold: Mapped[float] = mapped_column(
-        Numeric(3, 2), nullable=False, default=0.70
+    pass_threshold: Mapped[Decimal] = mapped_column(
+        Numeric(3, 2), nullable=False, default=Decimal("0.70")
     )
     duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -87,7 +90,9 @@ class Question(BaseModel):
     correct_index: Mapped[int] = mapped_column(Integer, nullable=False)
     explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     order_index: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=sql_text("true")
+    )
 
     # Relationships
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="questions")
@@ -126,7 +131,7 @@ class QuizAttempt(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=sql_text("gen_random_uuid()"),
         nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
@@ -181,7 +186,7 @@ class QuizAttemptAnswer(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=sql_text("gen_random_uuid()"),
         nullable=False,
     )
     attempt_id: Mapped[uuid.UUID] = mapped_column(

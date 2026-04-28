@@ -27,14 +27,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # server_default=1200 kaldır —
-    # ALTER TABLE quizzes ALTER COLUMN duration_seconds DROP DEFAULT
+    # Üretilen DDL (poetry run alembic upgrade 007_rm_duration_default --sql):
+    #   ALTER TABLE quizzes ALTER COLUMN duration_seconds DROP DEFAULT;
+    # server_default=None → DROP DEFAULT (sentinel False = "değiştirme" anlamı taşır)
     op.alter_column(
         "quizzes",
         "duration_seconds",
         existing_type=sa.Integer(),
         existing_nullable=False,
-        server_default=None,  # DROP DEFAULT
+        existing_server_default=sa.text("1200"),  # mevcut durumu beyan et
+        server_default=None,  # None = DROP DEFAULT
     )
 
 
