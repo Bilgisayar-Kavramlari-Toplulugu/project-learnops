@@ -279,27 +279,27 @@ metadata:
   annotations:
     # SSL redirect
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    
+
     # Rate limiting
     nginx.ingress.kubernetes.io/limit-rps: "10"
-    
+
     # CORS
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.example.com"
-    
+
     # Request body boyutu
     nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    
+
     # Timeout
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-    
+
     # Basic auth
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
-    
+
     # Rewrite
     nginx.ingress.kubernetes.io/rewrite-target: /
-    
+
     # Whitelist IP
     nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/24,172.16.0.0/16"
 ```
