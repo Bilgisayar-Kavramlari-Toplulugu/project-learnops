@@ -31,13 +31,15 @@ export default function CourseProgressCard({
   const isCompleted = courseProgress.completed_at != null;
 
   const targetSection =
-    sortedSections.find((section) =>
-      !courseProgress.sections.some(
-        (p) => p.section_id_str === section.section_id_str && p.completed,
-      ),
+    sortedSections.find(
+      (section) =>
+        !courseProgress.sections.some(
+          (p) => p.section_id_str === section.section_id_str && p.completed,
+        ),
     ) || sortedSections[sortedSections.length - 1];
 
-  const categoryColor = "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/50";
+  const categoryColor =
+    "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/50";
 
   return (
     <div className={cn("w-full space-y-4", className)}>
@@ -51,10 +53,12 @@ export default function CourseProgressCard({
                 {course.title}
               </h3>
               {course.category && (
-                <span className={cn(
-                  "inline-flex items-center text-xs font-semibold rounded-full border px-3 py-1",
-                  categoryColor
-                )}>
+                <span
+                  className={cn(
+                    "inline-flex items-center text-xs font-semibold rounded-full border px-3 py-1",
+                    categoryColor,
+                  )}
+                >
                   {course.category}
                 </span>
               )}
@@ -84,7 +88,9 @@ export default function CourseProgressCard({
           {/* Son Section Adı */}
           {!isCompleted && targetSection && (
             <div className="p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-700/50">
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">Sonraki Bölüm</p>
+              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                Sonraki Bölüm
+              </p>
               <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                 {targetSection.title}
               </p>
@@ -137,14 +143,10 @@ export default function CourseProgressCard({
                 >
                   <div
                     className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      isSectionCompleted
-                        ? "bg-emerald-500"
-                        : "bg-zinc-300 dark:bg-zinc-600"
+                      isSectionCompleted ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-600"
                     }`}
                   >
-                    {isSectionCompleted && (
-                      <CheckCircle2 className="w-3 h-3 text-white" />
-                    )}
+                    {isSectionCompleted && <CheckCircle2 className="w-3 h-3 text-white" />}
                   </div>
                   <span
                     className={`flex-1 text-xs font-semibold ${
