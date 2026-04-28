@@ -15,7 +15,11 @@ interface CompletionButtonProps {
    * @param progressPercent - Updated course progress percentage
    * @param courseCompletedAt - Course completion timestamp if course is now fully completed, null otherwise
    */
-  onSuccess?: (completedAt: string, progressPercent: number, courseCompletedAt: string | null) => void;
+  onSuccess?: (
+    completedAt: string,
+    progressPercent: number,
+    courseCompletedAt: string | null,
+  ) => void;
   onError?: (error: unknown) => void;
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -63,9 +67,7 @@ export function CompletionButton({
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
-      const response = await api.post(
-        `/progress/sections/${sectionIdStr}/complete`,
-      );
+      const response = await api.post(`/progress/sections/${sectionIdStr}/complete`);
 
       setCompleted(true);
 

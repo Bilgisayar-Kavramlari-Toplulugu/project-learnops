@@ -49,13 +49,13 @@ data:
   LOG_LEVEL: "info"
   MAX_CONNECTIONS: "100"
   API_BASE_URL: "https://api.example.com"
-  
+
   # Çok satırlı değer (dosya içeriği gibi)
   app.properties: |
     spring.datasource.url=jdbc:postgresql://db:5432/myapp
     spring.jpa.show-sql=false
     server.port=8080
-  
+
   nginx.conf: |
     server {
         listen 80;
@@ -137,7 +137,7 @@ spec:
     - name: nginx-config-vol
       mountPath: /etc/nginx/conf.d   # Dosyalar buraya yazılır
       readOnly: true
-  
+
   volumes:
   - name: nginx-config-vol
     configMap:
@@ -276,7 +276,7 @@ spec:
     - name: db-creds
       mountPath: /etc/secrets
       readOnly: true            # Güvenlik için readonly!
-  
+
   volumes:
   - name: db-creds
     secret:
