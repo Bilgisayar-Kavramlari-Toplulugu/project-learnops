@@ -438,30 +438,30 @@ Gerçek bir projenin klasör yapısı:
 infrastructure/
   bootstrap/           # State bucket oluşturma (bir kere çalışır)
     main.tf
-    
+
   environments/
     development/
       backend.tf       # backend "gcs" { prefix = "dev" }
       main.tf          # module çağrıları
       variables.tf
       terraform.tfvars # (gitignore'da!)
-      
+
     staging/
       backend.tf
       main.tf
       variables.tf
-      
+
     production/
       backend.tf
       main.tf
       variables.tf
-      
+
   modules/
     network/
     database/
     cloud-run/
     iam/
-    
+
   .terraform.lock.hcl  # Git'e commit edilir
   .gitignore
   README.md
