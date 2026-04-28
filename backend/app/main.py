@@ -88,6 +88,7 @@ app.include_router(quizzes.router, prefix="/v1")
 app.include_router(quiz_attempts.router, prefix="/v1")
 app.include_router(progress.router, prefix="/v1")
 app.include_router(enrollments.router, prefix="/v1")
+app.include_router(quizzes.router, prefix="/v1")
 
 
 # Rate Limiting

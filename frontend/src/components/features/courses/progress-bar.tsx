@@ -105,11 +105,7 @@ export function ProgressBar({
       {(label || showPercent) && (
         <div className="flex items-center justify-between mb-2">
           {label && (
-            <span
-              className={`font-bold ${colorStyle.text} ${sizeStyle.label}`}
-            >
-              {label}
-            </span>
+            <span className={`font-bold ${colorStyle.text} ${sizeStyle.label}`}>{label}</span>
           )}
           <div className="flex items-center gap-2">
             {showPercent && (

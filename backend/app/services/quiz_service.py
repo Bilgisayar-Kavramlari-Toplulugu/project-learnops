@@ -2,6 +2,7 @@ import logging
 import random
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -10,6 +11,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.exceptions.not_found import EntityNotFoundError
+from app.exceptions.validation import ValidationError
 from app.models.courses import Enrollment
 from app.models.quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
 from app.schemas.quizzes import SubmitAnswerItem
@@ -289,3 +292,52 @@ async def submit_quiz_attempt(
         "time_spent_secs": time_spent_secs,
         "answers": answer_results,
     }
+
+
+async def get_quiz_attempt_by_id(
+    db: AsyncSession, attempt_id: UUID, user_id: UUID
+) -> QuizAttempt:
+    """Ayrıntılı quiz denemesi bilgilerini (sorular ve cevaplarla birlikte) döndürür."""
+    stmt = (
+        select(QuizAttempt)
+        .options(
+            selectinload(QuizAttempt.answers).selectinload(QuizAttemptAnswer.question)
+        )
+        .where(QuizAttempt.id == attempt_id)
+    )
+    result = await db.execute(stmt)
+    attempt = result.scalar_one_or_none()
+
+    if not attempt:
+        raise EntityNotFoundError("Quiz attempt not found")
+
+    # Sahiplik kontrolü — 404 dönerek attempt varlığını sızdırmıyoruz (IDOR koruması)
+    if attempt.user_id != user_id:
+        raise EntityNotFoundError("Quiz attempt not found")
+
+    if attempt.submitted_at is None:
+        raise ValidationError("Quiz attempt is not completed yet")
+
+    # Cevapları ait oldukları sorunun order_index'ine göre sırala
+    attempt.answers.sort(key=lambda a: a.question.order_index)
+
+    return attempt
+
+
+async def get_quiz_attempts_by_quiz_id(
+    db: AsyncSession, quiz_id: UUID, user_id: UUID, limit: int = 20
+) -> Sequence[QuizAttempt]:
+    """Kullanıcının belirli bir quize ait tamamlanmış geçmiş denemelerini döndürür."""
+    # TODO: Add cursor-based pagination when attempt counts grow significantly
+    stmt = (
+        select(QuizAttempt)
+        .where(
+            QuizAttempt.quiz_id == quiz_id,
+            QuizAttempt.user_id == user_id,
+            QuizAttempt.submitted_at.is_not(None),
+        )
+        .order_by(QuizAttempt.started_at.desc())
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
+    return result.scalars().all()
