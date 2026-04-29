@@ -25,9 +25,9 @@ from sqlalchemy.orm import Session
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
-BACKEND_DIR = PROJECT_ROOT / "backend"
+SCRIPT_DIR = Path(__file__).resolve().parent   # backend/scripts/
+PROJECT_ROOT = SCRIPT_DIR.parent.parent        # backend/ -> repo root
+BACKEND_DIR = SCRIPT_DIR.parent               # backend/
 CONTENT_DIR = PROJECT_ROOT / "content" / "courses"
 
 # Add backend to sys.path so we can import app modules
