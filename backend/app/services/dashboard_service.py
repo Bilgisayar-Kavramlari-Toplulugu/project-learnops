@@ -1,6 +1,7 @@
+from typing import Any, Dict, List
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -15,16 +16,9 @@ class DashboardService:
     """
 
     @staticmethod
-    async def get_summary(db: AsyncSession, user_id: UUID) -> dict:
+    async def get_summary(db: AsyncSession, user_id: UUID) -> Dict[str, Any]:
         """
         Kullanıcı için dashboard özetini alır.
-
-        Args:
-            db: Asenkron veritabanı oturumu
-            user_id: Kullanıcı ID'si (UUID)
-
-        Returns:
-            Sözlük içeren dashboard özet verileri.
         """
         # 1. Tamamlanan Kurs Sayısı
         completed_count_stmt = select(func.count(Enrollment.id)).where(
@@ -32,7 +26,7 @@ class DashboardService:
         )
         completed_count = (await db.execute(completed_count_stmt)).scalar() or 0
 
-        # 2. Devam Eden Kurslar (Eager loading ile N+1 engellendi)
+        # 2. Devam Eden Kurslar
         enrollments_stmt = (
             select(Enrollment)
             .options(joinedload(Enrollment.course))
@@ -40,9 +34,10 @@ class DashboardService:
         )
         enrollments = (await db.execute(enrollments_stmt)).scalars().all()
 
-        in_progress_list = []
+        in_progress_list: List[Dict[str, Any]] = []
+
         if enrollments:
-            # Tamamlanmış bölümler subquery (veya liste)
+            # Tamamlanmış bölümler
             completed_sections_stmt = select(UserProgress.section_id).where(
                 UserProgress.user_id == user_id, UserProgress.completed.is_(True)
             )
@@ -51,15 +46,15 @@ class DashboardService:
             )
 
             for enc in enrollments:
+                # Mypy hatasını çözen dinamik filtre yapısı
+                filters = [Section.course_id == enc.course_id]
+                if completed_sections_ids:
+                    filters.append(~Section.id.in_(completed_sections_ids))
+
                 # Sonraki bölümü bul
                 next_sec_stmt = (
                     select(Section)
-                    .where(
-                        Section.course_id == enc.course_id,
-                        ~Section.id.in_(completed_sections_ids)
-                        if completed_sections_ids
-                        else True,
-                    )
+                    .where(and_(*filters))
                     .order_by(Section.order_index.asc())
                     .limit(1)
                 )
@@ -68,7 +63,7 @@ class DashboardService:
                 in_progress_list.append(
                     {
                         "course_id": enc.course_id,
-                        "title": enc.course.title,
+                        "title": enc.course.title if enc.course else "Unknown",
                         "next_section": {
                             "id": next_sec.id,
                             "title": next_sec.title,
@@ -79,7 +74,7 @@ class DashboardService:
                     }
                 )
 
-        # 3. Son Quiz (Join zinciri düzeltildi ve eager load eklendi)
+        # 3. Son Quiz
         last_attempt_stmt = (
             select(QuizAttempt)
             .join(Quiz, QuizAttempt.quiz_id == Quiz.id)
@@ -92,10 +87,9 @@ class DashboardService:
         last_attempt = (await db.execute(last_attempt_stmt)).scalar_one_or_none()
 
         last_quiz_data = None
-        if last_attempt:
+        if last_attempt and last_attempt.quiz and last_attempt.quiz.course:
             last_quiz_data = {
                 "quiz_name": last_attempt.quiz.course.title,
-                # Review 5: 0.0 maskelemesi kaldırıldı, ham değer dönülüyor.
                 "score": last_attempt.score,
                 "completed_at": last_attempt.submitted_at,
             }
