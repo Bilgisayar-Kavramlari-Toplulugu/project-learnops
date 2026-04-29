@@ -114,19 +114,42 @@ def _create_engine():
 
 # ── Step 1: Alembic migrations ────────────────────────────────────────────────
 def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
-    """Pre-flight: if tables exist but alembic_version has no revision, stamp.
+    """Pre-flight: reassign table ownership and stamp alembic if schema is untracked.
 
-    This handles the scenario where a previous job run committed DDL but crashed
-    before (or while) writing to alembic_version, leaving the DB schema ahead of
-    Alembic's tracking. Without this, the next run fails with DuplicateTableError.
+    Two problems this function solves:
 
-    All existence checks use to_regclass / information_schema so they return NULL
-    rather than raising a SQL error — querying a non-existent table directly puts
-    the PostgreSQL transaction into an aborted state that infects all later queries.
+    1. OWNERSHIP MISMATCH — Tables were created by the IAM user during an earlier
+       job run that used IAM auth. The job now connects as `postgres` (password auth)
+       for DDL privileges, but postgres cannot ALTER TABLE on objects it doesn't own.
+       Fix: REASSIGN OWNED BY <iam-user> TO postgres for all public schema objects.
+
+    2. ALEMBIC DESYNC — A previous run committed 001_initial DDL but crashed before
+       writing alembic_version. Fix: stamp at the correct revision so upgrade only
+       applies the missing migrations.
+
+    All existence checks use to_regclass / information_schema (never query a
+    potentially-missing table directly, which would abort the PG transaction).
     """
     from sqlalchemy import text
 
-    # Check alembic_version table existence without raising a SQL error.
+    # ── Step A: Fix ownership of any objects not owned by postgres ────────────
+    # Query pg_tables (safe, always exists) to find tables owned by other users.
+    non_postgres_owners = connection.execute(
+        text(
+            "SELECT DISTINCT tableowner FROM pg_tables "
+            "WHERE schemaname = 'public' AND tableowner != 'postgres'"
+        )
+    ).fetchall()
+
+    for (owner,) in non_postgres_owners:
+        logger.warning(f"Reassigning public schema objects owned by '{owner}' to postgres")
+        # Double-quote the owner name — IAM usernames contain @ and . characters.
+        connection.execute(
+            text(f'REASSIGN OWNED BY "{owner}" TO postgres')
+        )
+        logger.info(f"REASSIGN OWNED BY \"{owner}\" TO postgres — done.")
+
+    # ── Step B: Sync alembic_version if schema exists but is untracked ────────
     alembic_table_exists = (
         connection.execute(
             text("SELECT to_regclass('public.alembic_version')")
