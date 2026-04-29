@@ -13,7 +13,8 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @router.get("/summary", response_model=DashboardSummarySchema)
 async def get_dashboard_summary(
-    db: AsyncSession = Depends(get_db), current_user_id: str = Depends(get_current_user_id)
+    db: AsyncSession = Depends(get_db),
+    current_user_id: str = Depends(get_current_user_id),
 ):
     """
     Kimliği doğrulanmış kullanıcı için dashboard özetini alır.
