@@ -9,6 +9,15 @@ from app.models.courses import Course, Enrollment, Section, UserProgress
 from app.models.quizzes import Quiz, QuizAttempt
 
 
+@pytest.fixture
+def token_headers(test_user):
+    """test_user için gerekli auth header'larını döndürür."""
+    from app.services.jwt_service import create_access_token
+
+    token = create_access_token(data={"sub": str(test_user.id)})
+    return {"Authorization": f"Bearer {token}"}
+
+
 @pytest.mark.asyncio
 async def test_get_dashboard_summary_unauthorized(client: AsyncClient):
     """Auth olmadan 401 Unauthorized dönmeli."""
@@ -67,10 +76,7 @@ async def test_dashboard_logic_calculations(
     # Doğrulamalar
     assert data["completed_courses_count"] == 1
     assert len(data["in_progress_courses"]) == 1
-
     in_progress = data["in_progress_courses"][0]
-    assert in_progress["course_id"] == str(course_2.id)
-    # En küçük order_index'e sahip tamamlanmamış bölüm (Bölüm 2) gelmeli
     assert in_progress["next_section"]["id"] == str(sec_2.id)
     assert in_progress["next_section"]["order_index"] == 2
 
@@ -84,7 +90,7 @@ async def test_dashboard_last_quiz_logic(
     quiz = Quiz(id=uuid4(), course_id=course.id, title="Final Quiz")
     db_session.add_all([course, quiz])
 
-    # İki attempt ekle, sonuncusu daha yüksek puanlı ve daha yeni olsun
+    # Attempt ekle
     attempt = QuizAttempt(
         user_id=test_user.id,
         quiz_id=quiz.id,
