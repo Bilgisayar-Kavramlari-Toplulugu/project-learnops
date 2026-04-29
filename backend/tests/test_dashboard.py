@@ -151,20 +151,24 @@ async def test_dashboard_all_sections_completed(
     db_session.add(course)
     await db_session.flush()
 
-    sec_1 = Section(course_id=course.id, section_id_str="sec-1", title="B 1", order_index=1)
-    sec_2 = Section(course_id=course.id, section_id_str="sec-2", title="B 2", order_index=2)
+    sec_1 = Section(
+        course_id=course.id, section_id_str="sec-1", title="B 1", order_index=1
+    )
+    sec_2 = Section(
+        course_id=course.id, section_id_str="sec-2", title="B 2", order_index=2
+    )
     db_session.add_all([sec_1, sec_2])
     await db_session.flush()
 
     # 2. Kayıt
     enrollment = Enrollment(user_id=test_user.id, course_id=course.id)
     db_session.add(enrollment)
-    
+
     # 3. 'is_completed' yerine modeldeki doğru alan olan 'completed' kullanıldı
     p1 = UserProgress(user_id=test_user.id, section_id=sec_1.id, completed=True)
     p2 = UserProgress(user_id=test_user.id, section_id=sec_2.id, completed=True)
     db_session.add_all([p1, p2])
-    
+
     # conftest içindeki transaction yönetimi gereği flush yeterli, commit'e gerek yok
     await db_session.flush()
 
@@ -175,7 +179,10 @@ async def test_dashboard_all_sections_completed(
 
     # 5. KeyError almamak için 'course_id' anahtarını kullanıyoruz
     # DashboardService.py: "course_id": enc.course.id şeklinde dönüyor
-    target = next((c for c in data["in_progress_courses"] if c["course_id"] == str(course.id)), None)
-    
+    target = next(
+        (c for c in data["in_progress_courses"] if c["course_id"] == str(course.id)),
+        None,
+    )
+
     if target:
         assert target["next_section"] is None
