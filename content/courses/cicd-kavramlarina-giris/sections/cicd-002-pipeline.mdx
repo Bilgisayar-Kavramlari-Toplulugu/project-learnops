@@ -1,0 +1,50 @@
+---
+id: "cicd-002-pipeline"
+title: "CI/CD Pipeline"
+order: 20
+order_index: 20
+---
+
+# **CI/CD’nin Anatomisi: Pipeline’dan Runner’a Temel Kavramlar**
+
+Bir yazılımı sadece kodlamazsın; onu derlemen, test etmen ve sunucuya paketleyip göndermen gerekir. CI/CD araçları (GitHub Actions, GitLab CI, Jenkins vb.) bu süreci beş ana parça üzerinden yönetir:
+
+## **1\. Pipeline (Boru Hattı)**
+
+Pipeline, sürecin **tamamıdır.** Yazılımcı kodunu gönderdiği anda başlayan ve kodun canlıya çıkmasıyla biten o meşhur "otoban"ın adıdır. İçinde tüm işleri (Job) ve adımları (Step) barındıran en üst çatıdır.
+
+* **Örnek:** "Projeye yeni özellik ekledim, pipeline tetiklendi."
+
+## **2\. Job (İş)**
+
+Pipeline'ın içindeki **ana görev bölümleridir.** Genellikle birbirine paralel veya sırayla çalışan mantıksal gruplardır. Bir pipeline içinde genellikle "Build", "Test" ve "Deploy" adında üç temel Job bulunur.
+
+* **Örnek:** Test Job'ı başarısız olursa, Deploy Job'ı asla başlamaz.
+
+## **3\. Step (Adım)**
+
+Job'ların içindeki **en küçük atomik birimlerdir.** Genellikle terminalde çalıştırdığın tek bir komuta karşılık gelir.
+
+* **Örnek:** Bağımlılıkları yüklemek (npm install), testleri çalıştırmak (flutter test) veya bir dosyayı kopyalamak birer Step'tir.
+
+## **4\. Runner (Yürütücü)**
+
+Tüm bu komutlar (Step'ler) nerede çalışıyor? İşte burada devreye **Runner** girer. Runner, bu işlemleri gerçekleştiren işletim sistemi veya sunucudur. Kodun derlendiği ve test edildiği "boş bilgisayar" veya "konteynır" (Docker) olarak düşünebilirsin.
+
+* **Senaryo:** Kodunu GitHub'a gönderirsin, GitHub arka planda sana bir Runner (sanal makine) ayırır ve senin komutlarını orada çalıştırır.
+
+## **5\. Artifact (Çıktı / Ürün)**
+
+Pipeline sonunda elimizde ne kalıyor? İşte o değerli çıktıya **Artifact** diyoruz. Bu, derlenmiş bir dosya, bir mobil uygulama paketi (.apk veya .ipa) ya da bir Docker imajı olabilir.
+
+* **Neden Önemli?** Bir Job'da (Build) üretilen Artifact, bir sonraki Job'da (Deploy) kullanılır. Yani mutfakta hazırlanan "yemek", paketlenmiş bir "ürün" olarak servise hazır hale gelir.
+
+### **💡 Küçük Bir Analoji ile Özetleyelim**
+
+Bir mobil uygulama geliştirdiğini hayal et:
+
+* **Pipeline:** Uygulamanın markete gidiş yolculuğu.
+* **Job:** Uygulamanın derlenmesi (Build) aşaması.
+* **Step:** Derleme aşamasındaki "kütüphaneleri indir" komutu.
+* **Runner:** Derleme işleminin yapıldığı güçlü sunucu.
+* **Artifact:** Günün sonunda oluşan ve markete yüklenecek olan .apk dosyası.

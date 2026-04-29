@@ -1,12 +1,13 @@
-"use client";
+import CoursesClient from "@/components/features/courses/courses-client";
+import WrapperContainer from "@/components/features/dashboard/wrapper-container";
+import { getCourses } from "@/lib/fetchCourses";
 
-import { StarterCanvas } from "@/components/features/dashboard/starter-canvas";
+export default async function CoursesPage() {
+  const courses = await getCourses();
 
-export default function CoursesPage() {
   return (
-    <StarterCanvas
-      title="Kurslar"
-      description="Kurs listesi ve filtreler bu ekranda görüntülenir."
-    />
+    <WrapperContainer>
+      <CoursesClient courses={courses} />
+    </WrapperContainer>
   );
 }

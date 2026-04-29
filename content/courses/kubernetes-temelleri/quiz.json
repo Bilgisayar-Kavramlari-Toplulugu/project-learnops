@@ -1,0 +1,508 @@
+{
+  "_note": "Eğitim amaçlı. Cevaplar kasıtlı açıktır. v2.0'da private repo'ya taşınır.",
+  "course_slug": "kubernetes-temelleri",
+  "pass_threshold": 0.7,
+  "duration_seconds": 2000,
+  "questions": [
+    {
+      "order_index": 1,
+      "is_active": true,
+      "text": "Kubernetes'in kısaltması neden 'K8s' olarak kullanılır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Kubernetes 8 bileşenden oluştuğu için"
+        },
+        {
+          "index": 1,
+          "text": "'K' ve 's' harfleri arasında tam olarak 8 harf bulunduğu için"
+        },
+        {
+          "index": 2,
+          "text": "Sürüm 8 ile kararlı hale geldiği için"
+        },
+        {
+          "index": 3,
+          "text": "8 ana node desteğinden dolayı"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "'Kubernetes' kelimesindeki 'K' ve 's' harfleri arasında 'ubernete' olarak tam 8 harf bulunur. Bu nedenle kısaca K8s yazılır. Bu, yazılım dünyasında yaygın kullanılan bir numeronym (sayı kısaltması) formatıdır; i18n (internationalization), l10n (localization) de aynı mantıkla kısaltılır."
+    },
+    {
+      "order_index": 2,
+      "is_active": true,
+      "text": "Kubernetes'in etcd bileşeni ne işe yarar?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Container'ları doğrudan çalıştırır"
+        },
+        {
+          "index": 1,
+          "text": "Pod'ları node'lara atar (scheduling yapar)"
+        },
+        {
+          "index": 2,
+          "text": "Tüm cluster durum verilerini saklayan dağıtık key-value store'dur"
+        },
+        {
+          "index": 3,
+          "text": "Dış dünyadan gelen HTTP trafiğini yönetir"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "etcd, Kubernetes'in tüm cluster verilerini (pod tanımları, deployment konfigürasyonları, secret'lar, node bilgileri vb.) sakladığı dağıtık key-value store'dur. 'Cluster'ın hafızası' olarak düşünülebilir. etcd'ye yalnızca kube-apiserver üzerinden erişilir; doğrudan yazma yapılmaz. Production ortamlarında etcd'nin düzenli yedeklenmesi kritik önem taşır."
+    },
+    {
+      "order_index": 3,
+      "is_active": true,
+      "text": "Bir Pod içindeki container'lar hangi kaynakları birbirleriyle paylaşır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Ağ (network) ve storage volume'larını paylaşırlar"
+        },
+        {
+          "index": 1,
+          "text": "Yalnızca CPU ve bellek kaynaklarını paylaşırlar"
+        },
+        {
+          "index": 2,
+          "text": "Hiçbir şeyi paylaşmazlar, tamamen izole çalışırlar"
+        },
+        {
+          "index": 3,
+          "text": "Yalnızca environment variable'ları paylaşırlar"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Bir Pod içindeki tüm container'lar aynı ağ namespace'ini paylaşır; bu sayede birbirleriyle 'localhost' üzerinden haberleşebilirler ve aynı IP adresini kullanırlar. Ayrıca aynı storage volume'larını mount edebilirler. CPU ve bellek ise her container için ayrı ayrı `requests` ve `limits` ile tanımlanır; paylaşılmaz. Bu paylaşım modeli, sidecar ve init container gibi pattern'lerin temelini oluşturur."
+    },
+    {
+      "order_index": 4,
+      "is_active": true,
+      "text": "Bir deployment'ta `maxSurge: 1` ve `maxUnavailable: 0` olarak ayarlanmış RollingUpdate stratejisinde 3 replica varken güncelleme yapılınca ne olur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Önce tüm eski pod'lar silinir, sonra yeni pod'lar oluşturulur"
+        },
+        {
+          "index": 1,
+          "text": "Maksimum 4 pod çalışır ve her seferinde 1 eski pod yeni pod ile değiştirilir"
+        },
+        {
+          "index": 2,
+          "text": "Maksimum 2 pod çalışır ve güncelleme arka planda gerçekleşir"
+        },
+        {
+          "index": 3,
+          "text": "Tüm pod'lar aynı anda güncellenir"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "maxSurge:1 ayarı, güncelleme sırasında normal replica sayısının (3) en fazla 1 fazla pod'a (toplam 4) çıkabileceğini belirtir. maxUnavailable:0 ise hiçbir pod'un çevrimdışı kalamayacağını ifade eder. Bu kombinasyon tam olarak şu şekilde çalışır: 1 yeni pod başlatılır (toplam 4), yeni pod 'Ready' olunca 1 eski pod silinir (toplam 3). Bu süreç tüm pod'lar güncellenene kadar devam eder. Kesintisiz güncelleme sağlamak için ideal ayarlardır."
+    },
+    {
+      "order_index": 5,
+      "is_active": true,
+      "text": "Kubernetes'te bir Service'in `ClusterIP` tipinin temel özelliği nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "İnternet üzerinden erişilebilir bir public IP atar"
+        },
+        {
+          "index": 1,
+          "text": "Her Node'un belirli bir portunu dışarıya açar"
+        },
+        {
+          "index": 2,
+          "text": "Yalnızca cluster içinden erişilebilir, sabit bir sanal IP sağlar"
+        },
+        {
+          "index": 3,
+          "text": "Cloud provider'dan harici Load Balancer talep eder"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "ClusterIP, Kubernetes Service'inin varsayılan tipidir. Cluster içinde sabit bir sanal IP adresi atar ve bu IP yalnızca cluster'ın içinden erişilebilir. Dışarıdan erişim sağlamaz. Microservice'ler arası iç iletişim için ideal çözümdür. Her servis için otomatik olarak bir DNS kaydı da oluşturulur: <service-name>.<namespace>.svc.cluster.local formatında."
+    },
+    {
+      "order_index": 6,
+      "is_active": true,
+      "text": "ConfigMap ile Secret arasındaki temel fark nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "ConfigMap hassas olmayan veri, Secret hassas veri için kullanılır; Secret'larda veri base64 ile encode edilir"
+        },
+        {
+          "index": 1,
+          "text": "ConfigMap'ler yalnızca environment variable olarak, Secret'lar yalnızca dosya olarak bağlanabilir"
+        },
+        {
+          "index": 2,
+          "text": "ConfigMap'ler şifrelenmiş, Secret'lar düz metin olarak saklanır"
+        },
+        {
+          "index": 3,
+          "text": "ConfigMap'ler production'da, Secret'lar yalnızca development'ta kullanılır"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "ConfigMap, hassas olmayan konfigürasyon verilerini (DB host, log level, feature flag vb.) saklamak için kullanılır ve veri düz metin olarak depolanır. Secret ise şifreler, API anahtarları ve TLS sertifikaları gibi hassas verileri saklar; veriler base64 ile encode edilir. Ancak base64 bir şifreleme değil, yalnızca kodlama biçimidir. Production'da Secret güvenliği için RBAC ile erişim kısıtlanmalı, etcd encryption at rest aktif edilmeli, ya da Vault gibi harici secret yönetim sistemleri kullanılmalıdır."
+    },
+    {
+      "order_index": 7,
+      "is_active": true,
+      "text": "Kubernetes'te `kubectl rollout undo deployment/my-app` komutunun işlevi nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Deployment'ı tamamen siler ve yeniden başlatır"
+        },
+        {
+          "index": 1,
+          "text": "Deployment'ı bir önceki revision'a geri döndürür"
+        },
+        {
+          "index": 2,
+          "text": "Tüm pod'ları durdurur ama deployment'ı silmez"
+        },
+        {
+          "index": 3,
+          "text": "Yalnızca image'ı eski versiyona geri döndürür, diğer ayarları korumaz"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "kubectl rollout undo komutu, Deployment'ı bir önceki başarılı revision'a geri döndürür. Kubernetes, her güncelleme ile yeni bir ReplicaSet oluşturur ve eskisini sıfır replica'ya düşürür ama silmez. Rollback sırasında eski ReplicaSet tekrar aktif hale getirilir. Belirli bir revision'a dönmek için --to-revision=<N> parametresi kullanılır. Bu mekanizma, üretim ortamında hatalı bir güncellemenin hızla geri alınmasını sağlar."
+    },
+    {
+      "order_index": 8,
+      "is_active": true,
+      "text": "Bir PersistentVolumeClaim (PVC) oluşturulduğunda STATUS sütununda 'Pending' görünüyorsa bunun olası nedeni nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "PVC'nin namespace'i hatalı tanımlanmıştır"
+        },
+        {
+          "index": 1,
+          "text": "Eşleşen bir PersistentVolume bulunamadı veya dynamic provisioner henüz disk oluşturmadı"
+        },
+        {
+          "index": 2,
+          "text": "Pod henüz PVC'yi kullanmaya başlamadı"
+        },
+        {
+          "index": 3,
+          "text": "StorageClass tanımlanmamış olduğundan hata durumuna düştü"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "PVC 'Pending' durumunda kaldığında Kubernetes uygun bir PersistentVolume bulamıyor veya dynamic provisioning henüz tamamlanmamış demektir. Bu durumun olası nedenleri şunlardır: uygun kapasitede veya access mode'da bir PV mevcut değildir; belirtilen StorageClass geçersizdir; cloud ortamında disk oluşturma işlemi devam etmektedir. 'kubectl describe pvc <name>' komutu ile Events bölümünde detaylı neden görüntülenebilir."
+    },
+    {
+      "order_index": 9,
+      "is_active": true,
+      "text": "Kubernetes'te Namespace kullanmanın birincil amacı nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Farklı Docker image sürümlerini yönetmek"
+        },
+        {
+          "index": 1,
+          "text": "Container'lar arasında ağ iletişimini şifrelemek"
+        },
+        {
+          "index": 2,
+          "text": "Node'lar arasında iş yükünü dengelemek"
+        },
+        {
+          "index": 3,
+          "text": "Tek bir cluster içinde kaynakları mantıksal olarak izole etmek ve organize etmek"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Namespace, tek bir fiziksel Kubernetes cluster'ı içinde birden fazla sanal cluster oluşturmayı sağlar. Farklı ekipler, ortamlar (dev/staging/prod) veya projeler aynı cluster'da izole biçimde çalışabilir. Namespace'ler aynı isimde kaynakların çakışmasını önler, ResourceQuota ile kaynak limitleri uygulanabilir ve RBAC ile ekiplerin yalnızca kendi namespace'lerine erişmesi sağlanabilir."
+    },
+    {
+      "order_index": 10,
+      "is_active": true,
+      "text": "Aşağıdaki kubectl komutu ne yapar? `kubectl get pods -l app=nginx,tier=frontend`",
+      "options": [
+        {
+          "index": 0,
+          "text": "Tüm pod'ları listeler ve 'app=nginx,tier=frontend' sütunlarını gösterir"
+        },
+        {
+          "index": 1,
+          "text": "app=nginx VEYA tier=frontend label'ı olan tüm pod'ları listeler"
+        },
+        {
+          "index": 2,
+          "text": "app=nginx VE tier=frontend label'larının her ikisini de taşıyan pod'ları listeler"
+        },
+        {
+          "index": 3,
+          "text": "Pod'ları 'nginx' ve 'frontend' ismine göre filtreler"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Virgülle ayrılan label selector'lar AND mantığıyla çalışır. Bu komut, hem app=nginx hem de tier=frontend label'larını birlikte taşıyan pod'ları listeler. OR mantığı için 'in' operatörü kullanılır: -l 'app in (nginx, apache)'. Label selector'lar yalnızca pod'larda değil, Service'lerin Pod'ları seçmesinde, Deployment'ın ReplicaSet ile ilişkisinde ve birçok başka yerde de kullanılır."
+    },
+    {
+      "order_index": 11,
+      "is_active": true,
+      "text": "Bir container için `resources.requests.memory: '128Mi'` değeri ne anlama gelir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Container maksimum 128 MiB bellek kullanabilir, bu limit aşılınca kill edilir"
+        },
+        {
+          "index": 1,
+          "text": "Scheduler, bu container'ı barındıracak node'da en az 128 MiB belleğin müsait olmasını bekler"
+        },
+        {
+          "index": 2,
+          "text": "Container başlangıçta 128 MiB bellek kullanır ama sonra azaltabilir"
+        },
+        {
+          "index": 3,
+          "text": "128 MiB belleğin tamamı container'a fiziksel olarak tahsis edilir"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "resources.requests, kube-scheduler'ın pod'u yerleştireceği node'da garantilenen minimum kaynak miktarını belirtir. Scheduler, 128 MiB müsait belleği olmayan node'lara bu pod'u atamaz. Bu değer container'ın kullanabileceği maksimum değil minimumu belirler. Maksimum için resources.limits kullanılır. Bellek limiti aşılırsa container OOMKilled (Out of Memory Killed) hatası ile yeniden başlatılır."
+    },
+    {
+      "order_index": 12,
+      "is_active": true,
+      "text": "Ingress kaynağı oluşturulmasına rağmen trafiğin servislerinize ulaşmamasının en yaygın nedeni nedir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Ingress yalnızca HTTPS trafiğini yönlendirebilir"
+        },
+        {
+          "index": 1,
+          "text": "Cluster'da bir Ingress Controller kurulu olmadığı için Ingress kaynağı işlenemiyor"
+        },
+        {
+          "index": 2,
+          "text": "Ingress, yalnızca ClusterIP tipinde Service'lerle çalışmaz"
+        },
+        {
+          "index": 3,
+          "text": "Ingress kaynağı oluştururken --enable-ingress bayrağı verilmedi"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Kubernetes'te Ingress kaynağı, yalnızca bir tanım (manifest) dosyasıdır. Bu tanımı hayata geçirecek bir Ingress Controller kurulu olmazsa trafik yönlendirmesi gerçekleşmez. NGINX Ingress Controller, Traefik, HAProxy gibi seçeneklerden birinin cluster'a kurulması zorunludur. minikube'de 'minikube addons enable ingress' komutuyla etkinleştirilebilir. GKE, EKS gibi yönetilen cluster'larda genellikle bir controller hazır gelir ya da kolayca etkinleştirilebilir."
+    },
+    {
+      "order_index": 13,
+      "is_active": true,
+      "text": "Aşağıdaki pod tanımında hangi sorun vardır?\n```yaml\nspec:\n  containers:\n  - name: app\n    image: my-app:latest\n    resources:\n      limits:\n        memory: '256Mi'\n        cpu: '500m'\n```",
+      "options": [
+        {
+          "index": 0,
+          "text": "image: latest tag kullanılmamalı, sabit versiyon (1.0.0 gibi) tercih edilmeli"
+        },
+        {
+          "index": 1,
+          "text": "resources.limits tanımlanmış ama resources.requests tanımlanmamış"
+        },
+        {
+          "index": 2,
+          "text": "CPU birimi hatalı, '500m' yerine '0.5' yazılmalı"
+        },
+        {
+          "index": 3,
+          "text": "Hem A hem de B seçenekleri doğrudur"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Bu tanımda iki önemli best practice ihlali var. Birincisi: 'latest' tag kullanmak, yeniden deploy edildiğinde tahmin edilemeyen image sürümlerinin çalışmasına neden olabilir ve reproducibility'yi bozar; daima sabit bir tag (1.2.3 gibi) kullanılmalıdır. İkincisi: resources.limits tanımlanmış ama resources.requests tanımlanmamıştır; bu durumda Kubernetes requests=limits varsayar. İdeal olan her ikisini de açıkça tanımlamak ve requests değerini limits'ten düşük tutmaktır (burst kapasitesi için). CPU birimi '500m' olarak da '0.5' olarak da yazılabilir, her ikisi de doğrudur."
+    },
+    {
+      "order_index": 14,
+      "is_active": true,
+      "text": "Bir pod'un STATUS'u 'CrashLoopBackOff' olarak görünüyor. Bu durumu debug etmek için önce hangi komut çalıştırılmalıdır?",
+      "options": [
+        {
+          "index": 0,
+          "text": "kubectl delete pod <pod-name> ve yeniden oluşturma"
+        },
+        {
+          "index": 1,
+          "text": "kubectl logs <pod-name> --previous komutu ile önceki container'ın loglarını inceleme"
+        },
+        {
+          "index": 2,
+          "text": "kubectl exec -it <pod-name> -- sh ile container'a bağlanma"
+        },
+        {
+          "index": 3,
+          "text": "kubectl scale deployment <name> --replicas=0 ile pod'u durdurma"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "CrashLoopBackOff, container'ın sürekli çöküp yeniden başlatıldığını gösterir. Container çöktüğü için 'exec' ile bağlanmak mümkün olmaz. Önce 'kubectl logs <pod-name> --previous' ile çöken container'ın logları incelenmelidir; bu loglar genellikle hatanın sebebini (yanlış konfigürasyon, bağlantı hatası, startup komutu hatası vb.) açıkça gösterir. Ardından 'kubectl describe pod <pod-name>' ile Events bölümünde ek bilgi aranmalıdır."
+    },
+    {
+      "order_index": 15,
+      "is_active": true,
+      "text": "kube-scheduler'ın bir Pod'u belirli bir Node'a atamamasının nedeni olamaz?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Node'da yetersiz CPU veya memory olması"
+        },
+        {
+          "index": 1,
+          "text": "Pod'un talep ettiği StorageClass'ın o Node'da desteklenmemesi"
+        },
+        {
+          "index": 2,
+          "text": "Node'da çok fazla boş kaynak bulunması (over-provisioned)"
+        },
+        {
+          "index": 3,
+          "text": "Node üzerinde uyumsuz bir Taint bulunması ve Pod'un uygun Toleration'ı olmaması"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "kube-scheduler, Pod'ları yerleştirirken node'ların kaynaklarının yetersizliğine (CPU, memory), Taint/Toleration uyumsuzluklarına, nodeSelector ve affinity kurallarına, storage uyumluluğuna ve daha pek çok kısıtlamaya bakarak eleme yapar. Ancak bir node'da çok fazla boş kaynak olması (over-provisioned) hiçbir zaman bir engel değildir; aksine scheduler bu node'a pod yerleştirmeyi tercih edebilir (en az yüklü node'lar önce tercih edilir). Seçenekler A, B ve D gerçek scheduler engelleridir."
+    },
+    {
+      "order_index": 16,
+      "is_active": true,
+      "text": "Kubernetes'te bir Deployment'ın Recreate stratejisi kullanılması gereken senaryo hangisidir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Mümkün olan en hızlı güncellemeyi yapmak gerektiğinde"
+        },
+        {
+          "index": 1,
+          "text": "Uygulamanın eski ve yeni versiyonunun aynı anda çalışamadığı durumda (örn. veritabanı şema değişikliği)"
+        },
+        {
+          "index": 2,
+          "text": "Cluster'da yalnızca tek bir node bulunduğunda"
+        },
+        {
+          "index": 3,
+          "text": "Rolling update stratejisi etkinleştirilemediğinde"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Recreate stratejisi, tüm eski pod'ları silerek sıfır replica'ya indirip ardından yeni pod'ları başlatır. Bu süreçte kısa bir hizmet kesintisi yaşanır. Bu stratejinin tercih edildiği durum, uygulamanın iki farklı versiyonunun aynı anda çalışmasının sistemi bozacağı senaryolardur; örneğin veritabanı şemasını değiştiren bir migration söz konusuysa, eski kod yeni şemayla veya yeni kod eski şemayla çalışamıyor olabilir. Bu tür 'breaking change' güncellemelerde Recreate daha güvenlidir."
+    },
+    {
+      "order_index": 17,
+      "is_active": true,
+      "text": "Bir Namespace'e `ResourceQuota` uygulandıktan sonra o namespace'de `resources.requests` ve `resources.limits` tanımlamayan bir Pod oluşturulmaya çalışılırsa ne olur?",
+      "options": [
+        {
+          "index": 0,
+          "text": "API Server isteği reddeder; resource tanımlamak zorunlu hale gelir"
+        },
+        {
+          "index": 1,
+          "text": "Pod varsayılan değerlerle oluşturulur"
+        },
+        {
+          "index": 2,
+          "text": "Pod oluşturulur ama kaynak kullanamaz"
+        },
+        {
+          "index": 3,
+          "text": "Pod, diğer pod'ların kaynaklarından payını alarak çalışır"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Bir Namespace'de ResourceQuota tanımlandığında, o namespace'de oluşturulacak tüm container'ların resources.requests ve resources.limits alanlarını belirtmesi zorunlu hale gelir. Bu alanlar tanımlanmadan pod oluşturulmaya çalışılırsa kube-apiserver isteği 'must specify limits for resource' gibi bir hata mesajıyla reddeder. Bu davranış kasıtlıdır: quotayı hesaplayabilmek için her container'ın kaynak talebini bilmesi gerekir. Bu sorunu çözmek için LimitRange ile namespace'e default değerler tanımlanabilir."
+    },
+    {
+      "order_index": 18,
+      "is_active": true,
+      "text": "Aşağıdaki YAML parçasındaki Service hangi pod'lara trafik yönlendirir?\n```yaml\nspec:\n  selector:\n    app: backend\n    version: v2\n```",
+      "options": [
+        {
+          "index": 0,
+          "text": "app=backend VEYA version=v2 label'ı olan tüm pod'lar"
+        },
+        {
+          "index": 1,
+          "text": "Yalnızca app=backend label'ı olan pod'lar"
+        },
+        {
+          "index": 2,
+          "text": "app=backend VE version=v2 label'larının her ikisini de taşıyan pod'lar"
+        },
+        {
+          "index": 3,
+          "text": "app=backend label'ı olan ve v2 versiyonlu image kullanan pod'lar"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Service selector'ları AND mantığıyla çalışır. Bu Service, 'app=backend' VE 'version=v2' label'larının ikisini birlikte taşıyan pod'lara trafik yönlendirir. Sadece 'app=backend' label'ı olan ama 'version=v2' olmayan pod'lar bu Service'e dahil edilmez. Bu özellik, aynı uygulamanın birden fazla versiyonunu cluster'da bulundurarak canary deployment veya blue/green deployment pattern'lerini uygulamayı sağlar."
+    },
+    {
+      "order_index": 19,
+      "is_active": true,
+      "text": "Bir pod'un Readiness Probe'u başarısız olduğunda Kubernetes ne yapar?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Pod'u hemen siler ve yenisini oluşturur"
+        },
+        {
+          "index": 1,
+          "text": "Pod'u yeniden başlatır (restart)"
+        },
+        {
+          "index": 2,
+          "text": "Pod'u 'Failed' durumuna geçirir ve başka bir node'a taşır"
+        },
+        {
+          "index": 3,
+          "text": "Pod'u Service'in Endpoint listesinden çıkarır ama silmez veya yeniden başlatmaz"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Readiness Probe, container'ın trafik almaya hazır olup olmadığını kontrol eder. Başarısız olduğunda Kubernetes, bu pod'u ilgili Service'in Endpoints listesinden çıkarır; böylece yeni istekler bu pod'a yönlendirilmez. Pod silinmez, yeniden başlatılmaz. Bu özellik özellikle şu senaryolarda değerlidir: uygulama yavaş başlayan bir başlangıç süreci (warm-up) yaşıyorsa, geçici olarak aşırı yük altındaysa veya kritik bir bağımlılık (veritabanı gibi) geçici olarak erişilemez durumdaysa. Liveness Probe başarısız olduğunda ise container yeniden başlatılır."
+    },
+    {
+      "order_index": 20,
+      "is_active": true,
+      "text": "Bir DevOps mühendisi, production cluster'ında çalışan bir pod'un içine giremediğini fark ediyor. Pod 'distroless' bir image kullanıyor (bash/sh içermiyor). Bu durumda debug için en uygun yaklaşım hangisidir?",
+      "options": [
+        {
+          "index": 0,
+          "text": "Image'ı shell içeren bir versiyonla değiştirip pod'u yeniden deploy etmek"
+        },
+        {
+          "index": 1,
+          "text": "kubectl debug komutu ile pod'a geçici bir debug container eklemek"
+        },
+        {
+          "index": 2,
+          "text": "Node'a SSH ile bağlanıp container'ı doğrudan inspect etmek"
+        },
+        {
+          "index": 3,
+          "text": "Pod'u silip yeni bir debug image ile oluşturmak"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Kubernetes 1.23+ sürümünde gelen 'kubectl debug' komutu, mevcut bir pod'a shell gibi araçları içeren geçici bir container eklemek için kullanılır: 'kubectl debug -it <pod-name> --image=busybox --target=<container-name>'. Bu sayede production'da çalışan pod'u değiştirmeden, aynı process namespace'ini paylaşan bir debug container başlatılabilir. Pod'u silip yeniden oluşturmak production trafiğini etkiler. Image'ı değiştirmek de aynı riski taşır. Bu nedenle 'kubectl debug' doğru ve güvenli yaklaşımdır."
+    }
+  ]
+}

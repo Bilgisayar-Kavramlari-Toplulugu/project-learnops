@@ -5,6 +5,7 @@
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
+  default     = "learnops-staging"
 }
 
 variable "region" {
@@ -22,45 +23,49 @@ variable "vpc_name" {
 variable "db_instance_name" {
   description = "Cloud SQL instance name"
   type        = string
-  default     = "learnops-db-staging"
+  default     = "learnops-staging-db"
 }
 
 variable "db_name" {
   description = "Database name"
   type        = string
-  default     = "learnops"
+  default     = "learnops-staging-db"
 }
 
 variable "backend_service_name" {
   description = "Backend Cloud Run service name"
   type        = string
-  default     = "learnops-backend-staging"
+  default     = "backend"
 }
 
 variable "frontend_service_name" {
   description = "Frontend Cloud Run service name"
   type        = string
-  default     = "learnops-frontend-staging"
+  default     = "frontend"
 }
 
 variable "frontend_domain" {
   description = "Custom domain for frontend HTTPS endpoint (must point A record to frontend static IP)"
   type        = string
+  default     = "learnops-staging.findmywayapp.com"
 }
 
 variable "github_repo" {
   description = "GitHub repository name used as Artifact Registry repository prefix"
   type        = string
+  default     = "project-learnops"
 }
 
 variable "backend_image" {
   description = "Backend Docker image in Artifact Registry"
   type        = string
+  default     = "europe-west3-docker.pkg.dev/learnops-staging/project-learnops-backend/backend:latest"
 }
 
 variable "frontend_image" {
   description = "Frontend Docker image in Artifact Registry"
   type        = string
+  default     = "europe-west3-docker.pkg.dev/learnops-staging/project-learnops-frontend/frontend:latest"
 }
 
 variable "artifact_registry_region" {
@@ -121,4 +126,16 @@ variable "secret_token_encryption_key" {
   description = "Secret Manager secret ID for token encryption key"
   type        = string
   default     = "TOKEN_ENCRYPTION_KEY"
+}
+
+variable "secret_backend_public_url" {
+  description = "Secret Manager secret ID for backend public URL (used in OAuth callback URLs)"
+  type        = string
+  default     = "BACKEND_PUBLIC_URL"
+}
+
+variable "secret_frontend_public_url" {
+  description = "Secret Manager secret ID for frontend public URL (used in OAuth callback URLs)"
+  type        = string
+  default     = "FRONTEND_PUBLIC_URL"
 }

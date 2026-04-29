@@ -1,0 +1,180 @@
+---
+id: "git-005-remote"
+title: "Remote Repository: push, pull, fetch"
+order: 50
+order_index: 50
+---
+
+# Remote Repository: push, pull, fetch
+
+Yerel depoda çalışmak güçlüdür; ancak ekip çalışması için değişiklikleri paylaşılabilir bir uzak depoya (remote repository) göndermeniz gerekir. GitHub, GitLab ve Bitbucket en yaygın barındırma platformlarıdır.
+
+## Remote Nedir?
+
+Remote, internet üzerinde veya ağda erişilebilen bir Git deposudur. Yerel deponuz, bir ya da birden fazla remote ile bağlantılı olabilir. Varsayılan olarak ilk remote **`origin`** adını alır.
+
+```bash
+# Bağlı remote'ları listele
+git remote -v
+# origin  https://github.com/kullanici/proje.git (fetch)
+# origin  https://github.com/kullanici/proje.git (push)
+```
+
+## Uzak Depoya Bağlanma
+
+### Mevcut Yerel Depoyu Remote'a Bağlama
+
+GitHub'da yeni bir depo oluşturduktan sonra:
+
+```bash
+git remote add origin https://github.com/kullanici/proje.git
+
+# Doğrula
+git remote -v
+```
+
+### Remote Depoyu Klonlama
+
+Var olan uzak bir depoyu yerel makineye kopyalar; remote bağlantısı otomatik kurulur:
+
+```bash
+git clone https://github.com/kullanici/proje.git
+cd proje
+
+# Remote otomatik eklenmiştir
+git remote -v
+# origin  https://github.com/kullanici/proje.git (fetch)
+# origin  https://github.com/kullanici/proje.git (push)
+```
+
+## git push — Değişiklikleri Gönderme
+
+Yerel commit'leri remote depoya yükler.
+
+```bash
+# İlk push (upstream ayarlar)
+git push -u origin main
+
+# Sonraki push'lar kısaca
+git push
+
+# Belirli bir branch'i gönder
+git push origin feature/yeni-ozellik
+
+# Branch'i remote'dan sil
+git push origin --delete eski-branch
+```
+
+`-u` (upstream) bayrağı, yerel `main` branch'ini `origin/main` ile ilişkilendirir; sonraki push ve pull işlemlerinde hedef belirtmenize gerek kalmaz.
+
+> **Güvenlik notu:** `git push --force` komutu uzak geçmişi yeniden yazar. Paylaşılan branch'lerde **kesinlikle kullanmayın**. Gerekirse `--force-with-lease` kullanın: bu, başkasının push ettiği commit'lerin üstüne yazmaz.
+
+## git fetch — Değişiklikleri İndirme (Birleştirmeden)
+
+Uzak depodaki yeni commit'leri indirir; ancak yerel çalışma alanınıza dokunmaz.
+
+```bash
+# Tüm remote'lardan güncelleme al
+git fetch
+
+# Belirli bir remote'dan
+git fetch origin
+
+# Belirli bir branch
+git fetch origin main
+```
+
+`fetch` sonrası remote'daki değişiklikleri inceleyebilirsiniz:
+
+```bash
+git log origin/main --oneline
+git diff main origin/main
+```
+
+**Ne zaman kullanılır:** "Uzakta ne değişti?" diye bakmak istediğinizde, yerel çalışmanızı bozmadan. `fetch` güvenlidir.
+
+## git pull — Fetch + Merge
+
+`fetch` işlemini yapar, ardından aktif branch'inize birleştirir. `git fetch` + `git merge` kısayoludur.
+
+```bash
+git pull
+
+# Rebase ile çek (daha temiz geçmiş)
+git pull --rebase
+```
+
+```
+git pull eşdeğeri:
+  git fetch origin
+  git merge origin/main
+```
+
+### fetch vs pull — Hangisini Kullanmalı?
+
+| Komut | Ne yapar | Ne zaman |
+|---|---|---|
+| `git fetch` | İndirir, birleştirmez | "Önce bakayım" durumları |
+| `git pull` | İndirir ve birleştirir | Güncelleme almak istediğinizde |
+| `git pull --rebase` | İndirir, rebase eder | Temiz, doğrusal geçmiş için |
+
+Ekip çalışmalarında `git pull --rebase`, merge commit kalabalığını önlediği için tercih edilir.
+
+## Kimlik Doğrulama
+
+### HTTPS (Kullanıcı Adı + Token)
+
+GitHub, 2021'den itibaren şifre yerine **Personal Access Token (PAT)** kullanılmasını zorunlu kıldı:
+
+```bash
+# İlk push'ta sorulur:
+# Username: kullanici-adiniz
+# Password: ghp_xxxxxxxxxxxx  ← GitHub PAT
+```
+
+Kimlik bilgilerini saklamak için:
+
+```bash
+git config --global credential.helper store
+# ~/.git-credentials dosyasına yazar (düz metin, dikkatli olun)
+```
+
+### SSH (Önerilen)
+
+SSH anahtarı kuruluysa şifre sormadan çalışır:
+
+```bash
+# SSH anahtarı oluştur
+ssh-keygen -t ed25519 -C "email@ornek.com"
+
+# Açık anahtarı GitHub'a ekle (~/.ssh/id_ed25519.pub içeriği)
+
+# Remote URL'yi SSH formatına çevir
+git remote set-url origin git@github.com:kullanici/proje.git
+
+# Test et
+ssh -T git@github.com
+# Hi kullanici! You've successfully authenticated...
+```
+
+## Tipik Günlük Akış
+
+```bash
+# Sabah: son değişiklikleri al
+git switch main
+git pull
+
+# Yeni branch oluştur
+git switch -c feature/yeni-ozellik
+
+# Çalış, commit yap
+git add .
+git commit -m "feat: yeni özellik eklendi"
+
+# Remote'a gönder
+git push -u origin feature/yeni-ozellik
+
+# GitHub'da Pull Request aç
+```
+
+Bir sonraki bölümde, aynı dosyayı aynı anda iki kişi değiştirdiğinde ortaya çıkan merge conflict'i nasıl çözeceğinizi öğreneceğiz.

@@ -1,0 +1,413 @@
+---
+id: "k8s-004-deployment"
+title: "Deployment ve ReplicaSet"
+order: 40
+order_index: 40
+---
+
+# Deployment ve ReplicaSet
+
+Önceki bölümde öğrendiğimiz gibi, tek başına Pod'lar production için yeterli değildir. Deployment ve ReplicaSet, Pod'ları gerçek anlamda yönetilebilir hale getirir. Bu bölümde bu iki kritik kaynağı, rolling update stratejisini ve production'da uygulama yönetiminin temellerini öğreneceğiz.
+
+## ReplicaSet Nedir?
+
+ReplicaSet, belirli sayıda özdeş Pod kopyasının her zaman çalışır durumda olmasını garantiler.
+
+```
+ReplicaSet (replicas: 3)
+├── Pod-abc  ← Running ✅
+├── Pod-def  ← Running ✅
+└── Pod-ghi  ← Running ✅
+
+Pod-def çöktü!
+├── Pod-abc  ← Running ✅
+├── Pod-ghi  ← Running ✅
+└── Pod-xyz  ← Yeni pod oluşturuldu ✅ (Controller otomatik!)
+```
+
+```yaml
+# replicaset.yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-rs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx      # Bu label'ı taşıyan pod'ları yönet
+  template:           # Pod şablonu
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25
+```
+
+> ⚠️ **Neden ReplicaSet Doğrudan Kullanmıyoruz?**
+> ReplicaSet, image güncellemeyi veya rolling update'i desteklemez. Bu yüzden neredeyse her zaman **Deployment** üzerinden kullanılır.
+
+---
+
+## Deployment Nedir?
+
+Deployment, **ReplicaSet'leri yöneten** daha üst seviye bir kaynaktır. ReplicaSet'e ek olarak şunları sağlar:
+
+- **Rolling updates:** Uygulamayı kesintisiz günceller
+- **Rollback:** Hata durumunda önceki versiyona döner
+- **Revision history:** Güncelleme geçmişini saklar
+- **Pause/Resume:** Güncellemeyi durdurup devam ettirebilir
+
+```
+Deployment
+    │
+    ├── ReplicaSet (v1 - eski)  → 0 pod
+    └── ReplicaSet (v2 - güncel) → 3 pod  ← aktif
+```
+
+---
+
+## Deployment YAML Anatomisi
+
+```yaml
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3                    # Kaç pod olsun?
+
+  selector:                      # Hangi pod'ları yönet?
+    matchLabels:
+      app: nginx
+
+  strategy:                      # Güncelleme stratejisi
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1                # Güncelleme sırasında max kaç fazla pod olabilir?
+      maxUnavailable: 0          # Güncelleme sırasında max kaç pod çevrimdışı olabilir?
+
+  template:                      # Pod şablonu (metadata + spec)
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.24        # Bu image ile başla
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+```
+
+---
+
+## Deployment'ı Oluşturun ve Yönetin
+
+```bash
+# Oluştur
+kubectl apply -f deployment.yaml
+
+# Durumu izle
+kubectl get deployment nginx-deployment
+# NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+# nginx-deployment   3/3     3            3           30s
+
+# READY: hazır/toplam
+# UP-TO-DATE: en son spec ile güncel pod sayısı
+# AVAILABLE: kullanılabilir pod sayısı
+
+# Pod'ları görüntüle (deployment hangi pod'ları yönetiyor)
+kubectl get pods -l app=nginx
+# NAME                                READY   STATUS    RESTARTS   AGE
+# nginx-deployment-7d5d4d5b-abc12     1/1     Running   0          30s
+# nginx-deployment-7d5d4d5b-def34     1/1     Running   0          30s
+# nginx-deployment-7d5d4d5b-ghi56     1/1     Running   0          30s
+
+# ReplicaSet'i görüntüle
+kubectl get replicaset
+# NAME                          DESIRED   CURRENT   READY   AGE
+# nginx-deployment-7d5d4d5b     3         3         3       30s
+```
+
+---
+
+## Rolling Update Nasıl Çalışır?
+
+Rolling update, eski pod'ları birer birer yenisiyle değiştirerek kesintisiz güncelleme sağlar:
+
+```
+Başlangıç: image: nginx:1.24
+Pod-1 (v1.24) ✅
+Pod-2 (v1.24) ✅
+Pod-3 (v1.24) ✅
+
+Güncelleme Başladı: image → nginx:1.25
+maxSurge: 1, maxUnavailable: 0 ile:
+
+Adım 1:
+Pod-1 (v1.24) ✅
+Pod-2 (v1.24) ✅
+Pod-3 (v1.24) ✅
+Pod-4 (v1.25) 🔄 (yeni pod başlatılıyor, surge=1)
+
+Adım 2:
+Pod-2 (v1.24) ✅
+Pod-3 (v1.24) ✅
+Pod-4 (v1.25) ✅  (ready oldu)
+← Pod-1 silindi
+
+Adım 3:
+Pod-3 (v1.24) ✅
+Pod-4 (v1.25) ✅
+Pod-5 (v1.25) ✅
+← Pod-2 silindi
+
+Son Durum:
+Pod-4 (v1.25) ✅
+Pod-5 (v1.25) ✅
+Pod-6 (v1.25) ✅
+```
+
+### Update Komutları
+
+```bash
+# Image'ı güncelle (yöntem 1: imperative)
+kubectl set image deployment/nginx-deployment nginx=nginx:1.25
+
+# YAML'dan güncelle (yöntem 2: declarative - önerilen)
+# deployment.yaml'da image: nginx:1.25 yap, sonra:
+kubectl apply -f deployment.yaml
+
+# Patch ile güncelle (yöntem 3)
+kubectl patch deployment nginx-deployment \
+  -p '{"spec":{"template":{"spec":{"containers":[{"name":"nginx","image":"nginx:1.25"}]}}}}'
+
+# Güncelleme durumunu izle
+kubectl rollout status deployment/nginx-deployment
+# Waiting for deployment "nginx-deployment" rollout to finish:
+# 1 out of 3 new replicas have been updated...
+# 2 out of 3 new replicas have been updated...
+# deployment "nginx-deployment" successfully rolled out
+```
+
+---
+
+## Rollback: Önceki Versiyona Dönme
+
+```bash
+# Revision geçmişini gör
+kubectl rollout history deployment/nginx-deployment
+# REVISION  CHANGE-CAUSE
+# 1         <none>
+# 2         <none>
+
+# Rollout nedeni kaydet (--record artık deprecated, annotation kullanın)
+kubectl annotate deployment nginx-deployment \
+  kubernetes.io/change-cause="nginx 1.24 → 1.25 yükseltme"
+
+# Son adıma geri dön (rollback)
+kubectl rollout undo deployment/nginx-deployment
+
+# Belirli bir revision'a dön
+kubectl rollout undo deployment/nginx-deployment --to-revision=1
+
+# Rollback durumunu izle
+kubectl rollout status deployment/nginx-deployment
+```
+
+---
+
+## Scaling: Pod Sayısını Değiştirme
+
+```bash
+# Manuel scale
+kubectl scale deployment nginx-deployment --replicas=5
+
+# YAML ile scale (önerilen)
+# deployment.yaml'da replicas: 5 yap
+kubectl apply -f deployment.yaml
+
+# Anlık pod sayısını izle
+kubectl get pods -l app=nginx -w
+```
+
+---
+
+## Deployment Stratejileri
+
+### RollingUpdate (Varsayılan)
+
+```yaml
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%        # %25 fazla pod
+    maxUnavailable: 25%  # %25 çevrimdışı olabilir
+```
+
+**Ne zaman kullanılır:** Çoğu production senaryosu. Kesintisiz güncelleme sağlar.
+
+### Recreate
+
+```yaml
+strategy:
+  type: Recreate
+```
+
+Tüm eski pod'lar silinir, sonra yeniler başlatılır. Kısa süre kesinti yaşanır.
+
+**Ne zaman kullanılır:** Eski ve yeni versiyon aynı anda çalışamayacaksa (DB şema değişikliği gibi).
+
+---
+
+## Deployment Annotations ve Labels Best Practices
+
+```yaml
+metadata:
+  name: my-app
+  labels:
+    app: my-app           # Uygulama adı
+    version: "2.1.0"      # Versiyon
+    tier: backend         # Katman
+    environment: prod     # Ortam
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+    kubernetes.io/change-cause: "Bug fix: session timeout #1234"
+    contact: "backend-team@example.com"
+```
+
+---
+
+## Deployment'ı Pause ve Resume Etme
+
+Büyük güncelleme yapılacaksa önce pause, sonra birden fazla değişiklik, sonra resume:
+
+```bash
+# Güncellemeyi durdur
+kubectl rollout pause deployment/nginx-deployment
+
+# Birden fazla değişiklik yap
+kubectl set image deployment/nginx-deployment nginx=nginx:1.25
+kubectl set resources deployment/nginx-deployment \
+  -c nginx --limits=cpu=200m,memory=256Mi
+
+# Tüm değişiklikleri bir anda uygula
+kubectl rollout resume deployment/nginx-deployment
+```
+
+---
+
+## 🛠️ Hands-on: Deployment ile Rolling Update
+
+**Adım 1:** Deployment oluşturun:
+
+```bash
+cat > app-deployment.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment - v1"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: webapp
+        version: "1"
+    spec:
+      containers:
+      - name: webapp
+        image: nginx:1.24-alpine
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 3
+          periodSeconds: 3
+EOF
+
+kubectl apply -f app-deployment.yaml
+kubectl get pods -l app=webapp -w
+```
+
+**Adım 2:** Güncelleme yapın ve izleyin:
+
+```bash
+# Yeni terminal açın
+kubectl get pods -l app=webapp -w
+
+# Mevcut terminalde image güncelle
+kubectl set image deployment/webapp webapp=nginx:1.25-alpine
+kubectl annotate deployment webapp \
+  kubernetes.io/change-cause="Upgrade to nginx 1.25" --overwrite
+
+# Güncellemeyi izleyin
+kubectl rollout status deployment/webapp
+```
+
+**Adım 3:** History'ye bakın ve rollback yapın:
+
+```bash
+kubectl rollout history deployment/webapp
+kubectl rollout undo deployment/webapp
+kubectl rollout status deployment/webapp
+```
+
+**Adım 4:** Ölçeklendirin:
+
+```bash
+kubectl scale deployment webapp --replicas=5
+kubectl get pods -l app=webapp
+kubectl scale deployment webapp --replicas=2
+```
+
+**Temizlik:**
+```bash
+kubectl delete deployment webapp
+```
+
+---
+
+## Özet
+
+Bu bölümde şunları öğrendik:
+
+- **ReplicaSet:** Belirli sayıda özdeş Pod'un her zaman çalışmasını garantiler
+- **Deployment:** ReplicaSet'leri yöneten, güncelleme ve rollback desteği olan üst seviye kaynak
+- **Rolling Update:** Eski pod'ları birer birer yenisiyle değiştirerek kesintisiz güncelleme
+- **maxSurge / maxUnavailable:** Güncelleme sırasında pod sayısını kontrol eden parametreler
+- **Rollback:** `kubectl rollout undo` ile önceki versiyona dönme
+- **Scaling:** `kubectl scale` ile pod sayısını değiştirme
+- **Recreate stratejisi:** Eski/yeni versiyon uyumsuz durumlarda kullanılır
+
+Bir sonraki bölümde Deployment'larımıza ağ erişimi sağlayan **Service** kavramını öğreneceğiz.

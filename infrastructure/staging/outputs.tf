@@ -3,13 +3,13 @@
 # ===========================
 
 output "frontend_url" {
-  description = "Frontend application public HTTPS URL (via load balancer + managed cert)"
-  value       = local.frontend_public_url
+  description = "Public-facing frontend URL (custom domain via load balancer)"
+  value       = "https://${var.frontend_domain}"
 }
 
 output "backend_url" {
-  description = "Backend API public URL (direct Cloud Run URL)"
-  value       = local.backend_public_url
+  description = "Backend Cloud Run public URL"
+  value       = google_cloud_run_v2_service.backend.uri
 }
 
 output "frontend_static_ip" {
@@ -76,8 +76,6 @@ output "frontend_service_account" {
 output "deployment_info" {
   description = "Deployment information"
   value = {
-    frontend_url       = local.frontend_public_url
-    backend_url        = local.backend_public_url
     frontend_domain    = var.frontend_domain
     frontend_static_ip = google_compute_global_address.frontend_ip.address
     frontend_run_url   = google_cloud_run_v2_service.frontend.uri
