@@ -10,9 +10,11 @@ on:
     paths:
       - "content/**"
       - "backend/scripts/db_update.py"
+      - "backend/scripts/seed_content.py"
+      - "backend/scripts/seed_quiz.py"
       - "backend/Dockerfile.job"
-      - ".github/workflows/content-deploy.yaml" 
-      - "backend/**"  # Trigger on migration changes to run them in the same job 
+      - "backend/alembic/versions/**"  # Migration changes must also run the content job
+      - ".github/workflows/content-deploy.yaml"
   workflow_dispatch:
 
 concurrency:
@@ -39,12 +41,55 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # Required for Workload Identity Federation
+      id-token: write   # Required for Workload Identity Federation
+      actions: read     # Required to poll deploy-staging workflow status
 
     steps:
       # ── Checkout ────────────────────────────────────────────────────────────
       - name: Checkout code
         uses: actions/checkout@v6
+
+      # ── Wait for deploy-staging ──────────────────────────────────────────────
+      # If a backend change also triggered deploy-staging on this commit, wait
+      # for it to finish before we build and run the content job.  This prevents
+      # a race where content-deploy runs migrations against a DB that is still
+      # being updated by the staging deployment (e.g. Terraform secret creation).
+      - name: Wait for deploy-staging to complete
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Waiting up to 15 min for any concurrent deploy-staging run on ${{ github.sha }}..."
+          # Small initial delay so deploy-staging has time to be queued.
+          sleep 15
+          RUN_ID=""
+          for attempt in 1 2 3 4 5; do
+            RUN_ID=$(gh run list \
+              --workflow="deploy-staging.yaml" \
+              --commit="${{ github.sha }}" \
+              --status="in_progress" \
+              --json databaseId \
+              --jq '.[0].databaseId // empty' \
+              --repo "${{ github.repository }}")
+            [ -n "$RUN_ID" ] && break
+            # Also check if it is still queued.
+            RUN_ID=$(gh run list \
+              --workflow="deploy-staging.yaml" \
+              --commit="${{ github.sha }}" \
+              --status="queued" \
+              --json databaseId \
+              --jq '.[0].databaseId // empty' \
+              --repo "${{ github.repository }}")
+            [ -n "$RUN_ID" ] && break
+            sleep 10
+          done
+          if [ -n "$RUN_ID" ]; then
+            echo "Found deploy-staging run $RUN_ID — waiting for completion."
+            gh run watch "$RUN_ID" --exit-status --repo "${{ github.repository }}"
+            echo "deploy-staging finished."
+          else
+            echo "No active deploy-staging run found for this commit. Proceeding."
+          fi
 
       # ── GCP authentication (Workload Identity — same as other workflows) ────
       - name: Authenticate to Google Cloud
