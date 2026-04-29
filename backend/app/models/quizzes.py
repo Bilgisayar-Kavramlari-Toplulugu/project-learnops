@@ -2,9 +2,21 @@
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, Text, text
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy import (
+    text as sql_text,
+)
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,7 +37,9 @@ class Quiz(BaseModel):
     - course_id: Parent course (FK, UNIQUE)
     - pass_threshold: NUMERIC(3,2) decimal (e.g., 0.70 = %70 required to pass)
       Requirement FR-17: %70 geçme notu varsayılan
-    - duration_seconds: Quiz time limit in seconds (1200 = 20 minutes default)
+    - duration_seconds: Quiz time limit in seconds (no DB default — value always
+      written explicitly by seed_quiz.py: beginner=1500, intermediate=2000,
+      advanced=2500)
       Requirement FR-15: Backend verifies submitted_at - started_at <=
       duration_seconds + 30s tolerance
     """
@@ -35,17 +49,20 @@ class Quiz(BaseModel):
     course_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("courses.id", ondelete="CASCADE"), unique=True
     )
-    pass_threshold: Mapped[float] = mapped_column(
-        Numeric(3, 2), nullable=False, default=0.70
+    pass_threshold: Mapped[Decimal] = mapped_column(
+        Numeric(3, 2),
+        nullable=False,
+        default=Decimal("0.70"),
+        server_default=sql_text("0.70"),  # DB-level default for direct SQL inserts
     )
-    duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=1200)
+    duration_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Relationships
     course: Mapped["Course"] = relationship("Course", back_populates="quiz")
-    questions: Mapped[list] = relationship(
+    questions: Mapped[list["Question"]] = relationship(
         "Question", back_populates="quiz", cascade="all, delete-orphan"
     )
-    attempts: Mapped[list] = relationship(
+    attempts: Mapped[list["QuizAttempt"]] = relationship(
         "QuizAttempt", back_populates="quiz", cascade="all, delete-orphan"
     )
 
@@ -63,6 +80,7 @@ class Question(BaseModel):
       Only returned in submit response showing correct answer to user
     - explanation: Why this answer is correct (shown on result review page)
     - order_index: Question sequence within quiz
+    - is_active: Whether question is active (K-2: faulty questions set to false)
     """
 
     __tablename__ = "questions"
@@ -75,6 +93,7 @@ class Question(BaseModel):
     correct_index: Mapped[int] = mapped_column(Integer, nullable=False)
     explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Relationships
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="questions")
@@ -113,7 +132,7 @@ class QuizAttempt(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=sql_text("gen_random_uuid()"),
         nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
@@ -136,7 +155,7 @@ class QuizAttempt(Base):
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="quiz_attempts")
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="attempts")
-    answers: Mapped[list] = relationship(
+    answers: Mapped[list["QuizAttemptAnswer"]] = relationship(
         "QuizAttemptAnswer", back_populates="attempt", cascade="all, delete-orphan"
     )
 
@@ -161,11 +180,14 @@ class QuizAttemptAnswer(Base):
     """
 
     __tablename__ = "quiz_attempt_answers"
+    __table_args__ = (
+        UniqueConstraint("attempt_id", "question_id", name="uq_attempt_question"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
-        server_default=text("gen_random_uuid()"),
+        server_default=sql_text("gen_random_uuid()"),
         nullable=False,
     )
     attempt_id: Mapped[uuid.UUID] = mapped_column(

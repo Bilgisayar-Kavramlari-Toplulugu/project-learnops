@@ -1,0 +1,66 @@
+---
+id: "git-001-nedir"
+title: "Versiyon Kontrolü Neden Var?"
+order: 10
+order_index: 10
+---
+
+# Versiyon Kontrolü Neden Var?
+
+Bir proje üzerinde çalışırken kaç kez `proje_final.zip`, `proje_final_v2.zip`, `proje_GERCEKTEN_SON.zip` gibi dosyalar oluşturdunuz? Bu klasik problem, yazılım dünyasında onlarca yıl boyunca geliştirilen **versiyon kontrol sistemlerinin** temel çıkış noktasıdır.
+
+## Versiyon Kontrolü Olmadan Ne Olur?
+
+Versiyon kontrolsüz çalışmak birkaç kritik sorunu beraberinde getirir:
+
+- **Geçmiş kaybı:** Bir önceki çalışan sürüme dönmek zorunda kaldığınızda hangi dosyayı geri alacağınızı bilemezsiniz.
+- **Ekip kaosu:** İki kişi aynı dosyayı düzenlediğinde biri diğerinin değişikliklerini ezer.
+- **"Kim yaptı?" sorusu:** Hatalı bir satırın kim tarafından, ne zaman ve neden eklendiğini anlayamazsınız.
+- **Paralel geliştirme imkânsızlığı:** Aynı anda hem yeni özellik geliştirip hem de mevcut hatayı düzeltemezsiniz.
+
+## Versiyon Kontrolü Ne Sağlar?
+
+Bir versiyon kontrol sistemi (VCS), bir projedeki tüm değişikliklerin zaman damgalı, imzalı ve geri alınabilir bir geçmişini tutar.
+
+```
+Zaman →
+[İlk Sürüm] → [Özellik A Eklendi] → [Hata Düzeltildi] → [Özellik B Eklendi]
+     ↑ İstediğiniz noktaya dönebilirsiniz
+```
+
+Temel kazanımlar şunlardır:
+
+1. **Tam geçmiş:** Her değişiklik, kim yaptığı ve neden yaptığına dair notla birlikte saklanır.
+2. **Geri alma:** Herhangi bir önceki duruma güvenle dönebilirsiniz.
+3. **Paralel çalışma:** Farklı özellikler bağımsız dallarda geliştirilir, hazır olunca birleştirilir.
+4. **İşbirliği:** Onlarca geliştirici çakışma olmadan aynı kod tabanında çalışabilir.
+
+## Merkezi vs. Dağıtık Sistemler
+
+Tarihsel olarak iki model vardır:
+
+**Merkezi VCS (örn. SVN):** Tek bir sunucu tüm geçmişi tutar. Sunucu çökerse tarih erişilemez hale gelir; çevrimdışı çalışamazsınız.
+
+**Dağıtık VCS (örn. Git):** Her geliştirici, deponun **tam geçmişini** kendi makinesinde taşır. Sunucu olmadan da commit yapabilir, geçmişi inceleyebilirsiniz.
+
+> **Git dağıtık modeldir.** Bu, Git'in en güçlü özelliklerinden birinin temelidir: her kopya (clone) tam birer yedektir.
+
+## Git'in Kısa Tarihi
+
+Git, 2005 yılında **Linus Torvalds** tarafından Linux çekirdeği geliştirme sürecini yönetmek amacıyla yazılmıştır. Dönemin ticari aracı olan BitKeeper'ın lisansı iptal edilince Torvalds, 10 günde Git'in ilk çalışan sürümünü geliştirdi.
+
+Tasarım hedefleri şunlardı: hız, basit tasarım, güçlü dal (branch) desteği, tam dağıtık yapı ve Linux çekirdeği ölçeğinde büyük projeleri yönetebilme kapasitesi.
+
+Bugün Git, dünya genelinde en yaygın kullanılan versiyon kontrol sistemidir.
+
+## Özet
+
+| Sorun | Git Çözümü |
+|---|---|
+| "Eski hali nasıl geri alırım?" | Her commit geri alınabilir |
+| "Kim bu satırı değiştirdi?" | `git blame` komutu |
+| "Aynı anda iki özellik geliştireyim" | Branch (dal) |
+| "Ekibim benim değişikliklerimi eziyor" | Merge ve conflict çözümü |
+| "Sunucu çöktü, her şey gitti" | Her kopya tam geçmişi taşır |
+
+Bir sonraki bölümde Git'i kurup ilk konfigürasyonu yapacağız.

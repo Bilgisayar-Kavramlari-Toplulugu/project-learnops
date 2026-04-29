@@ -1,0 +1,519 @@
+---
+id: "tf-008-best"
+title: "Production Terraform: Workspace, Lock, CI"
+order: 80
+order_index: 80
+---
+
+# Production Terraform: Workspace, Lock, CI
+
+Bu kursun son bölümünde Terraform'u gerçekten production-grade kullanmak için bilmeniz gereken her şeyi ele alıyoruz. Workspace ile ortam yönetimi, provider lock dosyaları, CI/CD entegrasyonu ve gerçek dünya projelerinden dersler. Burası teorinin gerçeğe dönüştüğü bölüm.
+
+---
+
+## Terraform Workspace
+
+Workspace, **aynı konfigürasyonu farklı state dosyaları ile** çalıştırmanızı sağlar.
+
+```bash
+# Mevcut workspace'i gör
+terraform workspace show
+# default
+
+# Workspace listesi
+terraform workspace list
+# * default
+
+# Yeni workspace oluştur ve geç
+terraform workspace new staging
+# Created and switched to workspace "staging"!
+
+terraform workspace new production
+# Created and switched to workspace "production"!
+
+# Workspace'ler arasında geçiş
+terraform workspace select staging
+
+# Workspace sil (aktif olamazsa silebilirsiniz)
+terraform workspace delete staging
+```
+
+Her workspace **ayrı bir state** kullanır:
+
+```
+# Remote backend ile workspace state yolları:
+gs://learnops-terraform-state/
+  learnops/terraform.tfstate           # default workspace
+  learnops/env:/staging/terraform.tfstate
+  learnops/env:/production/terraform.tfstate
+```
+
+### Workspace'i Konfigürasyonda Kullanma
+
+```hcl
+locals {
+  # terraform.workspace: "default", "staging", "production"
+  ortam = terraform.workspace == "default" ? "development" : terraform.workspace
+
+  instance_sayisi = {
+    development = 1
+    staging     = 1
+    production  = 3
+  }
+
+  makine_tipi = {
+    development = "e2-micro"
+    staging     = "e2-small"
+    production  = "e2-standard-4"
+  }
+}
+
+resource "google_compute_instance_template" "app" {
+  name_prefix  = "learnops-${local.ortam}-"
+  machine_type = local.makine_tipi[local.ortam]
+
+  # ...
+}
+
+resource "google_compute_instance_group_manager" "app" {
+  name               = "learnops-${local.ortam}-igm"
+  target_size        = local.instance_sayisi[local.ortam]
+  # ...
+}
+```
+
+### Workspace vs Farklı Konfigürasyon Klasörleri
+
+| Yaklaşım | Workspace | Ayrı Klasörler |
+|----------|-----------|-----------------|
+| State izolasyonu | ✅ | ✅ |
+| Kod tekrarı | Az (paylaşılan kod) | Daha fazla |
+| Ortamlar arası fark | Değişkenle | Farklı `.tf` dosyaları |
+| Kullanım kolaylığı | ✅ Basit | Daha karmaşık |
+| Güçlü izolasyon | ⚠️ Orta | ✅ Yüksek |
+
+**Ne zaman hangisi?**
+- **Workspace**: Ortamlar çok benzer (sadece boyut/replica farkı)
+- **Ayrı klasörler**: Ortamlar ciddi ölçüde farklı veya tam izolasyon gerekiyorsa
+
+---
+
+## Provider Lock Dosyası Derinlemesine
+
+`.terraform.lock.hcl` dosyası provider versiyonlarını kilitler. Neden bu kadar önemli?
+
+```
+Senaryo:
+- Ali: Perşembe günü terraform init yaptı. hashicorp/google v5.21.0 kuruldu.
+- Ayşe: Pazartesi günü terraform init yaptı. hashicorp/google v5.25.0 (yeni release) kuruldu.
+- Aynı kod, farklı provider versiyonu → Farklı davranış!
+```
+
+Lock dosyası ile bu tutarsızlık önlenir:
+
+```hcl
+# .terraform.lock.hcl
+
+provider "registry.terraform.io/hashicorp/google" {
+  version     = "5.21.0"
+  constraints = "~> 5.0"
+  hashes = [
+    "h1:abcdef...",  # Platform-specific binary hash
+    "zh:123456...",  # Zip hash (platform-agnostic)
+  ]
+}
+```
+
+**Hash'ler ne işe yarar?** Güvenlik garantisi sağlar — indirilen binary'nin beklenen binary olduğunu doğrular (supply chain attack koruması).
+
+### Lock Dosyasını Güncelleme
+
+```bash
+# Provider'ı kasıtlı olarak güncelle
+terraform init -upgrade
+
+# Lock dosyası güncellendi — değişiklikleri incele
+git diff .terraform.lock.hcl
+
+# Farklı platformlar için hash ekle (CI/CD + local için)
+terraform providers lock \
+  -platform=linux_amd64 \
+  -platform=darwin_amd64 \
+  -platform=darwin_arm64 \
+  hashicorp/google
+```
+
+---
+
+## Pre-commit ile Kod Kalitesi
+
+Her commit'ten önce otomatik kontroller çalıştırın:
+
+```yaml
+# .pre-commit-config.yaml
+
+repos:
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.89.0
+    hooks:
+      # Terraform formatlama
+      - id: terraform_fmt
+
+      # Sözdizimi doğrulama
+      - id: terraform_validate
+
+      # Güvenlik taraması (tfsec)
+      - id: terraform_tfsec
+        args:
+          - --args=--exclude-downloaded-modules
+
+      # Dokümantasyon güncelleme (terraform-docs)
+      - id: terraform_docs
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+
+      # Sentinel/OPA policy check
+      - id: terraform_checkov
+```
+
+```bash
+# pre-commit kurulumu
+pip install pre-commit
+pre-commit install
+
+# Manuel çalıştır
+pre-commit run --all-files
+```
+
+---
+
+## tfsec ile Güvenlik Taraması
+
+```bash
+# Kurulum
+brew install tfsec  # veya
+go install github.com/aquasecurity/tfsec/cmd/tfsec@latest
+
+# Tarama
+tfsec .
+
+# Örnek çıktı:
+# CRITICAL  google-storage-bucket-no-public-access-prevention
+#   Bucket has public access prevention disabled
+#   /modules/storage/main.tf:15
+#   Resource: google_storage_bucket.assets
+```
+
+**Yaygın güvenlik bulguları ve çözümleri:**
+
+```hcl
+# ❌ Sorun: Public bucket
+resource "google_storage_bucket" "assets" {
+  name = "my-bucket"
+  # public_access_prevention yok
+}
+
+# ✅ Çözüm:
+resource "google_storage_bucket" "assets" {
+  name                        = "my-bucket"
+  public_access_prevention    = "enforced"  # veya "inherited"
+  uniform_bucket_level_access = true
+}
+```
+
+---
+
+## Production CI/CD Pipeline'ı
+
+```yaml
+# .github/workflows/terraform.yml
+
+name: Terraform CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+
+env:
+  TF_VERSION: "1.7.5"
+  TF_WORKING_DIR: "./infrastructure"
+
+jobs:
+  # PR için: Validate + Plan
+  terraform-check:
+    name: Terraform Validate & Plan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        # ❌ Format hatalıysa pipeline durur — PR merge edilemez
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          TF_WORKSPACE: staging
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: tfsec Güvenlik Taraması
+        uses: aquasecurity/tfsec-action@v1.0.0
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -out=tfplan.binary -no-color
+        env:
+          TF_WORKSPACE: staging
+
+      - name: Plan Çıktısını PR'a Yaz
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `#### Terraform Plan 📋
+            \`\`\`
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\``;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+  # Main'e merge sonrası: Apply
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production  # GitHub ortam koruyucusu — manuel onay
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Terraform Init
+        run: terraform init
+        env:
+          TF_WORKSPACE: production
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        env:
+          TF_WORKSPACE: production
+```
+
+---
+
+## Drift Detection: Gerçek ile Kodu Senkron Tutmak
+
+Birisi konsoldan elle değişiklik yaptığında (drift), bunu tespit etmek önemlidir:
+
+```bash
+# Gerçek altyapı ile state arasındaki farkı göster
+terraform plan -refresh-only
+
+# Eğer drift varsa:
+# Option A: Drift'i kabul et (state'i gerçekle senkronla)
+terraform apply -refresh-only
+
+# Option B: Drift'i reddet (gerçeği koda döndür)
+terraform apply  # Konfigürasyonu gerçeğe uygular
+```
+
+**Scheduled Drift Detection:**
+
+```yaml
+# .github/workflows/drift-detection.yml
+on:
+  schedule:
+    - cron: '0 8 * * 1-5'  # Hafta içi her sabah 08:00
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Terraform Plan (drift kontrolü için)
+        run: terraform plan -detailed-exitcode
+        # exit code 0: değişiklik yok
+        # exit code 1: hata
+        # exit code 2: değişiklik var (drift!)
+```
+
+---
+
+## Gerçek Projelerden Dersler
+
+### Ders 1: Önce Plan, Her Zaman
+
+```bash
+# 🚫 Tehlikeli
+terraform apply
+
+# ✅ Güvenli
+terraform plan -out=tfplan.binary
+# Plan'ı incele, onaya sun
+terraform apply tfplan.binary
+```
+
+### Ders 2: `-target` Tuzağı
+
+```bash
+# ⚠️ Sadece acil durumlarda kullanın
+terraform apply -target=google_compute_instance.web
+
+# Neden tehlikeli?
+# Bağımlı kaynakları atlar — state tutarsız hale gelebilir
+# Her -target sonrası tam plan yapın
+```
+
+### Ders 3: Silme Koruması
+
+```hcl
+# Production'da kritik kaynakları koruyun
+resource "google_sql_database_instance" "main" {
+  deletion_protection = true  # GCP seviyesinde koruma
+
+  lifecycle {
+    prevent_destroy = true  # Terraform seviyesinde koruma
+  }
+}
+```
+
+### Ders 4: State Backup Ritüeli
+
+```bash
+# Apply öncesi state backup al
+terraform state pull > backup-$(date +%Y%m%d-%H%M%S).tfstate
+
+# Felaket senaryosunda geri dön
+terraform state push backup-20240115-142200.tfstate
+```
+
+---
+
+## Hands-on: Production-Ready Proje Yapısı
+
+Gerçek bir projenin klasör yapısı:
+
+```
+infrastructure/
+  bootstrap/           # State bucket oluşturma (bir kere çalışır)
+    main.tf
+
+  environments/
+    development/
+      backend.tf       # backend "gcs" { prefix = "dev" }
+      main.tf          # module çağrıları
+      variables.tf
+      terraform.tfvars # (gitignore'da!)
+
+    staging/
+      backend.tf
+      main.tf
+      variables.tf
+
+    production/
+      backend.tf
+      main.tf
+      variables.tf
+
+  modules/
+    network/
+    database/
+    cloud-run/
+    iam/
+
+  .terraform.lock.hcl  # Git'e commit edilir
+  .gitignore
+  README.md
+```
+
+**Bu bölümün son alıştırması:**
+
+Kursun tüm bölümlerini birleştiren gerçek bir proje oluşturun. Şu gereksinimleri karşılamalı:
+
+1. Remote GCS backend
+2. Staging ve production workspace
+3. `modules/cloud-run` modülü
+4. pre-commit hooks (fmt + validate)
+5. GitHub Actions CI/CD pipeline
+
+---
+
+## Özet: Terraform Altın Kuralları
+
+Bu kursun tamamında öğrendiklerimizin özeti:
+
+| Kural | Açıklama |
+|-------|----------|
+| **State'i remote tut** | GCS, S3 — asla local disk |
+| **Lock dosyasını commit et** | `.terraform.lock.hcl` Git'te olmalı |
+| **Her zaman önce plan** | `terraform plan -out=tfplan && terraform apply tfplan` |
+| **Production'ı koru** | `prevent_destroy = true`, `deletion_protection = true` |
+| **Sırları kodda tutma** | Secret Manager, Vault veya CI/CD secrets |
+| **Modül yaz** | DRY prensibini uygula, yeniden kullanılabilirlik |
+| **Drift'i izle** | Scheduled plan ile periyodik kontrol |
+| **Güvenliği tara** | tfsec, checkov CI'ye entegre et |
+| **IaC = tek kaynak** | Konsol değişikliklerini kabul etme |
+
+---
+
+## Kurs Sonu: Hands-on Proje
+
+**Öğrendiklerinizi pekiştirmek için final projesini tamamlayın:**
+
+LearnOps uygulamasının GCP altyapısını Terraform ile kodlayın:
+
+1. **VPC** — Private subnet, firewall kuralları
+2. **Cloud SQL** — PostgreSQL 15, private IP
+3. **Cloud Run** — Backend servisi, VPC connector
+4. **GCS** — Assets bucket, lifecycle policy
+5. **IAM** — Service account, en az yetki
+6. **Remote Backend** — GCS state bucket
+7. **CI/CD** — GitHub Actions ile otomatik plan/apply
+
+Her kaynak için:
+- Production ve staging farkını `workspace` ile yönetin
+- `prevent_destroy` ile kritik kaynakları koruyun
+- Output'lar anlamlı ve kullanılabilir olsun
+
+Bu proje; ilerleyen kariyer adımlarınızda GitHub profilinizde gösterebileceğiniz, production-grade bir Terraform referansı olacak. Başarılar! 🚀

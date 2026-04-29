@@ -1,0 +1,9 @@
+{
+  "slug": "cicd-kavramlarina-giris",
+  "title": "CI/CD Kavramlarına Giriş",
+  "description": "Continuous Integration ve Continuous Deployment kavramlarını öğrenin; GitHub Actions, pipeline tasarımı, deployment stratejileri ve secrets yönetimini uygulayın.",
+  "category": "devops",
+  "difficulty": "beginner",
+  "duration_minutes": 60,
+  "is_published": false
+}

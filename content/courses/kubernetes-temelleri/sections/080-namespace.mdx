@@ -1,0 +1,380 @@
+---
+id: "k8s-008-namespace"
+title: "Namespace ile İzolasyon"
+order: 80
+order_index: 80
+---
+
+# Namespace ile İzolasyon
+
+Büyüyen bir organizasyonda farklı ekipler, farklı projeler veya farklı ortamlar aynı Kubernetes cluster'ını paylaşabilir. **Namespace** bu senaryoları yönetmek için cluster kaynaklarını mantıksal olarak bölen bir mekanizmadır.
+
+## Namespace Nedir?
+
+Namespace, tek bir fiziksel cluster içinde sanal cluster'lar oluşturmayı sağlar:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                 Kubernetes Cluster                       │
+│                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐ │
+│  │  development │  │    staging   │  │  production   │ │
+│  │  namespace   │  │  namespace   │  │  namespace    │ │
+│  │              │  │              │  │               │ │
+│  │ pod: app-dev │  │ pod: app-stg │  │ pod: app-prod │ │
+│  │ svc: backend │  │ svc: backend │  │ svc: backend  │ │
+│  └──────────────┘  └──────────────┘  └───────────────┘ │
+│                                                         │
+│  Aynı isimdeki kaynaklar farklı namespace'lerde olabilir│
+└─────────────────────────────────────────────────────────┘
+```
+
+Namespace şunları sağlar:
+- **İsim çakışması önleme:** Aynı isimde kaynak farklı namespace'lerde olabilir
+- **Resource Quota:** Namespace'e CPU, memory, pod sayısı limiti koyma
+- **RBAC izolasyonu:** Ekiplere yalnızca kendi namespace erişimi verme
+- **Organizasyonel düzen:** Ortam, ekip veya proje bazlı gruplama
+
+---
+
+## Varsayılan Namespace'ler
+
+```bash
+kubectl get namespaces
+# NAME              STATUS   AGE
+# default           Active   1d   ← kubectl'in varsayılan yeri
+# kube-system       Active   1d   ← K8s sistem bileşenleri
+# kube-public       Active   1d   ← Herkese açık, genellikle boş
+# kube-node-lease   Active   1d   ← Node heartbeat'leri
+```
+
+| Namespace | Kullanım |
+|-----------|---------|
+| `default` | Namespace belirtilmeden oluşturulan kaynaklar buraya gider |
+| `kube-system` | Kubernetes'in kendi bileşenleri (apiserver, scheduler, coredns...) |
+| `kube-public` | Kimlik doğrulama olmadan erişilebilir kaynaklar |
+| `kube-node-lease` | Node sağlık bildirim sistemi |
+
+---
+
+## Namespace Oluşturma
+
+```bash
+# Komut satırından
+kubectl create namespace development
+kubectl create namespace staging
+kubectl create namespace production
+
+# YAML ile
+cat > namespaces.yaml << 'EOF'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-backend
+  labels:
+    team: backend
+    env: development
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-frontend
+  labels:
+    team: frontend
+    env: development
+EOF
+
+kubectl apply -f namespaces.yaml
+kubectl get namespaces
+```
+
+---
+
+## Namespace ile Kaynak Yönetimi
+
+```bash
+# Belirli namespace'e kaynak oluştur
+kubectl apply -f deployment.yaml -n development
+
+# YAML'de namespace belirtme
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  namespace: development    # ← Namespace burada belirtilir
+```
+
+```bash
+# Belirli namespace'deki kaynakları listele
+kubectl get pods -n development
+kubectl get pods -n kube-system
+
+# Tüm namespace'lerdeki kaynakları listele
+kubectl get pods --all-namespaces
+kubectl get pods -A  # Kısaltma
+
+# Namespace'e ait tüm kaynaklar
+kubectl get all -n development
+```
+
+---
+
+## Default Namespace Değiştirme
+
+Her seferinde `-n development` yazmak yerine:
+
+```bash
+# Mevcut context bilgisi
+kubectl config current-context
+
+# Mevcut namespace'i değiştir
+kubectl config set-context --current --namespace=development
+
+# Artık -n development yazmana gerek yok
+kubectl get pods  # Otomatik olarak development namespace'de
+
+# kubens aracı ile (kurulu değilse: brew install kubectx)
+kubens development
+kubens default
+```
+
+---
+
+## Namespace Arası DNS
+
+Farklı namespace'lerdeki servisler birbirine DNS ile erişebilir:
+
+```
+Aynı namespace içinde:
+  http://backend-service
+
+Farklı namespace'den:
+  http://backend-service.development.svc.cluster.local
+            ┌─────────┘  ┌──────────────────────────────┐
+            Service adı  Namespace.svc.cluster.local
+```
+
+```yaml
+# Örnek: frontend (team-frontend namespace) → backend (team-backend namespace)
+env:
+- name: BACKEND_URL
+  value: "http://api-service.team-backend.svc.cluster.local:8080"
+```
+
+---
+
+## ResourceQuota: Namespace'e Kaynak Limiti
+
+Bir namespace'in kullanabileceği maksimum kaynağı sınırlamak için:
+
+```yaml
+# resource-quota.yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-quota
+  namespace: development
+spec:
+  hard:
+    # Pod sayısı
+    pods: "20"
+    # CPU
+    requests.cpu: "4"        # Toplam requests max
+    limits.cpu: "8"          # Toplam limits max
+    # Memory
+    requests.memory: 4Gi
+    limits.memory: 8Gi
+    # Service sayısı
+    services: "10"
+    # PVC sayısı
+    persistentvolumeclaims: "5"
+    # ConfigMap sayısı
+    configmaps: "20"
+```
+
+```bash
+kubectl apply -f resource-quota.yaml
+
+# Quota kullanımını gör
+kubectl describe resourcequota dev-quota -n development
+# Name:                   dev-quota
+# Namespace:              development
+# Resource                Used  Hard
+# --------                ----  ----
+# limits.cpu              500m  8
+# limits.memory           256Mi 8Gi
+# pods                    3     20
+```
+
+---
+
+## LimitRange: Default Resource Limitleri
+
+Namespace içindeki her container için default limits tanımlar:
+
+```yaml
+# limitrange.yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+  namespace: development
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: "500m"
+      memory: "256Mi"
+    defaultRequest:
+      cpu: "100m"
+      memory: "64Mi"
+    max:
+      cpu: "2"
+      memory: "1Gi"
+    min:
+      cpu: "50m"
+      memory: "32Mi"
+```
+
+Bu sayede geliştirici `resources` yazmayı unutsa bile default değerler uygulanır.
+
+---
+
+## Namespace Silme
+
+```bash
+# Namespace ve içindeki TÜM kaynakları siler (dikkatli!)
+kubectl delete namespace development
+
+# Yavaş siliniyorsa, finalizer sorununa bakın
+kubectl get namespace development -o yaml | grep finalizers
+```
+
+> ⚠️ **Uyarı:** Namespace silindiğinde içindeki PVC'ler de silinir. Reclaim policy `Retain` olmayan PV'ların verileri kaybolabilir!
+
+---
+
+## Namespace Best Practices
+
+**Organizasyonel yaklaşımlar:**
+
+```
+Seçenek 1: Ortam bazlı
+├── dev
+├── staging
+└── prod
+
+Seçenek 2: Ekip bazlı
+├── team-backend
+├── team-frontend
+└── team-data
+
+Seçenek 3: Hibrit
+├── backend-dev
+├── backend-prod
+├── frontend-dev
+└── frontend-prod
+```
+
+**Genel kurallar:**
+- `kube-system` ve `default` namespace'lerine uygulama deploy etme
+- Her namespace için ResourceQuota ve LimitRange tanımla
+- Namespace isimleri küçük harf, tire (-) ile ayırılmış olsun
+- Namespace'lere anlamlı label'lar ekle (team, env, cost-center)
+
+---
+
+## 🛠️ Hands-on: Çok Ortamlı Senaryo
+
+**Adım 1:** Development ve staging namespace'leri oluşturun:
+
+```bash
+kubectl create namespace dev
+kubectl create namespace staging
+
+# Label ekle
+kubectl label namespace dev environment=development team=backend
+kubectl label namespace staging environment=staging team=backend
+```
+
+**Adım 2:** Her namespace'e aynı uygulamayı farklı konfigürasyonla deploy edin:
+
+```bash
+# Dev ortamı
+kubectl create configmap app-config \
+  --from-literal=LOG_LEVEL=debug \
+  --from-literal=REPLICA_COUNT=1 \
+  -n dev
+
+kubectl create deployment nginx \
+  --image=nginx:1.25 \
+  --replicas=1 \
+  -n dev
+
+# Staging ortamı
+kubectl create configmap app-config \
+  --from-literal=LOG_LEVEL=info \
+  --from-literal=REPLICA_COUNT=2 \
+  -n staging
+
+kubectl create deployment nginx \
+  --image=nginx:1.25 \
+  --replicas=2 \
+  -n staging
+```
+
+**Adım 3:** İzolasyonu gözlemleyin:
+
+```bash
+# Her namespace bağımsız
+kubectl get pods -n dev
+kubectl get pods -n staging
+kubectl get pods -A  # Hepsi birden
+
+# ConfigMap izolasyonu
+kubectl get configmap -n dev
+kubectl get configmap -n staging
+```
+
+**Adım 4:** ResourceQuota ekleyin:
+
+```bash
+cat > dev-quota.yaml << 'EOF'
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-quota
+  namespace: dev
+spec:
+  hard:
+    pods: "5"
+    requests.cpu: "1"
+    limits.cpu: "2"
+    requests.memory: 512Mi
+    limits.memory: 1Gi
+EOF
+
+kubectl apply -f dev-quota.yaml
+kubectl describe resourcequota -n dev
+```
+
+**Temizlik:**
+```bash
+kubectl delete namespace dev staging
+```
+
+---
+
+## Özet
+
+Bu bölümde Namespace ile izolasyonu öğrendik:
+
+- Namespace, tek cluster içinde sanal cluster'lar oluşturur
+- Varsayılan namespace'ler: `default`, `kube-system`, `kube-public`, `kube-node-lease`
+- Farklı namespace'lerdeki aynı isimli kaynaklar çakışmaz
+- **ResourceQuota:** Namespace'e kaynak limiti koyar
+- **LimitRange:** Container'lara default resource değerleri atar
+- Namespace arası DNS: `<service>.<namespace>.svc.cluster.local`
+- Production ortamında her ekip/ortam için ayrı namespace önerilir
+
+Bir sonraki bölümde dışarıdan gelen HTTP/HTTPS trafiğini cluster'ın içine yönlendiren **Ingress Controller** kavramını öğreneceğiz.

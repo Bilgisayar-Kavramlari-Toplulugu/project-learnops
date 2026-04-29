@@ -4,7 +4,7 @@ export default function OAuthButtonContainer() {
   const providers = [
     { name: "Google", comingSoon: false },
     { name: "GitHub", comingSoon: false },
-    { name: "LinkedIn", comingSoon: true },
+    { name: "LinkedIn", comingSoon: false },
   ];
 
   return (

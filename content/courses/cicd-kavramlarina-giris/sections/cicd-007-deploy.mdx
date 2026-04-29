@@ -1,0 +1,43 @@
+---
+id: "cicd-007-deploy"
+title: "Deployment Stratejileri"
+order: 70
+order_index: 70
+---
+# **Kesintisiz Geçişin Sırrı: Deployment Stratejileri**
+
+Canlı ortamdaki (*production*) bir uygulamayı güncellemek, **saatte 120 km hızla giden bir arabanın lastiklerini değiştirmeye benzer.** İşte bu riskli işlemi yönetme biçimlerimiz:
+
+## **1\. Rolling Deployment (Kademeli Dağıtım)**
+
+En yaygın ve doğal yöntemdir. Sunucularınızın (veya konteynırlarınızın) hepsini birden değil, sırayla güncellersiniz.
+
+* **Nasıl Çalışır?** 10 adet sunucunuz olduğunu düşünün. Önce 1\. sunucuyu kapatıp yeni sürümü yüklersiniz, o ayağa kalkınca 2\. sunucuya geçersiniz.
+* **Avantajı:** Hiçbir zaman sistem tamamen kapanmaz (**Zero Downtime**).
+* **Dezavantajı:** Güncelleme sırasında bazı kullanıcılar eski sürümü, bazıları yeni sürümü görür. Bu da geçici veri uyumsuzluklarına yol açabilir.
+
+## **2\. Blue/Green Deployment (Mavi/Yeşil Dağıtım)**
+
+Bu yöntemde "risk" kelimesine yer yoktur. Elinizde iki tane tıpatıp aynı ortam (sunucu grubu) bulunur.
+
+* **Nasıl Çalışır?** Mevcut çalışan sistem **Blue (Mavi)** olsun. Yeni sürümü tamamen ayrı bir yer olan **Green (Yeşil)** ortama kurarsınız. Her şeyin çalıştığından emin olduğunuzda, bir "şalteri" (*Load Balancer*) çevirerek tüm trafiği saniyeler içinde Green'e yönlendirirsiniz.
+* **Avantajı:** Bir sorun çıkarsa şalteri geri çevirip eski sisteme (Blue) anında dönebilirsiniz (**Instant Rollback**).
+* **Dezavantajı:** Aynı anda iki katı sunucu maliyeti gerektirir.
+
+## **3\. Canary Deployment (Kanarya Dağıtım)**
+
+İsmini madencilerin yanlarında taşıdığı kanaryalardan alır. Madendeki tehlikeyi (gazı) önce kanaryanın fark etmesi gibi, hatayı da önce küçük bir grup fark eder.
+
+* **Nasıl Çalışır?** Yeni sürümü tüm kullanıcılara değil, sadece %5'lik bir kısıma açarsınız. Eğer bu %5'lik grupta çökme yaşanmazsa, oranı kademeli olarak %20, %50 ve %100'e çıkarırsınız.
+* **Avantajı:** Büyük bir hata varsa, bu hata tüm kullanıcıları değil sadece çok küçük bir grubu etkiler. Risk yönetimi için zirve noktadır.
+* **Dezavantajı:** Trafiği bu şekilde bölmek teknik olarak biraz daha karmaşık bir altyapı gerektirir.
+
+### **Özet Karşılaştırma Tablosu**
+
+| Strateji | Maliyet | Risk | Geri Dönüş (Rollback) |
+| :---- | :---- | :---- | :---- |
+| **Rolling** | Düşük | Orta | Yavaş |
+| **Blue/Green** | Yüksek | Çok Düşük | Çok Hızlı |
+| **Canary** | Orta | En Düşük | Hızlı |
+
+>Sonuç: Hangi stratejinin seçileceği; bütçenize, altyapı karmaşıklığınıza ve hataya olan toleransınıza bağlıdır.

@@ -1,0 +1,468 @@
+---
+id: "tf-003-hcl"
+title: "HCL: Resource, Variable, Output, Local"
+order: 30
+order_index: 30
+---
+
+# HCL: Resource, Variable, Output, Local
+
+HashiCorp Configuration Language (HCL), Terraform'un kullandığı özel konfigürasyon dilidir. JSON'dan daha okunabilir, XML'den çok daha az ayrıntılı. Bu bölümde HCL'in dört temel yapı taşını — `resource`, `variable`, `output` ve `local` — gerçek senaryolarla öğreniyoruz.
+
+---
+
+## HCL Temel Sözdizimi
+
+Başlamadan önce HCL'in temel kurallarını görelim:
+
+```hcl
+# Bu bir yorum satırı
+
+# Blok yapısı
+<BLOK_TİPİ> "<TİP>" "<İSİM>" {
+  argüman1 = "değer"
+  argüman2 = 42
+  argüman3 = true
+}
+
+# Tek değer atama
+değişken_adi = "değer"
+
+# Referans
+resource "google_storage_bucket" "main" {
+  name = var.bucket_name  # Başka bloğa referans
+}
+```
+
+**HCL'de Veri Tipleri:**
+
+```hcl
+# String
+isim = "terraform"
+
+# Number
+port = 8080
+
+# Boolean
+aktif = true
+
+# List
+bölgeler = ["us-central1", "europe-west1", "asia-east1"]
+
+# Map
+etiketler = {
+  ortam = "production"
+  ekip  = "backend"
+}
+
+# null
+değer = null
+```
+
+---
+
+## 1. Resource Bloğu
+
+`resource` bloğu, Terraform'un oluşturacağı, yöneteceği veya sileceği gerçek altyapı bileşenlerini tanımlar.
+
+### Temel Sözdizimi
+
+```hcl
+resource "<PROVIDER>_<TİP>" "<YEREL_İSİM>" {
+  # argümanlar
+}
+```
+
+- `PROVIDER`: google, aws, azurerm, github vb.
+- `TİP`: compute_instance, storage_bucket, sql_database vb.
+- `YEREL_İSİM`: Bu Terraform konfigürasyonu içinde kullandığınız referans adı
+
+### Örnek: Birden Fazla İlişkili Resource
+
+```hcl
+# GCP'de bir network ve subnet oluştur
+resource "google_compute_network" "main" {
+  name                    = "learnops-vpc"
+  auto_create_subnetworks = false
+}
+
+resource "google_compute_subnetwork" "backend" {
+  name          = "backend-subnet"
+  ip_cidr_range = "10.0.1.0/24"
+  region        = "europe-west3"
+
+  # Yukarıdaki network'e referans veriyor
+  network = google_compute_network.main.id
+  #         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  #         <RESOURCE_TİPİ>.<YEREL_İSİM>.<ATTRIBUTE>
+}
+```
+
+Bu referans mekanizması son derece güçlüdür: Terraform, kaynaklar arasındaki bağımlılıkları otomatik olarak çözümler ve doğru sırayla oluşturur.
+
+### Resource Meta-Argümanları
+
+Her resource'da kullanabileceğiniz özel argümanlar:
+
+```hcl
+resource "google_compute_instance" "web" {
+  # ... normal argümanlar ...
+
+  # ─── META-ARGÜMANLAR ───────────────────────────────────
+
+  # 1. count: Aynı resource'dan birden fazla oluştur
+  count = 3
+
+  # 2. for_each: Map veya set üzerinden iterasyon
+  for_each = toset(["europe-west1", "us-central1"])
+
+  # 3. depends_on: Explicit bağımlılık
+  depends_on = [google_compute_network.main]
+
+  # 4. lifecycle: Resource yaşam döngüsünü özelleştir
+  lifecycle {
+    prevent_destroy = true          # Silmeyi engelle
+    create_before_destroy = true    # Önce yeni oluştur, sonra eskiyi sil
+    ignore_changes = [labels]       # Bu attribute değişirse Terraform'u tetikleme
+  }
+}
+```
+
+### count ile Çoklu Resource
+
+```hcl
+variable "sunucu_sayisi" {
+  type    = number
+  default = 3
+}
+
+resource "google_compute_instance" "web" {
+  count = var.sunucu_sayisi
+
+  name         = "web-server-${count.index}"
+  machine_type = "e2-micro"
+  # count.index = 0, 1, 2 şeklinde artar
+}
+
+# Referans: google_compute_instance.web[0], web[1], web[2]
+```
+
+---
+
+## 2. Variable Bloğu
+
+`variable` bloğu, Terraform konfigürasyonunuzu **parametrik** hale getirir. Aynı kod, farklı değerlerle farklı ortamlara deploy edilebilir.
+
+### Temel Sözdizimi
+
+```hcl
+variable "<İSİM>" {
+  type        = <TİP>
+  description = "Bu değişkenin ne işe yaradığı"
+  default     = <VARSAYILAN_DEĞER>
+  sensitive   = false  # true ise Terraform output'larda gizler
+
+  validation {
+    condition     = <KOŞUL>
+    error_message = "Hata mesajı"
+  }
+}
+```
+
+### Variable Tipleri
+
+```hcl
+# Basit tipler
+variable "bölge" {
+  type    = string
+  default = "europe-west3"
+}
+
+variable "instance_sayisi" {
+  type    = number
+  default = 2
+}
+
+variable "public_erişim" {
+  type    = bool
+  default = false
+}
+
+# Karmaşık tipler
+variable "makine_tipleri" {
+  type    = list(string)
+  default = ["e2-micro", "e2-small", "e2-medium"]
+}
+
+variable "etiketler" {
+  type = map(string)
+  default = {
+    ortam = "development"
+    ekip  = "devops"
+  }
+}
+
+# Object tipi — birden fazla alan içeren yapı
+variable "veritabani_config" {
+  type = object({
+    boyut         = string
+    versiyon      = string
+    yedek_aktif   = bool
+  })
+  default = {
+    boyut       = "db-f1-micro"
+    versiyon    = "POSTGRES_15"
+    yedek_aktif = true
+  }
+}
+```
+
+### Validation ile Giriş Doğrulama
+
+```hcl
+variable "ortam" {
+  type = string
+
+  validation {
+    condition     = contains(["development", "staging", "production"], var.ortam)
+    error_message = "Ortam yalnızca 'development', 'staging' veya 'production' olabilir."
+  }
+}
+
+variable "port" {
+  type = number
+
+  validation {
+    condition     = var.port >= 1 && var.port <= 65535
+    error_message = "Port numarası 1-65535 arasında olmalıdır."
+  }
+}
+```
+
+### Variable Değerlerini Belirleme
+
+Değişken değerlerini üç yolla belirleyebilirsiniz:
+
+```bash
+# 1. CLI argümanı
+terraform apply -var="bölge=us-central1"
+
+# 2. terraform.tfvars dosyası (otomatik yüklenir)
+# terraform.tfvars içinde:
+bölge = "europe-west3"
+instance_sayisi = 5
+
+# 3. .tfvars dosyası (manuel belirtin)
+terraform apply -var-file="production.tfvars"
+```
+
+> ⚠️ **Güvenlik Uyarısı:** `terraform.tfvars` ve özel `.tfvars` dosyalarını **asla** Git'e commit etmeyin! Şifre, API key gibi hassas değerler içerebilir. `.gitignore`'a ekleyin:
+> ```
+> *.tfvars
+> !example.tfvars  # Örnek dosyayı commit edebilirsiniz
+> ```
+
+---
+
+## 3. Output Bloğu
+
+`output` bloğu, Terraform apply sonrası kullanıcıya veya diğer Terraform modüllerine döndürülecek değerleri tanımlar.
+
+```hcl
+output "sunucu_ip" {
+  description = "Web sunucusunun dış IP adresi"
+  value       = google_compute_instance.web.network_interface[0].access_config[0].nat_ip
+}
+
+output "veritabani_baglanti" {
+  description = "Veritabanı bağlantı bilgisi"
+  value       = google_sql_database_instance.main.connection_name
+  sensitive   = false
+}
+
+output "bucket_url" {
+  description = "Storage bucket'ın tam URL'i"
+  value       = "gs://${google_storage_bucket.assets.name}"
+}
+```
+
+Apply sonrası çıktılar terminalde görünür:
+
+```
+Outputs:
+sunucu_ip = "34.89.123.45"
+veritabani_baglanti = "project:region:instance"
+bucket_url = "gs://learnops-assets-prod"
+```
+
+Sonradan da sorgulayabilirsiniz:
+
+```bash
+terraform output sunucu_ip
+terraform output -json  # Tüm outputları JSON formatında al
+```
+
+### sensitive Output
+
+```hcl
+output "db_sifre" {
+  value     = random_password.db.result
+  sensitive = true  # Terminalde gizlenir
+}
+```
+
+---
+
+## 4. Local Bloğu
+
+`local` bloğu, konfigürasyon içinde tekrar kullanılacak ara değerleri tanımlar. Programlamadaki yerel değişkenlerin karşılığıdır.
+
+```hcl
+locals {
+  # Tekrar kullanılacak sabit değerler
+  proje_adi = "learnops"
+  ortam     = "production"
+
+  # Dinamik hesaplama
+  tam_isim  = "${local.proje_adi}-${local.ortam}"
+
+  # Karmaşık expression'lar
+  ortak_etiketler = {
+    proje     = local.proje_adi
+    ortam     = local.ortam
+    yönetilen = "terraform"
+    son_güncelleme = timestamp()
+  }
+
+  # Koşullu değer
+  makine_tipi = var.ortam == "production" ? "e2-standard-4" : "e2-micro"
+}
+
+# Kullanım
+resource "google_compute_instance" "app" {
+  name         = "${local.tam_isim}-server"
+  machine_type = local.makine_tipi
+  labels       = local.ortak_etiketler
+}
+```
+
+**`variable` vs `local` ne zaman?**
+
+| `variable` | `local` |
+|------------|---------|
+| Dışarıdan değer almak istiyorsunuz | İçeride hesaplama yapıyorsunuz |
+| Kullanıcı/ortam değiştirebilmeli | Sabit veya türetilmiş değer |
+| `var.xyz` ile referans | `local.xyz` ile referans |
+
+---
+
+## Gerçek Dünya Örneği: Hepsini Birleştirmek
+
+```hcl
+# variables.tf
+variable "proje_id" {
+  type        = string
+  description = "GCP proje ID'si"
+}
+
+variable "ortam" {
+  type    = string
+  default = "development"
+
+  validation {
+    condition     = contains(["development", "staging", "production"], var.ortam)
+    error_message = "Geçersiz ortam değeri."
+  }
+}
+
+variable "bölge" {
+  type    = string
+  default = "europe-west3"
+}
+
+# locals.tf
+locals {
+  isim_eki      = "${var.ortam}-${var.bölge}"
+  bucket_adi    = "learnops-assets-${local.isim_eki}"
+  silme_koruması = var.ortam == "production"
+
+  ortak_etiketler = {
+    proje  = "learnops"
+    ortam  = var.ortam
+    bölge  = var.bölge
+    yönetim = "terraform"
+  }
+}
+
+# main.tf
+resource "google_storage_bucket" "assets" {
+  name          = local.bucket_adi
+  location      = "EU"
+  force_destroy = !local.silme_koruması
+
+  labels = local.ortak_etiketler
+}
+
+# outputs.tf
+output "bucket_adı" {
+  description = "Oluşturulan bucket'ın adı"
+  value       = google_storage_bucket.assets.name
+}
+
+output "bucket_url" {
+  description = "Bucket'ın tam URL'i"
+  value       = "gs://${google_storage_bucket.assets.name}"
+}
+```
+
+Farklı ortamlar için:
+
+```bash
+# Development
+terraform apply -var="proje_id=learnops-dev" -var="ortam=development"
+
+# Production
+terraform apply -var="proje_id=learnops-prod" -var="ortam=production"
+```
+
+---
+
+## Hands-on: Web Uygulaması Altyapısı
+
+**Görev:** Aşağıdaki gereksinimleri karşılayan bir Terraform konfigürasyonu yazın:
+
+1. `ortam` (development/staging/production) değişkeni olsun
+2. `production`'da makine tipi `e2-standard-2`, diğerlerinde `e2-micro` olsun
+3. Tüm kaynaklara `ortam` ve `proje=learnops` etiketleri eklensin
+4. Apply sonrası sunucu adı output olarak gösterilsin
+
+```hcl
+# Çözüm şablonu
+variable "ortam" {
+  type    = string
+  default = "development"
+}
+
+locals {
+  makine_tipi = var.ortam == "production" ? "e2-standard-2" : "e2-micro"
+  etiketler   = {
+    proje = "learnops"
+    ortam = var.ortam
+  }
+}
+
+# ... resource ve output bloklarını siz tamamlayın!
+```
+
+---
+
+## Özet
+
+Bu bölümde HCL'in dört temel yapı taşını öğrendik:
+
+- **`resource`**: Gerçek altyapı bileşenlerini tanımlar; `count`, `for_each`, `lifecycle` ile güçlenir
+- **`variable`**: Konfigürasyonu parametrik yapar; tip doğrulaması güvenliği artırır
+- **`output`**: Terraform sonuçlarını dışa çıkarır; modüller arası iletişimi sağlar
+- **`local`**: Tekrar kullanılacak ara değerleri ve hesaplamaları yönetir
+
+Bir sonraki bölümde Terraform'un belki de en kritik konusu olan **state yönetimi** ve **remote backend**'i inceleyeceğiz.

@@ -1,0 +1,415 @@
+---
+id: "k8s-005-service"
+title: "Service: ClusterIP, NodePort, LoadBalancer"
+order: 50
+order_index: 50
+---
+
+# Service: ClusterIP, NodePort, LoadBalancer
+
+Deployment ile yönetilen Pod'lar dinamik IP alır. Pod yeniden başlatıldığında IP değişir. O halde uygulamalara nasıl güvenilir şekilde erişebiliriz? İşte tam burada **Service** devreye girer.
+
+## Service Neden Gerekli?
+
+```
+Sorun:
+Pod-abc (IP: 10.244.0.5) → çöktü
+Pod-xyz (IP: 10.244.0.8) → yeni başlatıldı
+
+Hangi IP'ye bağlanacaksınız?
+Hem IP değişti hem de 3 replica varsa hangisine?
+```
+
+Service, Pod'lar önüne sabit bir erişim noktası koyar:
+
+```
+Kullanıcı → Service (IP: 10.96.50.100 - SABIT)
+               │
+        ┌──────┼──────┐
+        ▼      ▼      ▼
+      Pod1   Pod2   Pod3
+   (dinamik IP'ler - önemli değil)
+```
+
+Service şunları sağlar:
+1. **Stable DNS adı ve IP:** Pod'lar değişse de Service adresi değişmez
+2. **Load Balancing:** Trafiği sağlıklı Pod'lara dengeli dağıtır
+3. **Service Discovery:** Uygulamalar birbirini DNS adıyla bulur
+
+---
+
+## Service Tiplerine Genel Bakış
+
+```
+Cluster Dışından Erişim Derecesi:
+
+  Dışarıdan           LoadBalancer ← Cloud sağlayıcı LB (gerçek external IP)
+  Erişilebilir    →   NodePort     ← Her Node'un IP'si:NodePort
+                      ClusterIP   ← Yalnızca cluster içi (varsayılan)
+  Cluster İçi →      Headless    ← IP yok, doğrudan Pod DNS
+```
+
+---
+
+## 1. ClusterIP (Varsayılan)
+
+Yalnızca cluster içinden erişilebilir. Servisler arası iletişim için ideal.
+
+```yaml
+# clusterip-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: ClusterIP        # Varsayılan, yazmasanız da olur
+  selector:
+    app: backend         # Bu label'ı taşıyan pod'lara yönlendir
+  ports:
+  - protocol: TCP
+    port: 80             # Service'in dinleyeceği port
+    targetPort: 8080     # Pod'un dinlediği port
+```
+
+```bash
+kubectl apply -f clusterip-service.yaml
+
+kubectl get service backend-service
+# NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+# backend-service   ClusterIP   10.96.50.100    <none>        80/TCP    10s
+```
+
+### Service Discovery (DNS)
+
+Kubernetes, her Service için otomatik DNS kaydı oluşturur:
+
+```
+<service-name>.<namespace>.svc.cluster.local
+
+Örnek:
+backend-service.default.svc.cluster.local
+
+Aynı namespace içinde kısa ad kullanılabilir:
+backend-service
+```
+
+```bash
+# Cluster içinden DNS testi
+kubectl run test-pod --image=busybox --rm -it -- sh
+# Pod içinde:
+nslookup backend-service
+# Server:    10.96.0.10
+# Address:   10.96.0.10:53
+# Name:      backend-service.default.svc.cluster.local
+# Address:   10.96.50.100
+
+wget -O- http://backend-service
+```
+
+---
+
+## 2. NodePort
+
+Her cluster Node'unun belirli bir portunu dışarıya açar. External traffic için kullanılır (development/test ortamları için uygun).
+
+```yaml
+# nodeport-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+  - protocol: TCP
+    port: 80          # Cluster içi port
+    targetPort: 3000  # Pod portu
+    nodePort: 30080   # Dışarıya açılan port (30000-32767 arası)
+```
+
+```
+Dış trafik akışı:
+Kullanıcı → NodeIP:30080 → Service:80 → Pod:3000
+
+┌──────────────────────────────────────────┐
+│              Kubernetes Cluster          │
+│                                          │
+│  Node1 (192.168.1.10):30080  ───┐       │
+│  Node2 (192.168.1.11):30080  ───┼──→ Service → Pods
+│  Node3 (192.168.1.12):30080  ───┘       │
+└──────────────────────────────────────────┘
+```
+
+```bash
+kubectl apply -f nodeport-service.yaml
+
+# minikube'de NodePort URL'ini al
+minikube service frontend-service --url
+# http://192.168.49.2:30080
+
+# Direkt erişim
+curl http://192.168.49.2:30080
+```
+
+> ⚠️ **NodePort Sınırlılıkları:**
+> Port aralığı 30000-32767 ile sınırlıdır. Production'da genellikle tercih edilmez. Her Node'un IP'si bilinmeli. Firewall konfigürasyonu gerekebilir.
+
+---
+
+## 3. LoadBalancer
+
+Cloud provider'dan harici bir Load Balancer talep eder ve gerçek bir public IP alır. Production'da dışa açık servisler için standart yöntem.
+
+```yaml
+# loadbalancer-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: public-api
+spec:
+  type: LoadBalancer
+  selector:
+    app: api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+```
+
+```bash
+kubectl apply -f loadbalancer-service.yaml
+
+kubectl get service public-api
+# NAME         TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
+# public-api   LoadBalancer   10.96.100.200   34.90.120.50     80:32456/TCP   1m
+#                                             ↑ Gerçek Public IP (cloud'dan)
+
+# minikube'de test için (cloud olmadığından pending kalır)
+# minikube tunnel komutu ile simüle edilir:
+minikube tunnel
+# Şimdi EXTERNAL-IP atanır
+```
+
+```
+Cloud Provider ile Akış:
+Kullanıcı → 34.90.120.50:80 → GCP/AWS Load Balancer
+                                      │
+                                      ▼
+                              Kubernetes Service
+                                      │
+                              ┌───────┼───────┐
+                              ▼       ▼       ▼
+                            Pod-1   Pod-2   Pod-3
+```
+
+---
+
+## 4. ExternalName
+
+DNS CNAME olarak davranır. Cluster içinden dış servislere erişimi kolaylaştırır:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-db
+spec:
+  type: ExternalName
+  externalName: prod.postgres.example.com
+```
+
+```bash
+# Cluster içinde:
+nslookup external-db
+# → prod.postgres.example.com'a yönlendirir
+```
+
+---
+
+## Service ve Endpoint İlişkisi
+
+Service, Pod'lara `selector` üzerinden bağlanır. Kubernetes bu eşleşmeyi **Endpoints** objesi ile takip eder:
+
+```bash
+kubectl get endpoints backend-service
+# NAME              ENDPOINTS                          AGE
+# backend-service   10.244.0.5:8080,10.244.0.7:8080   5m
+#                   ↑ Sağlıklı pod'ların IP:Port listesi
+
+# Pod sağlıksız olursa Endpoints'ten çıkar (Readiness Probe failed)
+```
+
+---
+
+## Session Affinity (Yapışkan Oturum)
+
+Aynı client'ın her istekte aynı Pod'a gitmesini isterseniz:
+
+```yaml
+spec:
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 saat
+```
+
+---
+
+## Headless Service
+
+Cluster IP olmadan Pod'lara doğrudan DNS erişimi. StatefulSet ile birlikte kullanılır:
+
+```yaml
+spec:
+  clusterIP: None    # Headless!
+  selector:
+    app: my-stateful-app
+```
+
+```bash
+# Her Pod için ayrı DNS kaydı oluşturulur:
+# pod-0.my-service.default.svc.cluster.local
+# pod-1.my-service.default.svc.cluster.local
+```
+
+---
+
+## Multi-Port Service
+
+Bir Service birden fazla port yönetebilir:
+
+```yaml
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8443
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+```
+
+---
+
+## 🛠️ Hands-on: Service Türlerini Deneyin
+
+**Adım 1:** Deployment ve ClusterIP Service oluşturun:
+
+```bash
+cat > app-with-service.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+      - name: hello
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: hello
+  ports:
+  - port: 80
+    targetPort: 8080
+EOF
+
+kubectl apply -f app-with-service.yaml
+```
+
+**Adım 2:** ClusterIP üzerinden test edin:
+
+```bash
+# Test pod'u ile cluster içinden eriş
+kubectl run curl-test --image=curlimages/curl --rm -it -- \
+  curl http://hello-clusterip
+
+# Birkaç kez çalıştırın - farklı Pod'lara yönlendiğini görün
+for i in $(seq 1 5); do
+  kubectl run curl-$i --image=curlimages/curl --rm -it --restart=Never -- \
+    curl -s http://hello-clusterip | grep "Hello"
+done
+```
+
+**Adım 3:** NodePort Service ekleyin:
+
+```bash
+kubectl expose deployment hello-app \
+  --type=NodePort \
+  --port=80 \
+  --target-port=8080 \
+  --name=hello-nodeport
+
+# minikube URL'ini al
+minikube service hello-nodeport --url
+
+# Tarayıcıda açın veya:
+curl $(minikube service hello-nodeport --url)
+```
+
+**Adım 4:** Endpoints'i inceleyin:
+
+```bash
+kubectl get endpoints hello-clusterip
+kubectl describe service hello-clusterip
+
+# Bir pod silerken endpoints'i izleyin
+kubectl get endpoints hello-clusterip -w &
+kubectl delete pod -l app=hello --field-selector='status.phase=Running' \
+  $(kubectl get pod -l app=hello -o name | head -1)
+```
+
+**Temizlik:**
+```bash
+kubectl delete -f app-with-service.yaml
+kubectl delete service hello-nodeport
+```
+
+---
+
+## Hangi Service Tipini Kullanmalıyım?
+
+| Senaryo | Service Tipi |
+|---------|-------------|
+| Microservice'ler arası iletişim | **ClusterIP** |
+| Development/test ortamı dışa açma | **NodePort** |
+| Production'da dışa açık servis (cloud) | **LoadBalancer** |
+| Dış veritabanı / API'ye kolay erişim | **ExternalName** |
+| StatefulSet pod'larına direkt erişim | **Headless (ClusterIP: None)** |
+
+---
+
+## Özet
+
+Bu bölümde Service'i derinlemesine öğrendik:
+
+- Pod'ların dinamik IP'si nedeniyle Service soyutlaması zorunludur
+- **ClusterIP:** Yalnızca cluster içi, microservice iletişimi için ideal
+- **NodePort:** Her Node'da belirli port açar, test ortamları için uygun (30000-32767)
+- **LoadBalancer:** Cloud LB alır, production dışa açık servisler için standart
+- **ExternalName:** Dış servislere DNS yönlendirmesi
+- Service, **Endpoints** üzerinden sağlıklı Pod'ları takip eder
+- DNS formatı: `<service-name>.<namespace>.svc.cluster.local`
+
+Bir sonraki bölümde uygulama konfigürasyonunu yönetmek için kullandığımız **ConfigMap ve Secret** kaynaklarını öğreneceğiz.

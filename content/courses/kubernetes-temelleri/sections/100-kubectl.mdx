@@ -1,0 +1,657 @@
+---
+id: "k8s-010-kubectl"
+title: "kubectl Komutları ve Debugging"
+order: 100
+order_index: 100
+---
+
+# kubectl Komutları ve Debugging
+
+Bu son bölümde Kubernetes'i günlük kullanımda verimli hale getiren kubectl komutlarını, kısayolları, debugging tekniklerini ve gerçek bir uygulamayı baştan sona deploy etmeyi öğreneceğiz.
+
+## kubectl Çalışma Prensibi
+
+kubectl, Kubernetes API Server ile iletişim kuran komut satırı aracıdır:
+
+```
+kubectl get pods
+    │
+    ▼
+~/.kube/config      ← Hangi cluster'a bağlanacağını bilir
+    │
+    ▼
+kube-apiserver      ← HTTPS isteği gönderir
+    │
+    ▼
+Sonuç → Terminal
+```
+
+```bash
+# Kube config içeriğini gör
+kubectl config view
+
+# Mevcut context (cluster bağlantısı)
+kubectl config current-context
+
+# Tüm context'leri listele
+kubectl config get-contexts
+
+# Context değiştir
+kubectl config use-context minikube
+```
+
+---
+
+## Temel Komut Kalıpları
+
+kubectl komutlarının genel yapısı:
+
+```
+kubectl [fiil] [kaynak-tipi] [kaynak-adı] [bayraklar]
+
+Fiiller: get, describe, apply, delete, edit, patch, exec, logs, port-forward...
+Kaynak tipleri: pods, deployments, services, configmaps, secrets, nodes...
+```
+
+---
+
+## GET: Kaynakları Listeleme
+
+```bash
+# Temel listeleme
+kubectl get pods
+kubectl get deployments
+kubectl get services
+kubectl get nodes
+
+# Kısaltmalar kullanın (hız kazanır!)
+kubectl get po        # pods
+kubectl get deploy    # deployments
+kubectl get svc       # services
+kubectl get cm        # configmaps
+kubectl get ns        # namespaces
+kubectl get pvc       # persistentvolumeclaims
+kubectl get ing       # ingresses
+
+# Birden fazla kaynak tipi
+kubectl get pods,services,deployments
+
+# Tüm kaynaklar
+kubectl get all
+kubectl get all -n kube-system
+
+# Farklı namespace
+kubectl get pods -n production
+
+# Tüm namespace'ler
+kubectl get pods -A
+kubectl get pods --all-namespaces
+
+# Detaylı çıktı (IP, Node bilgisi)
+kubectl get pods -o wide
+
+# YAML çıktısı
+kubectl get pod my-pod -o yaml
+
+# JSON çıktısı
+kubectl get pod my-pod -o json
+
+# Belirli alan(lar)
+kubectl get pod my-pod -o jsonpath='{.status.podIP}'
+kubectl get pods -o jsonpath='{.items[*].metadata.name}'
+
+# Custom sütunlar
+kubectl get pods -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,IP:.status.podIP
+
+# Canlı izleme (watch)
+kubectl get pods -w
+
+# Label filtresi
+kubectl get pods -l app=nginx
+kubectl get pods -l 'app in (nginx, redis)'
+kubectl get pods -l app=nginx,tier=frontend
+```
+
+---
+
+## DESCRIBE: Detaylı Bilgi
+
+Sorun tespitinin en önemli komutu. **Events** bölümüne özellikle dikkat edin:
+
+```bash
+kubectl describe pod my-pod
+kubectl describe deployment nginx-deployment
+kubectl describe node minikube
+kubectl describe service my-service
+kubectl describe ingress my-ingress
+
+# Çıktının önemli bölümleri:
+# - Conditions (pod durumu)
+# - Events (son olaylar - sorun tespitinde altın değer)
+# - Volumes (bağlı storage)
+# - Environment (env var'lar)
+```
+
+---
+
+## LOGS: Container Logları
+
+```bash
+# Temel log
+kubectl logs my-pod
+
+# Birden fazla replica - tüm pod'lar
+kubectl logs -l app=my-app
+
+# Canlı takip
+kubectl logs my-pod -f
+kubectl logs -l app=my-app -f
+
+# Son N satır
+kubectl logs my-pod --tail=100
+
+# Son 1 saatin logları
+kubectl logs my-pod --since=1h
+kubectl logs my-pod --since-time="2024-01-15T10:00:00Z"
+
+# Çökmüş/önceki container logu
+kubectl logs my-pod --previous
+kubectl logs my-pod -p
+
+# Multi-container pod
+kubectl logs my-pod -c sidecar-container
+
+# Tüm container'ların logları birleşik
+kubectl logs my-pod --all-containers
+```
+
+---
+
+## EXEC: Container'a Bağlanma
+
+```bash
+# Interaktif shell
+kubectl exec -it my-pod -- /bin/bash
+kubectl exec -it my-pod -- /bin/sh   # bash yoksa
+
+# Tek komut çalıştır
+kubectl exec my-pod -- ls /var/log
+kubectl exec my-pod -- cat /etc/nginx/nginx.conf
+kubectl exec my-pod -- ps aux
+
+# Multi-container pod
+kubectl exec -it my-pod -c sidecar -- /bin/sh
+
+# Deployment'ın pod'larından birine bağlan
+kubectl exec -it $(kubectl get pod -l app=nginx -o name | head -1) -- sh
+```
+
+---
+
+## APPLY ve DECLARATIVE YÖNETİM
+
+```bash
+# Kaynak oluştur/güncelle
+kubectl apply -f my-resource.yaml
+
+# Birden fazla dosya
+kubectl apply -f deployment.yaml -f service.yaml
+
+# Tüm dizindeki YAML'ları uygula
+kubectl apply -f ./manifests/
+
+# URL'den uygula
+kubectl apply -f https://raw.githubusercontent.com/.../deployment.yaml
+
+# Kuru çalıştırma (gerçekte değiştirme)
+kubectl apply -f deployment.yaml --dry-run=client
+kubectl apply -f deployment.yaml --dry-run=server
+
+# YAML'dan diff al (neyin değişeceğini gör)
+kubectl diff -f deployment.yaml
+```
+
+---
+
+## EDIT ve PATCH
+
+```bash
+# Kaynağı doğrudan editörde düzenle
+kubectl edit deployment nginx-deployment
+kubectl edit pod my-pod  # (Bazı alanlar değiştirilemez)
+
+# Patch ile belirli alanı değiştir
+kubectl patch deployment nginx-deployment \
+  -p '{"spec":{"replicas":5}}'
+
+# JSON Patch
+kubectl patch pod my-pod --type='json' \
+  -p='[{"op": "replace", "path": "/spec/containers/0/image", "value":"nginx:1.25"}]'
+```
+
+---
+
+## PORT-FORWARD: Lokal Erişim
+
+```bash
+# Pod'a port forward
+kubectl port-forward pod/my-pod 8080:80
+
+# Deployment'a (otomatik pod seçer)
+kubectl port-forward deployment/my-app 8080:80
+
+# Service'e
+kubectl port-forward service/my-service 8080:80
+
+# Arka planda çalıştır
+kubectl port-forward service/postgres 5432:5432 &
+
+# Durdur
+kill %1   # background job'u kapat
+```
+
+---
+
+## DEBUG Komutları
+
+```bash
+# Pod'a geçici debug container ekle (K8s 1.23+)
+kubectl debug -it my-pod --image=busybox --target=my-container
+
+# Yeni debug pod oluştur
+kubectl run debug-pod --image=busybox --rm -it -- sh
+
+# Node'a SSH benzeri erişim
+kubectl debug node/minikube -it --image=ubuntu
+
+# Network debug (curl ile)
+kubectl run curl-test --image=curlimages/curl --rm -it -- \
+  curl http://my-service:80
+
+# DNS debug
+kubectl run dns-test --image=busybox --rm -it -- \
+  nslookup my-service
+```
+
+---
+
+## Yaygın Sorunlar ve Çözümleri
+
+### CrashLoopBackOff
+
+```bash
+# Neden çöküyor?
+kubectl describe pod <pod-name>   # Events bölümüne bak
+kubectl logs <pod-name> --previous  # Önceki çalışmada ne oldu?
+
+# Yaygın nedenler:
+# - Yanlış command/args
+# - ConfigMap/Secret eksik
+# - Bağımlı servis henüz hazır değil
+# - OOMKilled (memory limit aşıldı)
+# - Image hatalı
+```
+
+### ImagePullBackOff / ErrImagePull
+
+```bash
+kubectl describe pod <pod-name>
+# Events: Failed to pull image "nginx:latst": ...
+# → Typo! nginx:latest olmalı
+
+# Nedenler:
+# - Image adı/tag yanlış
+# - Private registry: imagePullSecret eksik
+# - Rate limiting (Docker Hub)
+```
+
+### Pending Pod
+
+```bash
+kubectl describe pod <pod-name>
+# Events: 0/1 nodes are available: 1 Insufficient memory.
+# → Node'da yeterli kaynak yok
+
+# Kontrol et:
+kubectl get nodes
+kubectl describe node <node-name> | grep -A 10 "Allocated resources"
+
+# ResourceQuota dolmuş mu?
+kubectl describe resourcequota -n <namespace>
+```
+
+### Service'e Erişilemiyor
+
+```bash
+# 1. Service var mı?
+kubectl get service my-service
+
+# 2. Selector doğru mu?
+kubectl describe service my-service | grep Selector
+kubectl get pods -l <selector>
+
+# 3. Endpoints var mı?
+kubectl get endpoints my-service
+# Endpoints: <none>  → Pod'lar hazır değil veya selector yanlış
+
+# 4. Port doğru mu?
+kubectl describe service my-service | grep "Port:"
+```
+
+---
+
+## kubectl Alias ve Kısayollar
+
+Terminale ekleyin (`.bashrc` veya `.zshrc`):
+
+```bash
+# Temel alias
+alias k='kubectl'
+alias kgp='kubectl get pods'
+alias kgs='kubectl get services'
+alias kgd='kubectl get deployments'
+alias kga='kubectl get all'
+alias kaf='kubectl apply -f'
+alias kdf='kubectl delete -f'
+
+# Context ve namespace yönetimi
+alias kcc='kubectl config current-context'
+alias kcx='kubectl config use-context'
+
+# Log ve exec
+alias kl='kubectl logs'
+alias klf='kubectl logs -f'
+alias ke='kubectl exec -it'
+
+# Describe
+alias kdp='kubectl describe pod'
+alias kdd='kubectl describe deployment'
+alias kds='kubectl describe service'
+
+# Uygula
+source ~/.bashrc  # veya source ~/.zshrc
+```
+
+---
+
+## 🛠️ Final Hands-on: Tam Uygulama Deployment
+
+Bu alıştırmada tüm öğrendiklerimizi kullanarak gerçek bir uygulamayı deploy edeceğiz: **3 katmanlı web uygulaması** (Frontend + Backend API + PostgreSQL)
+
+**Hedef mimari:**
+```
+İnternet
+    │
+    ▼
+Ingress (demo.local)
+├── /        → frontend-service:80
+└── /api/*   → backend-service:8080
+    │
+    ├── frontend-service → nginx pods (x2)
+    └── backend-service  → api pods (x2)
+                              │
+                          postgres-service → postgres pod (x1)
+                              │
+                          PVC → PV (1Gi)
+```
+
+```bash
+# Tüm manifests tek dosyada
+cat > full-app.yaml << 'MANIFEST'
+# === NAMESPACE ===
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-app
+---
+# === DATABASE ===
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  namespace: demo-app
+type: Opaque
+stringData:
+  password: "demopass123"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: demo-app
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        env:
+        - name: POSTGRES_DB
+          value: demodb
+        - name: POSTGRES_USER
+          value: demouser
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        volumeMounts:
+        - name: storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: demo-app
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+# === FRONTEND ===
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: demo-app
+data:
+  default.conf: |
+    server {
+        listen 80;
+        location / {
+            root /usr/share/nginx/html;
+            index index.html;
+        }
+        location /health {
+            return 200 'ok';
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: demo-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/conf.d
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: demo-app
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 80
+---
+# === INGRESS ===
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: demo-app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: demo.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+MANIFEST
+
+kubectl apply -f full-app.yaml
+
+# İzle
+kubectl get all -n demo-app -w
+```
+
+**Doğrulama:**
+```bash
+# Tüm pod'lar Running?
+kubectl get pods -n demo-app
+
+# PVC Bound?
+kubectl get pvc -n demo-app
+
+# Ingress IP?
+kubectl get ingress -n demo-app
+
+# Loglara bak
+kubectl logs -l app=frontend -n demo-app
+
+# Test
+INGRESS_IP=$(kubectl get ingress app-ingress -n demo-app \
+  -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+curl -H "Host: demo.local" http://$INGRESS_IP
+```
+
+**Temizlik:**
+```bash
+kubectl delete namespace demo-app
+```
+
+---
+
+## kubectl Cheatsheet
+
+```bash
+# BILGI
+kubectl version --short
+kubectl cluster-info
+kubectl api-resources           # Tüm kaynak tipleri
+kubectl explain pod.spec        # YAML alan açıklaması
+
+# KAYNAK YÖNETİMİ
+kubectl apply -f file.yaml
+kubectl delete -f file.yaml
+kubectl delete pod <name> --force --grace-period=0  # Zorla sil
+
+# ROLLOUT
+kubectl rollout status deployment/<name>
+kubectl rollout history deployment/<name>
+kubectl rollout undo deployment/<name>
+kubectl rollout pause deployment/<name>
+kubectl rollout resume deployment/<name>
+
+# SCALE
+kubectl scale deployment/<name> --replicas=5
+kubectl autoscale deployment/<name> --min=2 --max=10 --cpu-percent=80
+
+# DEBUG
+kubectl describe <resource> <name>
+kubectl logs <pod> -f --tail=100
+kubectl exec -it <pod> -- sh
+kubectl port-forward <pod> 8080:80
+kubectl top pods              # CPU/Memory kullanımı (metrics-server gerekli)
+kubectl top nodes
+```
+
+---
+
+## Özet: Kurs Geneli
+
+Bu son bölümde ve kurs boyunca Kubernetes'in temel yapı taşlarını öğrendik:
+
+| Bölüm | Öğrenilen Kavram |
+|-------|-----------------|
+| 1 | Orchestration ihtiyacı, K8s tarihi, kurulum |
+| 2 | Control Plane (apiserver, etcd, scheduler, controller) ve Worker Node (kubelet, kube-proxy) |
+| 3 | Pod: lifecycle, probe'lar, multi-container pattern'ler |
+| 4 | Deployment: rolling update, rollback, scaling stratejileri |
+| 5 | Service: ClusterIP, NodePort, LoadBalancer, DNS |
+| 6 | ConfigMap ve Secret: konfigürasyon yönetimi |
+| 7 | PersistentVolume ve PVC: kalıcı storage |
+| 8 | Namespace: izolasyon, ResourceQuota, LimitRange |
+| 9 | Ingress: HTTP routing, TLS termination |
+| 10 | kubectl: komutlar, debug teknikleri, full-stack deployment |
+
+**Sonraki Adımlar:**
+- **Kubernetes İleri** kursu: RBAC, HPA/VPA, Helm, Operator Pattern
+- **Monitoring & Observability** kursu: Prometheus, Grafana, Loki
+- Gerçek bir projeyi Kubernetes'e taşımayı deneyin
+- CKA (Certified Kubernetes Administrator) sertifikasına hazırlanın
+
+Kubernetes yolculuğunuzda başarılar! 🚀

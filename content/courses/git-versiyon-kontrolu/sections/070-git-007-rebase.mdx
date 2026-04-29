@@ -1,0 +1,156 @@
+---
+id: "git-007-rebase"
+title: "Rebase vs Merge"
+order: 70
+order_index: 70
+---
+
+# Rebase vs Merge
+
+Rebase ve merge, iki branch'i birleştirmenin farklı yollarıdır. Farkları teknik olduğu kadar felsefidir: "Geçmişin gerçek kaydı mı olması gerekir, yoksa temiz ve okunabilir mi?"
+
+## Merge'ü Hatırlayalım
+
+```
+main:    A → B → E
+              ↘
+feature:       C → D
+
+git merge → A → B → E → M
+                ↘       ↗
+                 C → D
+```
+
+Merge, iki branch'i birleştiren yeni bir **merge commit (M)** oluşturur. Geçmiş tam olarak yaşandığı gibi korunur: hangi dal ne zaman ayrıldı, ne zaman birleşti.
+
+## Rebase Nedir?
+
+Rebase, bir branch'in commit'lerini alır ve onları farklı bir temel commit'in üzerine **yeniden yazar**.
+
+```
+Önce:
+main:    A → B → E
+              ↘
+feature:       C → D
+
+git rebase main →
+
+main:    A → B → E
+                  ↘
+feature:           C' → D'    ← Yeni commit'ler (farklı hash)
+```
+
+`C` ve `D` commit'leri silinip `E`'nin üzerine yeni `C'` ve `D'` commit'leri yazılır. Geçmiş sanki feature branch `E`'den açılmış gibi görünür.
+
+## Komutlar
+
+```bash
+# Merge
+git switch main
+git merge feature/kullanici-girisi
+
+# Rebase
+git switch feature/kullanici-girisi
+git rebase main
+# Ardından main'e fast-forward ile birleştir:
+git switch main
+git merge feature/kullanici-girisi  # artık fast-forward olur
+```
+
+## Görsel Karşılaştırma
+
+**Merge sonrası geçmiş:**
+
+```
+* M   (main) Merge branch 'feature/kullanici-girisi'
+|\
+| * D feat: giriş formu tamamlandı
+| * C feat: giriş sayfası oluşturuldu
+* | E fix: navbar hizalandı
+|/
+* B ilk commit
+```
+
+**Rebase sonrası geçmiş:**
+
+```
+* D' (main) feat: giriş formu tamamlandı
+* C' feat: giriş sayfası oluşturuldu
+* E  fix: navbar hizalandı
+* B  ilk commit
+```
+
+Rebase geçmişi, sanki hiç dal ayrılmamış gibi düz ve doğrusal görünür.
+
+## Interactive Rebase: Geçmişi Temizleme
+
+`git rebase -i` (interactive), son N commit'i yeniden düzenlemenizi sağlar. Commit'leri birleştirme, silme, sıra değiştirme ve mesaj düzenleme işlemlerini yapabilirsiniz.
+
+```bash
+# Son 3 commit'i interaktif olarak düzenle
+git rebase -i HEAD~3
+```
+
+Editörde şu liste açılır:
+
+```
+pick a1b2c3d WIP: giriş sayfası başlandı
+pick d4e5f6g WIP: buton eklendi
+pick g7h8i9j feat: kullanıcı girişi tamamlandı
+```
+
+Komutları değiştirerek:
+
+```
+squash a1b2c3d WIP: giriş sayfası başlandı
+squash d4e5f6g WIP: buton eklendi
+pick   g7h8i9j feat: kullanıcı girişi tamamlandı
+```
+
+İki "WIP" commit'i son commit'e sıkıştırılır; geçmişte yalnızca temiz tek bir commit görünür.
+
+### Interactive Rebase Komutları
+
+| Komut | Açıklama |
+|---|---|
+| `pick` | Commit'i olduğu gibi tut |
+| `reword` | Commit'i tut, mesajı değiştir |
+| `squash` | Önceki commit'e birleştir |
+| `drop` | Commit'i sil |
+| `edit` | Commit'te dur, değişiklik yap |
+
+## Altın Kural: Paylaşılan Geçmişi Yeniden Yazma
+
+> **Push edilmiş ve başkaları tarafından kullanılan commit'leri asla rebase etmeyin.**
+
+Rebase yeni hash'ler üretir. Başkası eski hash'leri baz almışsa onların geçmişi bozulur ve ciddi conflict'ler ortaya çıkar. Bu kural ihlal edildiğinde ekipler saatler kaybeder.
+
+**Güvenli rebase:** Yalnızca kendinizin kullandığı yerel branch'lerde.
+
+```bash
+# Güvenli: henüz push edilmemiş commit'lerde
+git rebase main
+
+# TEHLİKELİ: başkalarının kullandığı branch'te
+git push --force  # ← bunu görenler panikler
+```
+
+## Ne Zaman Hangisi?
+
+| Durum | Tercih |
+|---|---|
+| Kısa bireysel feature branch | Rebase → temiz geçmiş |
+| Uzun süreli ekip branch'i | Merge → gerçek geçmiş korunur |
+| PR açmadan önce temizlik | Interactive rebase |
+| `main`'deki değişiklikleri feature'a almak | `git pull --rebase` |
+| Public/shared branch birleştirme | Merge |
+
+## Özet
+
+```
+merge  → Dallanma geçmişini korur, merge commit oluşturur
+rebase → Doğrusal geçmiş oluşturur, commit'leri yeniden yazar
+-i     → İnteraktif: commit'leri birleştir, düzenle, sil
+```
+
+Rebase güçlüdür, ancak yanlış kullanıldığında ekip genelinde sorun çıkarır. Altın kuralı unutmayın: **push ettikten sonra rebase etme.**

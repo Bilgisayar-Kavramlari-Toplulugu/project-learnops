@@ -16,13 +16,18 @@ services:
       retries: 5
 
   backend:
-    build: ../backend
+    build: ../../backend
     container_name: learnops_backend
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     env_file:
       - .env
     volumes:
-      - ../backend:/app
+      - ../../backend:/app
+      # Host-side seed scripts (poetry run python scripts/seed_content.py)
+      # için read-only mount — runtime'da FastAPI okumaz.
+      - ../../content:/app/content:ro
+      # Poetry ile kurulan paketleri container restart'lar arası önbelleğe alır.
+      # Geliştirici Rehberi v2.0 / Bölüm 8.1 ile uyumlu — silmeyin.
       - backend_deps:/usr/local/lib/python3.13/site-packages
     ports:
       - "8000:8080"
@@ -37,13 +42,16 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ../frontend
+    build: ../../frontend
     container_name: learnops_frontend
     command: ["npm", "run", "dev"]
     env_file:
       - .env
     volumes:
-      - ../frontend:/app
+      - ../../frontend:/app
+      # Frontend MDX dosyalarını sadece okur (getSectionContent, getAllSectionParams) —
+      # least-privilege için read-only mount.
+      - ../../content:/app/content:ro
       - frontend_node_modules:/app/node_modules
       - frontend_next:/app/.next
     ports:

@@ -13,7 +13,7 @@ export function EnrolledCoursesSection({ courses }: EnrolledCoursesSectionProps)
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-[2rem] leading-tight font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          Enrolled Courses
+          Kurslarım
         </h3>
         <div className="flex items-center gap-1.5">
           <Button

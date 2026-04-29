@@ -1,0 +1,498 @@
+---
+id: "k8s-009-ingress"
+title: "Ingress Controller ve Routing"
+order: 90
+order_index: 90
+---
+
+# Ingress Controller ve Routing
+
+Production'da her servis için ayrı bir LoadBalancer almak hem pahalı hem de yönetimi zor. **Ingress**, tek bir giriş noktasından birden fazla servise HTTP/HTTPS trafiği yönlendirmeyi sağlar.
+
+## Sorun: Çok Servis, Çok LoadBalancer
+
+```
+Yanlış Yaklaşım (LoadBalancer her servis için):
+
+İnternet → LB-1 (34.90.1.1:80) → frontend-service
+İnternet → LB-2 (34.90.2.2:80) → api-service
+İnternet → LB-3 (34.90.3.3:80) → admin-service
+
+❌ 3 ayrı IP adresi
+❌ Her biri aylık maliyet
+❌ SSL sertifikası her biri için ayrı
+```
+
+```
+Doğru Yaklaşım (Ingress):
+
+                    ┌──────────────────────────┐
+İnternet → LB-1 → │    Ingress Controller     │
+(34.90.1.1)        │                          │
+                    │ /api/* → api-service     │
+                    │ /admin/* → admin-service │
+                    │ app.io → frontend        │
+                    │ api.io → api             │
+                    └──────────────────────────┘
+
+✅ Tek IP
+✅ Tek SSL sertifikası yönetimi
+✅ Path ve host bazlı routing
+✅ Maliyet düşük
+```
+
+---
+
+## Ingress vs Service
+
+| Özellik | Service (NodePort/LB) | Ingress |
+|---------|----------------------|---------|
+| HTTP/HTTPS yönlendirme | ❌ | ✅ |
+| Host-based routing | ❌ | ✅ |
+| Path-based routing | ❌ | ✅ |
+| SSL Termination | ❌ | ✅ |
+| Maliyet | Her servis için LB | Tek LB |
+| Karmaşıklık | Düşük | Orta |
+
+---
+
+## Ingress Controller
+
+Ingress kaynağı tek başına çalışmaz. Bir **Ingress Controller** kurulması gerekir. Popüler seçenekler:
+
+| Controller | Açıklama |
+|-----------|---------|
+| **NGINX Ingress Controller** | En yaygın kullanılan, NGINX tabanlı |
+| **Traefik** | Otomatik service discovery, Let's Encrypt |
+| **HAProxy Ingress** | Yüksek performans |
+| **GKE Ingress (Google)** | GCP'de native, Google LB |
+| **AWS ALB Ingress** | AWS Application Load Balancer |
+| **Istio Gateway** | Service mesh tabanlı |
+
+### minikube'de NGINX Ingress Controller Kurulumu
+
+```bash
+# Ingress addon'unu etkinleştir
+minikube addons enable ingress
+
+# Controller pod'unu doğrula
+kubectl get pods -n ingress-nginx
+# NAME                                        READY   STATUS
+# ingress-nginx-controller-xxxxx              1/1     Running
+```
+
+---
+
+## Ingress Kaynağı Oluşturma
+
+### Path-Based Routing
+
+Aynı domain altında farklı path'leri farklı servislere yönlendirme:
+
+```yaml
+# path-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2    # Path rewrite
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: myapp.local                    # Domain
+    http:
+      paths:
+      - path: /api(/|$)(.*)             # /api/* trafiği
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 80
+      - path: /admin(/|$)(.*)           # /admin/* trafiği
+        pathType: Prefix
+        backend:
+          service:
+            name: admin-service
+            port:
+              number: 80
+      - path: /()(.*)                   # /* trafiği (catch-all)
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+```
+
+### Host-Based Routing (Virtual Hosting)
+
+Farklı domain'leri farklı servislere yönlendirme:
+
+```yaml
+# host-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multi-host-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: app.example.com              # Bu domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+
+  - host: api.example.com              # Bu domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 8080
+
+  - host: admin.example.com            # Bu domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: admin-service
+            port:
+              number: 3000
+```
+
+---
+
+## HTTPS / TLS Termination
+
+Ingress, SSL sertifikasını yönetip backend'e HTTP olarak iletebilir:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: secure-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - app.example.com
+    - api.example.com
+    secretName: tls-secret          # TLS sertifikası burada
+
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+```
+
+### TLS Secret Oluşturma
+
+```bash
+# Self-signed sertifika (development için)
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout tls.key \
+  -out tls.crt \
+  -subj "/CN=app.example.com/O=myorg"
+
+# Kubernetes Secret olarak yükle
+kubectl create secret tls tls-secret \
+  --key tls.key \
+  --cert tls.crt
+
+# Production: cert-manager ile Let's Encrypt
+# https://cert-manager.io/
+```
+
+---
+
+## cert-manager ile Otomatik SSL
+
+Production'da manuel sertifika yönetimi yerine cert-manager kullanılır:
+
+```yaml
+# cert-manager kurulumu (helm ile)
+# helm install cert-manager jetstack/cert-manager
+
+# ClusterIssuer (Let's Encrypt)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@example.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+---
+# Ingress - otomatik sertifika talebi
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auto-tls-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - app.example.com
+    secretName: app-tls-auto         # cert-manager bu Secret'ı oluşturur
+  rules:
+  - host: app.example.com
+    ...
+```
+
+---
+
+## Ingress Annotations
+
+NGINX Ingress Controller pek çok özelliği annotation ile kontrol edilir:
+
+```yaml
+metadata:
+  annotations:
+    # SSL redirect
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.example.com"
+
+    # Request body boyutu
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+
+    # Timeout
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+
+    # Basic auth
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+
+    # Rewrite
+    nginx.ingress.kubernetes.io/rewrite-target: /
+
+    # Whitelist IP
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/24,172.16.0.0/16"
+```
+
+---
+
+## Ingress'i İzleme ve Debug
+
+```bash
+# Ingress'leri listele
+kubectl get ingress
+kubectl get ingress -A  # Tüm namespace'ler
+
+# Ingress detayları
+kubectl describe ingress app-ingress
+
+# NGINX Controller logları
+kubectl logs -n ingress-nginx \
+  $(kubectl get pods -n ingress-nginx -o name | head -1) | tail -50
+
+# Ingress IP'sini al
+kubectl get ingress app-ingress
+# NAME          CLASS   HOSTS          ADDRESS        PORTS   AGE
+# app-ingress   nginx   myapp.local    192.168.49.2   80      5m
+
+# Local hosts dosyasına ekle (test için)
+echo "192.168.49.2 myapp.local api.myapp.local" | sudo tee -a /etc/hosts
+```
+
+---
+
+## 🛠️ Hands-on: Çok Servisli Ingress
+
+**Adım 1:** Ingress Controller kurulumu:
+
+```bash
+minikube addons enable ingress
+kubectl get pods -n ingress-nginx -w
+# ingress-nginx-controller Running olana kadar bekle
+```
+
+**Adım 2:** İki servis oluşturun:
+
+```bash
+cat > two-services.yaml << 'EOF'
+# Service 1: Hello App v1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: hello
+        version: v1
+    spec:
+      containers:
+      - name: hello
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-v1-service
+spec:
+  selector:
+    app: hello
+    version: v1
+  ports:
+  - port: 80
+    targetPort: 8080
+---
+# Service 2: Hello App v2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-v2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: hello
+        version: v2
+    spec:
+      containers:
+      - name: hello
+        image: gcr.io/google-samples/hello-app:2.0
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-v2-service
+spec:
+  selector:
+    app: hello
+    version: v2
+  ports:
+  - port: 80
+    targetPort: 8080
+EOF
+
+kubectl apply -f two-services.yaml
+kubectl get svc,pods
+```
+
+**Adım 3:** Ingress ile yönlendirme:
+
+```bash
+cat > path-routing-ingress.yaml << 'EOF'
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: demo-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: demo.local
+    http:
+      paths:
+      - path: /v1
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-v1-service
+            port:
+              number: 80
+      - path: /v2
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-v2-service
+            port:
+              number: 80
+EOF
+
+kubectl apply -f path-routing-ingress.yaml
+kubectl get ingress demo-ingress
+```
+
+**Adım 4:** Test edin:
+
+```bash
+# Ingress IP'sini al
+INGRESS_IP=$(kubectl get ingress demo-ingress -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+echo "Ingress IP: $INGRESS_IP"
+
+# hosts dosyasına ekle
+echo "$INGRESS_IP demo.local" | sudo tee -a /etc/hosts
+
+# Test
+curl http://demo.local/v1
+# Hello, world! Version: 1.0.0
+
+curl http://demo.local/v2
+# Hello, world! Version: 2.0.0
+```
+
+**Temizlik:**
+```bash
+kubectl delete -f two-services.yaml
+kubectl delete -f path-routing-ingress.yaml
+# /etc/hosts'tan eklediğiniz satırı kaldırın
+```
+
+---
+
+## Özet
+
+Bu bölümde Ingress ile HTTP yönlendirmeyi öğrendik:
+
+- Ingress, tek giriş noktasından birden fazla servise trafik yönlendirir
+- **Path-based routing:** Aynı domain, farklı path'ler → farklı servisler
+- **Host-based routing:** Farklı domain'ler → farklı servisler
+- **TLS Termination:** SSL Ingress katmanında yönetilir
+- **cert-manager** ile Let's Encrypt sertifikaları otomatik alınır
+- **NGINX Annotations** ile rate limit, CORS, auth gibi özellikler eklenir
+- Ingress Controller kurulumu zorunludur (nginx, traefik vb.)
+
+Bir sonraki (son) bölümde Kubernetes'i günlük kullanımda verimli hale getiren **kubectl komutları ve debugging** tekniklerini öğreneceğiz.

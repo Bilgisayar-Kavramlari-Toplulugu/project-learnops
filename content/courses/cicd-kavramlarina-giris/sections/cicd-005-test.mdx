@@ -1,0 +1,42 @@
+---
+id: "cicd-005-test"
+title: "Test Otomasyonu"
+order: 50
+order_index: 50
+---
+
+# **Yazılımın Sigortası: CI/CD’de Test Otomasyonu**
+
+Bir yazılımı manuel olarak test etmek, her seferinde bir labirenti baştan sona yürümeye benzer. Bir kapıyı değiştirdiğinizde, diğer on kapının hala açılıp açılmadığını kontrol etmeniz gerekir.
+
+CI/CD içindeki **test otomasyonu**, bu labirente yerleştirilmiş binlerce sensördür; bir şeyler yanlış gittiği an alarm çalar.
+
+## **1\. Test Piramidi: Stratejik Bölünme**
+
+Otomasyonu verimli kılmak için testleri bir piramit şeklinde kurgularız. Her test türü farklı bir amaca hizmet eder:
+
+* **Birim Testleri (Unit Tests):** Piramidin tabanıdır. En küçük kod parçalarını (bir fonksiyonu veya bir sınıfı) test eder. Çok hızlı çalışırlar (milisaniyeler içinde) ve projede binlerce bulunabilirler.
+* **Entegrasyon Testleri (Integration Tests):** Farklı parçaların (örneğin veri tabanı ile API’nizin) birbiriyle doğru konuşup konuşmadığını kontrol eder.
+* **Uçtan Uca Testler (E2E Tests):** Piramidin tepesidir. Gerçek bir kullanıcı gibi tarayıcıyı veya mobil uygulamayı açar, butonlara tıklar ve akışın tamamlandığını doğrular. En yavaş ama en güven verici testlerdir.
+
+## **2\. "Fail-Fast" (Hızlı Hata) Prensibi**
+
+CI/CD hattında testlerin en büyük görevi **vakit kaybetmemektir.** Eğer birim testleri başarısız olursa, pipeline saniyeler içinde durur. Bozuk bir kodu derlemek (build) veya sunucuya yüklemek (deploy) için dakikalarca beklemene gerek kalmaz. Hata ne kadar erken yakalanırsa, maliyeti o kadar düşük olur.
+
+## **3\. Pipeline'a Testi Nasıl Ekleriz?**
+
+GitHub Actions gibi bir araçta test aşaması genellikle bağımlılıklar yüklendikten hemen sonra, derleme (build) öncesinde gelir.
+
+| Teknoloji | Test Komutu |
+| :---- | :---- |
+| **Flutter** | run: flutter test |
+| **Python / FastAPI** | run: pytest |
+| **Ruby on Rails** | run: bundle exec rake test |
+
+>Dikkat: Eğer bu komutlardan biri hata kodu (*non-zero exit code*) döndürürse, GitHub Actions o adımı kırmızıya boyar ve bir sonraki adıma (örneğin yayına alma) geçilmesini otomatik olarak engeller.
+
+### **Neden Test Otomasyonu?**
+
+1. **Hız:** Manuel kontrolleri ortadan kaldırır.
+2. **Güven:** Kodun her zaman çalıştığından emin olmanızı sağlar.
+3. **Cesaret:** Mevcut kodu bozma korkusu olmadan yeni özellikler eklemenize imkan tanır.
