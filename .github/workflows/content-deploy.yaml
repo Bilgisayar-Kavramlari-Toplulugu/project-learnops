@@ -96,8 +96,10 @@ jobs:
           # Derived from GCP_PROJECT_ID — no extra secrets needed
           BACKEND_SA="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
           INSTANCE_CONN="${{ secrets.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:${{ env.DB_INSTANCE_NAME }}"
-          # IAM DB user is the SA email without .gserviceaccount.com suffix
-          DB_USER="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}"
+          # IAM DB user: SA email with .iam suffix, without .gserviceaccount.com
+          # Matches Terraform: trimsuffix(sa.email, ".gserviceaccount.com")
+          # e.g. backend-runtime-sa@learnops-staging.iam
+          DB_USER="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}.iam"
           VPC_FULL="projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/connectors/${{ env.VPC_CONNECTOR }}"
 
           gcloud run jobs deploy "${{ env.JOB_NAME }}" \
