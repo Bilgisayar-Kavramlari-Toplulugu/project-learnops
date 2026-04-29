@@ -112,9 +112,7 @@ export function QuizResultScreen({
           {/* İkon */}
           <div
             className={`flex h-16 w-16 items-center justify-center rounded-full ${
-              passed
-                ? "bg-[#DCFCE7] dark:bg-[#16A34A]/20"
-                : "bg-[#FEE2E2] dark:bg-[#DC2626]/20"
+              passed ? "bg-[#DCFCE7] dark:bg-[#16A34A]/20" : "bg-[#FEE2E2] dark:bg-[#DC2626]/20"
             }`}
           >
             {passed ? (
@@ -130,9 +128,7 @@ export function QuizResultScreen({
               {passed ? "Tebrikler!" : "Üzgünüm"}
             </h2>
             <p className="text-[#4B5563] dark:text-[#D1D5DB]">
-              {passed
-                ? "Sınavı başarıyla geçtin!"
-                : "Sınavı geçmek için yeterli puan alamadın."}
+              {passed ? "Sınavı başarıyla geçtin!" : "Sınavı geçmek için yeterli puan alamadın."}
             </p>
           </div>
 

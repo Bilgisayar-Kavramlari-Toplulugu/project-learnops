@@ -60,24 +60,26 @@ export default function DashboardPage() {
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6">
       <WelcomeHeader userName={userName} courseCount={courses.length} avatarType={avatarType} />
-      <StatsSummary items={stats} />
-      {/* sınav sonucu null gelirse gözükmesin*/}
-      {lastQuizResult && <LastQuizResult result={lastQuizResult} />}
 
-      <div className="space-y-4">
-        <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          Devam Eden Kurslar
-        </h3>
-        {isEmpty ? (
-          <EmptyCoursesState />
-        ) : (
-          <div className="grid gap-5 xl:grid-cols-2">
-            {courses.map((course) => (
-              <CourseProgressCard key={course.course_id} course={course} />
-            ))}
+      {isEmpty ? (
+        <EmptyCoursesState />
+      ) : (
+        <>
+          <StatsSummary items={stats} />
+          {lastQuizResult && <LastQuizResult result={lastQuizResult} />}
+
+          <div className="space-y-4">
+            <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              Devam Eden Kurslar
+            </h3>
+            <div className="grid gap-5 xl:grid-cols-2">
+              {courses.map((course) => (
+                <CourseProgressCard key={course.course_id} course={course} />
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </section>
   );
 }

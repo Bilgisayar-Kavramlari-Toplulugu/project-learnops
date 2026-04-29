@@ -18,10 +18,10 @@ interface AnswerResultItem {
 interface QuizAttemptDetailResponse {
   attempt_id: string;
   score: number;
-  total: number; 
+  total: number;
   passed: boolean;
   time_spent_seconds?: number;
-  course_slug?: string; 
+  course_slug?: string;
   answers: AnswerResultItem[];
 }
 
@@ -46,7 +46,9 @@ export default function ResultsPage() {
   const quizId = params.quizId as string;
   const attemptId = searchParams.get("attemptId");
 
-  const [loadingState, setLoadingState] = useState<LoadingState>(attemptId ? "loading" : "not-found");
+  const [loadingState, setLoadingState] = useState<LoadingState>(
+    attemptId ? "loading" : "not-found",
+  );
   const [resultData, setResultData] = useState<QuizResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +57,7 @@ export default function ResultsPage() {
 
     async function fetchResults() {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      
+
       try {
         const response = await fetch(`${API_URL}/quiz-attempts/${attemptId}`, {
           cache: "no-store",
@@ -109,7 +111,7 @@ export default function ResultsPage() {
 
   // Handlers
   const handleRetry = () => router.push(`/quiz/${quizId}`);
-  
+
   const handleBackToCourse = () => {
     router.push("/courses");
   };
