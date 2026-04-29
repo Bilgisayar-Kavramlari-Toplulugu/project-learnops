@@ -1,7 +1,29 @@
 import { NextResponse, NextRequest } from "next/server";
 
 const STATIC_FILE_PATTERN = /\.[^/]+$/;
-const publicPaths = ["/", "/login"];
+
+// Sadece bunlar — login varsa dashboard'a fırlat
+const AUTH_REDIRECT_PATHS = ["/", "/login"];
+
+// Public exact match
+const PUBLIC_EXACT = ["/", "/login"];
+
+// Public prefix match (ör: /courses, /courses/linux-temelleri)
+const PUBLIC_PREFIXES = ["/courses"];
+
+// Ama /courses/[slug]/[sectionId] korumalı
+const PROTECTED_COURSE_PATTERN = /^\/courses\/[^/]+\/[^/]+/;
+
+function isPublic(pathname: string): boolean {
+  // Önce protected pattern kontrolü (öncelikli)
+  if (PROTECTED_COURSE_PATTERN.test(pathname)) return false;
+
+  // Exact match
+  if (PUBLIC_EXACT.includes(pathname)) return true;
+
+  // Prefix match (/courses ve /courses/...)
+  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -15,12 +37,14 @@ export function proxy(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
-  if (publicPaths.includes(pathname) && token) {
+
+  // Authenticated user / veya /login'e gelirse dashboard'a fırlat
+  if (AUTH_REDIRECT_PATHS.includes(pathname) && token) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Protected path + unauthenticated → login
-  if (!publicPaths.includes(pathname) && !token) {
+  // Public olmayan path + token yoksa login'e fırlat
+  if (!isPublic(pathname) && !token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -28,9 +52,7 @@ export function proxy(request: NextRequest) {
   requestHeaders.set("x-learnops-path", pathname);
 
   return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
+    request: { headers: requestHeaders },
   });
 }
 
