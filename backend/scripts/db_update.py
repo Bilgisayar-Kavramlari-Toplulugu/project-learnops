@@ -27,10 +27,11 @@ import os
 import sys
 from pathlib import Path
 
-from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
+
+from alembic import command as alembic_command
 
 # ── Path setup ───────────────────────────────────────────────────────────────
 # backend/scripts/db_update.py  →  SCRIPT_DIR = backend/scripts/
@@ -51,6 +52,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("db_update")
 
+
 # ── Engine factory ────────────────────────────────────────────────────────────
 def _create_engine():
     """
@@ -64,9 +66,13 @@ def _create_engine():
     if instance_conn_name:
         db_password = os.environ.get("DB_PASSWORD", "")
         if db_password:
-            logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, password auth)")
+            logger.info(
+                "Cloud Run mode: Cloud SQL Python Connector (private IP, password auth)"
+            )
         else:
-            logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, IAM auth)")
+            logger.info(
+                "Cloud Run mode: Cloud SQL Python Connector (private IP, IAM auth)"
+            )
 
         from google.cloud.sql.connector import IPTypes, create_async_connector
 
@@ -88,7 +94,9 @@ def _create_engine():
                 kwargs["password"] = db_password
             else:
                 kwargs["enable_iam_auth"] = True
-            return await _connector.connect_async(instance_conn_name, "asyncpg", **kwargs)
+            return await _connector.connect_async(
+                instance_conn_name, "asyncpg", **kwargs
+            )
 
         return create_async_engine(
             "postgresql+asyncpg://",
@@ -125,11 +133,32 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
     """
     from sqlalchemy import text
 
-    # Check alembic_version table existence without raising a SQL error.
+    # ── Step A: Fix ownership of any objects not owned by postgres ────────────
+    # REASSIGN OWNED BY requires the caller to be a member of the source role.
+    # Cloud SQL postgres has CREATEROLE which, in PostgreSQL 15, allows granting
+    # membership in any non-superuser role — including IAM user roles created
+    # automatically by Cloud SQL. So we: GRANT role TO postgres → REASSIGN → REVOKE.
+    non_postgres_owners = connection.execute(
+        text(
+            "SELECT DISTINCT tableowner FROM pg_tables "
+            "WHERE schemaname = 'public' AND tableowner != 'postgres'"
+        )
+    ).fetchall()
+
+    for (owner,) in non_postgres_owners:
+        logger.warning(f"Fixing ownership: '{owner}' → postgres")
+        # GRANT membership so REASSIGN OWNED BY is permitted (PG 15 CREATEROLE)
+        connection.execute(text(f'GRANT "{owner}" TO postgres'))
+        connection.execute(text(f'REASSIGN OWNED BY "{owner}" TO postgres'))
+        connection.execute(text(f'REVOKE "{owner}" FROM postgres'))
+        logger.info(f"Ownership of all objects by '{owner}' transferred to postgres.")
+
+    # ── Step B: Sync alembic_version if schema exists but is untracked ────────
     alembic_table_exists = (
         connection.execute(
             text("SELECT to_regclass('public.alembic_version')")
-        ).scalar() is not None
+        ).scalar()
+        is not None
     )
 
     if alembic_table_exists:
@@ -143,9 +172,8 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
 
     # alembic_version table absent or empty — check if schema was already applied.
     users_exists = (
-        connection.execute(
-            text("SELECT to_regclass('public.users')")
-        ).scalar() is not None
+        connection.execute(text("SELECT to_regclass('public.users')")).scalar()
+        is not None
     )
     if not users_exists:
         return  # Truly fresh DB — let upgrade create everything
@@ -157,7 +185,8 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
                 "SELECT 1 FROM information_schema.columns "
                 "WHERE table_name='courses' AND column_name='display_order'"
             )
-        ).scalar() is not None
+        ).scalar()
+        is not None
     )
 
     if display_order_exists:
