@@ -120,30 +120,33 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
     before (or while) writing to alembic_version, leaving the DB schema ahead of
     Alembic's tracking. Without this, the next run fails with DuplicateTableError.
 
-    Decision logic:
-    - alembic_version has a revision → nothing to do, upgrade handles the rest.
-    - alembic_version empty AND users table missing → fresh DB, let upgrade run.
-    - alembic_version empty AND users table present:
-        - display_order column present on courses → all migrations likely applied,
-          stamp head.
-        - display_order column absent → only 001_initial applied, stamp there so
-          upgrade applies 002 onward.
+    All existence checks use to_regclass / information_schema so they return NULL
+    rather than raising a SQL error — querying a non-existent table directly puts
+    the PostgreSQL transaction into an aborted state that infects all later queries.
     """
     from sqlalchemy import text
 
-    try:
+    # Check alembic_version table existence without raising a SQL error.
+    alembic_table_exists = (
+        connection.execute(
+            text("SELECT to_regclass('public.alembic_version')")
+        ).scalar() is not None
+    )
+
+    if alembic_table_exists:
         row = connection.execute(
             text("SELECT version_num FROM alembic_version LIMIT 1")
         ).fetchone()
         if row is not None:
             logger.info(f"Alembic current revision: {row[0]} — no stamp needed.")
             return
-    except Exception:
-        pass  # alembic_version table doesn't exist yet — fresh DB
+        # Table exists but is empty — fall through to stamp
 
+    # alembic_version table absent or empty — check if schema was already applied.
     users_exists = (
-        connection.execute(text("SELECT to_regclass('public.users')")).scalar()
-        is not None
+        connection.execute(
+            text("SELECT to_regclass('public.users')")
+        ).scalar() is not None
     )
     if not users_exists:
         return  # Truly fresh DB — let upgrade create everything
@@ -155,8 +158,7 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
                 "SELECT 1 FROM information_schema.columns "
                 "WHERE table_name='courses' AND column_name='display_order'"
             )
-        ).scalar()
-        is not None
+        ).scalar() is not None
     )
 
     if display_order_exists:
