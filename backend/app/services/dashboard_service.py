@@ -1,11 +1,12 @@
-from typing import Any, Optional
 from uuid import UUID
-from sqlalchemy import select, func, and_
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.models.courses import Enrollment, Section, UserProgress, Course
-from app.models.quizzes import QuizAttempt, Quiz
+from app.models.courses import Course, Enrollment, Section, UserProgress
+from app.models.quizzes import Quiz, QuizAttempt
+
 
 class DashboardService:
     """
@@ -26,9 +27,8 @@ class DashboardService:
             Sözlük içeren dashboard özet verileri.
         """
         # 1. Tamamlanan Kurs Sayısı
-        completed_count_stmt = (
-            select(func.count(Enrollment.id))
-            .where(Enrollment.user_id == user_id, Enrollment.completed_at.isnot(None))
+        completed_count_stmt = select(func.count(Enrollment.id)).where(
+            Enrollment.user_id == user_id, Enrollment.completed_at.isnot(None)
         )
         completed_count = (await db.execute(completed_count_stmt)).scalar() or 0
 
@@ -43,11 +43,12 @@ class DashboardService:
         in_progress_list = []
         if enrollments:
             # Tamamlanmış bölümler subquery (veya liste)
-            completed_sections_stmt = (
-                select(UserProgress.section_id)
-                .where(UserProgress.user_id == user_id, UserProgress.completed == True)
+            completed_sections_stmt = select(UserProgress.section_id).where(
+                UserProgress.user_id == user_id, UserProgress.completed.is_(True)
             )
-            completed_sections_ids = (await db.execute(completed_sections_stmt)).scalars().all()
+            completed_sections_ids = (
+                (await db.execute(completed_sections_stmt)).scalars().all()
+            )
 
             for enc in enrollments:
                 # Sonraki bölümü bul
@@ -55,22 +56,28 @@ class DashboardService:
                     select(Section)
                     .where(
                         Section.course_id == enc.course_id,
-                        ~Section.id.in_(completed_sections_ids) if completed_sections_ids else True
+                        ~Section.id.in_(completed_sections_ids)
+                        if completed_sections_ids
+                        else True,
                     )
                     .order_by(Section.order_index.asc())
                     .limit(1)
                 )
                 next_sec = (await db.execute(next_sec_stmt)).scalar_one_or_none()
 
-                in_progress_list.append({
-                    "course_id": enc.course_id,
-                    "title": enc.course.title,
-                    "next_section": {
-                        "id": next_sec.id,
-                        "title": next_sec.title,
-                        "order_index": next_sec.order_index,
-                    } if next_sec else None
-                })
+                in_progress_list.append(
+                    {
+                        "course_id": enc.course_id,
+                        "title": enc.course.title,
+                        "next_section": {
+                            "id": next_sec.id,
+                            "title": next_sec.title,
+                            "order_index": next_sec.order_index,
+                        }
+                        if next_sec
+                        else None,
+                    }
+                )
 
         # 3. Son Quiz (Join zinciri düzeltildi ve eager load eklendi)
         last_attempt_stmt = (
@@ -88,7 +95,8 @@ class DashboardService:
         if last_attempt:
             last_quiz_data = {
                 "quiz_name": last_attempt.quiz.course.title,
-                "score": last_attempt.score,  # Review 5: 0.0 maskelemesi kaldırıldı, ham değer (float veya None) dönülüyor.
+                # Review 5: 0.0 maskelemesi kaldırıldı, ham değer dönülüyor.
+                "score": last_attempt.score,
                 "completed_at": last_attempt.submitted_at,
             }
 
