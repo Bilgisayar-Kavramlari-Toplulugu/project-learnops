@@ -14,7 +14,8 @@ def token_headers(test_user):
     """test_user için gerekli auth header'larını döndürür."""
     from app.services.jwt_service import create_access_token
 
-    token = create_access_token(data={"sub": str(test_user.id)})
+    # jwt_service.py'daki 'sub' parametresine uygun çağrım yapıldı
+    token = create_access_token(sub=str(test_user.id))
     return {"Authorization": f"Bearer {token}"}
 
 
@@ -63,7 +64,7 @@ async def test_dashboard_logic_calculations(
     enroll_2 = Enrollment(user_id=test_user.id, course_id=course_2.id)
     db_session.add(enroll_2)
 
-    # Bölüm 1'i tamamla (Next section Bölüm 2 olmalı)
+    # Bölüm 1'i tamamla (Bu durumda next_section Bölüm 2 olmalı)
     progress = UserProgress(user_id=test_user.id, section_id=sec_1.id, completed=True)
     db_session.add(progress)
 
@@ -90,7 +91,7 @@ async def test_dashboard_last_quiz_logic(
     quiz = Quiz(id=uuid4(), course_id=course.id, title="Final Quiz")
     db_session.add_all([course, quiz])
 
-    # Attempt ekle
+    # Bir attempt ekle
     attempt = QuizAttempt(
         user_id=test_user.id,
         quiz_id=quiz.id,
