@@ -139,10 +139,7 @@ export default function ResultsPage() {
         <div className="max-w-md text-center">
           <p className="text-lg font-semibold text-[#991B1B]">Hata</p>
           <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata tespit edildi."}</p>
-          <Button
-            onClick={handleRetry}
-            className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
-          >
+          <Button onClick={handleRetry} className="mt-4 rounded-xl text-sm font-bold">
             Quiz&apos;e Geri Dön
           </Button>
         </div>
