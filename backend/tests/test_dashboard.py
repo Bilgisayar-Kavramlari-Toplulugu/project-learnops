@@ -1,7 +1,9 @@
+from uuid import uuid4
+
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import uuid4
 
 from app.models.courses import Course, Enrollment, Section, UserProgress
 from app.models.quizzes import Quiz, QuizAttempt
@@ -25,7 +27,7 @@ async def test_get_dashboard_summary_authenticated_empty(
     data = response.json()
     assert data["completed_courses_count"] == 0
     assert data["in_progress_courses"] == []
-    assert data["last_quiz"] is None  # Hiç attempt yoksa None dönmeli
+    assert data["last_quiz"] is None
 
 
 @pytest.mark.asyncio
@@ -84,7 +86,10 @@ async def test_dashboard_last_quiz_logic(
 
     # İki attempt ekle, sonuncusu daha yüksek puanlı ve daha yeni olsun
     attempt = QuizAttempt(
-        user_id=test_user.id, quiz_id=quiz.id, score=85.0, submitted_at=func.now()
+        user_id=test_user.id,
+        quiz_id=quiz.id,
+        score=85.0,
+        submitted_at=func.now(),
     )
     db_session.add(attempt)
     await db_session.commit()
