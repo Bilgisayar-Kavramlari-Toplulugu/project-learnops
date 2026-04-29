@@ -1,0 +1,33 @@
+# Build context must be the repository root so both backend/ and content/ are available.
+# Usage (from repo root):
+#   docker build -f backend/Dockerfile.job -t content-job .
+
+FROM python:3.13.11-slim
+
+WORKDIR /app
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN pip install poetry==2.3.2
+
+# Copy dependency manifests first for layer caching
+COPY backend/pyproject.toml backend/poetry.lock ./
+
+# Install Python dependencies (no virtualenv — install directly to system Python)
+RUN poetry config virtualenvs.create false \
+    && poetry install --only main --no-interaction --no-ansi
+
+# Copy backend source (app code, alembic, scripts, alembic.ini)
+COPY backend/ ./backend/
+
+# Copy course content (excluding nothing — _ornek-kurs is skipped at runtime)
+COPY content/ ./content/
+
+WORKDIR /app/backend
+
+CMD ["python", "scripts/db_update.py"]
