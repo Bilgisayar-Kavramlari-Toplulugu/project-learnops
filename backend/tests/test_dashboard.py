@@ -22,6 +22,7 @@ async def test_get_dashboard_summary_authenticated_empty(
     client: AsyncClient, token_headers: dict
 ):
     """Authenticated kullanıcı için 200 OK ve boş/başlangıç verisi doğrulaması."""
+    # token_headers fixture'ı artık conftest.py'dan geliyor
     response = await client.get("/v1/dashboard/summary", headers=token_headers)
 
     assert response.status_code == 200
@@ -39,35 +40,43 @@ async def test_dashboard_logic_calculations(
     # 1. Hazırlık: Bir kurs oluştur ve tamamla
     # FIX: slug eklendi (NOT NULL constraint)
     course_1 = Course(
-        id=uuid4(), slug="tamamlanan-kurs", title="Tamamlanan Kurs", description="Desc"
+        id=uuid4(), 
+        slug="tamamlanan-kurs", 
+        title="Tamamlanan Kurs", 
+        description="Desc"
     )
     db_session.add(course_1)
-
+    
     enroll_1 = Enrollment(
-        user_id=test_user.id, course_id=course_1.id, completed_at=func.now()
+        user_id=test_user.id, 
+        course_id=course_1.id, 
+        completed_at=func.now()
     )
     db_session.add(enroll_1)
 
     # 2. Hazırlık: Devam eden bir kurs ve bölümler oluştur
     course_2 = Course(
-        id=uuid4(), slug="devam-eden-kurs", title="Devam Eden Kurs", description="Desc"
+        id=uuid4(), 
+        slug="devam-eden-kurs", 
+        title="Devam Eden Kurs", 
+        description="Desc"
     )
     db_session.add(course_2)
 
     # FIX: section_id_str eklendi (NOT NULL constraint)
     sec_1 = Section(
-        id=uuid4(),
-        course_id=course_2.id,
-        section_id_str="sec-1",
-        title="Bölüm 1",
-        order_index=1,
+        id=uuid4(), 
+        course_id=course_2.id, 
+        section_id_str="sec-1", 
+        title="Bölüm 1", 
+        order_index=1
     )
     sec_2 = Section(
-        id=uuid4(),
-        course_id=course_2.id,
-        section_id_str="sec-2",
-        title="Bölüm 2",
-        order_index=2,
+        id=uuid4(), 
+        course_id=course_2.id, 
+        section_id_str="sec-2", 
+        title="Bölüm 2", 
+        order_index=2
     )
     db_session.add_all([sec_1, sec_2])
 
@@ -107,7 +116,8 @@ async def test_dashboard_last_quiz_logic(
     db_session.add(course)
     await db_session.flush()
 
-    # FIX: Quiz modelinde zorunlu alanlar: course_id, duration_seconds
+    # FIX: Quiz modelinde 'title' field'ı yok.
+    #         Zorunlu alanlar: course_id, duration_seconds
     quiz = Quiz(
         id=uuid4(),
         course_id=course.id,
@@ -124,7 +134,7 @@ async def test_dashboard_last_quiz_logic(
         submitted_at=datetime.now(timezone.utc),
         score=85,
         total_questions=10,
-        passed=True,
+        passed=True
     )
     db_session.add(attempt)
     await db_session.flush()
