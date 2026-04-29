@@ -145,26 +145,17 @@ async def test_dashboard_all_sections_completed(
 ):
     # 1. Kurs Kurulumu
     course = Course(
-        id=uuid4(), 
-        slug="full-course", 
-        title="Full Course", 
-        is_published=True
+        id=uuid4(), slug="full-course", title="Full Course", is_published=True
     )
     db_session.add(course)
     await db_session.flush()
 
     # 2. Bölüm Kurulumu (section_id_str zorunlu alanı eklendi)
     sec_1 = Section(
-        course_id=course.id, 
-        section_id_str="sec-1", 
-        title="Bölüm 1", 
-        order_index=1
+        course_id=course.id, section_id_str="sec-1", title="Bölüm 1", order_index=1
     )
     sec_2 = Section(
-        course_id=course.id, 
-        section_id_str="sec-2", 
-        title="Bölüm 2", 
-        order_index=2
+        course_id=course.id, section_id_str="sec-2", title="Bölüm 2", order_index=2
     )
     db_session.add_all([sec_1, sec_2])
     await db_session.flush()
@@ -172,9 +163,13 @@ async def test_dashboard_all_sections_completed(
     # 3. Kayıt ve TÜM bölümleri tamamlama
     enrollment = Enrollment(user_id=test_user.id, course_id=course.id)
     db_session.add(enrollment)
-    
-    progress_1 = UserProgress(user_id=test_user.id, section_id=sec_1.id, is_completed=True)
-    progress_2 = UserProgress(user_id=test_user.id, section_id=sec_2.id, is_completed=True)
+
+    progress_1 = UserProgress(
+        user_id=test_user.id, section_id=sec_1.id, is_completed=True
+    )
+    progress_2 = UserProgress(
+        user_id=test_user.id, section_id=sec_2.id, is_completed=True
+    )
     db_session.add_all([progress_1, progress_2])
     await db_session.commit()
 
@@ -184,12 +179,15 @@ async def test_dashboard_all_sections_completed(
     data = response.json()
 
     # 5. Doğrulama
-    # Kurs tamamlandığında in_progress listesinden düşebilir veya listede kalıp next_section null olabilir.
+    # Kurs tamamlandığında in_progress listesinden düşebilir veya
+    # listede kalıp next_section null olabilir.
     # Mevcut DashboardService mantığına göre filtreleme yapıyoruz:
     in_progress_ids = [c["id"] for c in data["in_progress_courses"]]
-    
+
     if str(course.id) in in_progress_ids:
-        course_data = next(c for c in data["in_progress_courses"] if c["id"] == str(course.id))
+        course_data = next(
+            c for c in data["in_progress_courses"] if c["id"] == str(course.id)
+        )
         assert course_data["next_section"] is None
     else:
         # Eğer tamamlanan kurslar in_progress'te listelenmiyorsa bu da doğrudur
