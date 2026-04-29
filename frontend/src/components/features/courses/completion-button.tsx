@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import type { AxiosError } from "axios";
+
+import { Button, toast } from "@/components/ui";
 import { api } from "@/lib/api";
 
 interface CompletionButtonProps {
@@ -47,10 +48,15 @@ export function CompletionButton({
   }, [isCompleted]);
 
   const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs",
-    md: "px-4 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-base",
   };
+  const buttonSize = {
+    sm: "sm",
+    md: "default",
+    lg: "lg",
+  } as const;
 
   const variantClasses = {
     primary: completed
@@ -105,11 +111,12 @@ export function CompletionButton({
   const isDisabled = completed || isCompleting;
 
   return (
-    <button
+    <Button
       type="button"
       onClick={handleComplete}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all ${
+      size={buttonSize[size]}
+      className={`font-bold rounded-xl ${
         fullWidth ? "w-full" : ""
       } ${sizeClasses[size]} ${variantClasses[variant]} ${
         isCompleting ? "opacity-50 cursor-not-allowed" : ""
@@ -126,6 +133,6 @@ export function CompletionButton({
           <span>{completed ? "Bölüm Tamamlandı" : "Bölümü Tamamla"}</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }

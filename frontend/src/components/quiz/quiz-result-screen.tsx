@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home, History } from "lucide-react";
 
+import { Button } from "@/components/ui";
+
 // onViewHistory — BE-20 (Sprint 6) tamamlandı. Frontend sayfası FE-24 (Sprint 7)
 // kapsamında aktive edilecek.
 
@@ -112,9 +114,7 @@ export function QuizResultScreen({
           {/* İkon */}
           <div
             className={`flex h-16 w-16 items-center justify-center rounded-full ${
-              passed
-                ? "bg-[#DCFCE7] dark:bg-[#16A34A]/20"
-                : "bg-[#FEE2E2] dark:bg-[#DC2626]/20"
+              passed ? "bg-[#DCFCE7] dark:bg-[#16A34A]/20" : "bg-[#FEE2E2] dark:bg-[#DC2626]/20"
             }`}
           >
             {passed ? (
@@ -130,9 +130,7 @@ export function QuizResultScreen({
               {passed ? "Tebrikler!" : "Üzgünüm"}
             </h2>
             <p className="text-[#4B5563] dark:text-[#D1D5DB]">
-              {passed
-                ? "Sınavı başarıyla geçtin!"
-                : "Sınavı geçmek için yeterli puan alamadın."}
+              {passed ? "Sınavı başarıyla geçtin!" : "Sınavı geçmek için yeterli puan alamadın."}
             </p>
           </div>
 
@@ -273,28 +271,28 @@ export function QuizResultScreen({
 
       {/* Aksiyon Butonları */}
       <div className="flex flex-wrap gap-3 border-t border-[#E5E7EB] pt-4 dark:border-[#374151]">
-        <button
+        <Button
           onClick={handleRetry}
           className="inline-flex items-center gap-2 rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#4F46E5]/20 hover:bg-[#4338CA] active:scale-[0.97]"
         >
           <RotateCcw className="h-4 w-4" />
           Tekrar Dene
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleBackToCourse}
           className="inline-flex items-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-4 py-2.5 text-sm font-bold text-[#374151] hover:bg-[#F3F4F6] dark:border-[#4B5563] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:hover:bg-[#374151]"
         >
           <Home className="h-4 w-4" />
           Kursa Dön
-        </button>
+        </Button>
         {onViewHistory && (
-          <button
+          <Button
             onClick={onViewHistory}
             className="inline-flex items-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-4 py-2.5 text-sm font-bold text-[#374151] hover:bg-[#F3F4F6] dark:border-[#4B5563] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:hover:bg-[#374151]"
           >
             <History className="h-4 w-4" />
             Geçmiş Denemeler
-          </button>
+          </Button>
         )}
       </div>
     </div>
