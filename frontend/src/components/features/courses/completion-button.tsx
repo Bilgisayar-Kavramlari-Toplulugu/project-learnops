@@ -47,11 +47,6 @@ export function CompletionButton({
     setCompleted(isCompleted);
   }, [isCompleted]);
 
-  const sizeClasses = {
-    sm: "text-xs",
-    md: "text-sm",
-    lg: "text-base",
-  };
   const buttonSize = {
     sm: "sm",
     md: "default",
@@ -118,9 +113,7 @@ export function CompletionButton({
       size={buttonSize[size]}
       className={`font-bold rounded-xl ${
         fullWidth ? "w-full" : ""
-      } ${sizeClasses[size]} ${variantClasses[variant]} ${
-        isCompleting ? "opacity-50 cursor-not-allowed" : ""
-      } ${className}`}
+      } ${variantClasses[variant]} ${isCompleting ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
     >
       {isCompleting ? (
         <>

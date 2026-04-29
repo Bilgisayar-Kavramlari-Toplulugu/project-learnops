@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 import type { CourseCardItem, DashboardSuggestion, LearningPath, UpcomingExam } from "@/types";
 import { ContinueLearningCard } from "./continue-learning-card";
 import { EnrolledCoursesSection } from "./enrolled-courses-section";
@@ -80,10 +80,10 @@ export function DashboardOverview({
           <div className="flex flex-col gap-2.5">
             <label className="group flex h-11 flex-1 items-center gap-2 rounded-xl border border-blue-100 bg-white px-3 shadow-xs transition focus-within:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:focus-within:border-slate-500">
               <Search className="size-4 text-slate-400 transition group-focus-within:text-blue-500 dark:text-slate-500 dark:group-focus-within:text-sky-400" />
-              <Input
+              <input
                 type="text"
                 placeholder="Search courses..."
-                className="h-auto border-0 bg-transparent p-0 text-sm font-medium text-slate-700 shadow-none placeholder:text-slate-400 focus:border-0 focus:ring-0 dark:bg-transparent dark:text-slate-200 dark:placeholder:text-slate-500"
+                className="w-full bg-transparent text-sm font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none dark:text-slate-200 dark:placeholder:text-slate-500"
               />
             </label>
             <div className="grid gap-2.5 sm:grid-cols-3">

@@ -73,6 +73,7 @@ export function SectionActions({
     <Button
       onClick={handleMarkComplete}
       disabled={isButtonDisabled}
+      variant={isCurrentCompleted ? "outline" : "default"}
       className={`w-full gap-2 rounded-xl text-sm font-bold ${
         isCurrentCompleted
           ? "cursor-default border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"

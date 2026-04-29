@@ -273,23 +273,21 @@ export function QuizResultScreen({
       <div className="flex flex-wrap gap-3 border-t border-[#E5E7EB] pt-4 dark:border-[#374151]">
         <Button
           onClick={handleRetry}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#4F46E5] px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#4F46E5]/20 hover:bg-[#4338CA] active:scale-[0.97]"
+          className="gap-2 rounded-xl font-bold shadow-lg active:scale-[0.97]"
         >
           <RotateCcw className="h-4 w-4" />
           Tekrar Dene
         </Button>
         <Button
           onClick={handleBackToCourse}
-          className="inline-flex items-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-4 py-2.5 text-sm font-bold text-[#374151] hover:bg-[#F3F4F6] dark:border-[#4B5563] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:hover:bg-[#374151]"
+          variant="outline"
+          className="gap-2 rounded-xl font-bold"
         >
           <Home className="h-4 w-4" />
           Kursa Dön
         </Button>
         {onViewHistory && (
-          <Button
-            onClick={onViewHistory}
-            className="inline-flex items-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-4 py-2.5 text-sm font-bold text-[#374151] hover:bg-[#F3F4F6] dark:border-[#4B5563] dark:bg-[#1F2937] dark:text-[#D1D5DB] dark:hover:bg-[#374151]"
-          >
+          <Button onClick={onViewHistory} variant="outline" className="gap-2 rounded-xl font-bold">
             <History className="h-4 w-4" />
             Geçmiş Denemeler
           </Button>
