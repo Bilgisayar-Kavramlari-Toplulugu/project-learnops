@@ -151,7 +151,7 @@ jobs:
             --service-account="${BACKEND_SA}" \
             --vpc-connector="${VPC_FULL}" \
             --vpc-egress="private-ranges-only" \
-            --set-env-vars="INSTANCE_CONNECTION_NAME=${INSTANCE_CONN},DB_USER=postgres,DB_NAME=${{ env.DB_NAME }},ENVIRONMENT=staging" \
+            --set-env-vars="INSTANCE_CONNECTION_NAME=${INSTANCE_CONN},DB_USER=postgres,DB_NAME=${{ env.DB_NAME }},ENVIRONMENT=staging,RUNTIME_IAM_DB_USER=backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}.iam" \
             --set-secrets="DB_PASSWORD=POSTGRES_PASSWORD:latest" \
             --max-retries=1 \
             --tasks=1 \
