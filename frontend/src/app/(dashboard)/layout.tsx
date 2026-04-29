@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
 import { useProfile } from "@/hooks/profile/use-profile";
-import { DashboardShellSkeleton } from "@/components/ui/dashboardshell-skeleton";
-import { DashboardErrorState } from "@/components/ui/dashboard-error-state";
+import { DashboardErrorState, DashboardShellSkeleton } from "@/components/ui";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();

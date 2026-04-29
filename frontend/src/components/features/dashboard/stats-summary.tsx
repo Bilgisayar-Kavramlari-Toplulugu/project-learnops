@@ -1,6 +1,6 @@
 import { BookOpenCheck, Trophy, TrendingUp, type LucideIcon } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui";
 import type { DashboardStatSummaryItem } from "@/types";
 
 const statIconMap: Record<string, LucideIcon> = {
