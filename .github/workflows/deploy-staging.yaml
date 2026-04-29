@@ -19,7 +19,7 @@ concurrency:
 
 env:
   GCP_REGION: "europe-west3"
-  TF_VERSION: "1.6.0"
+  TF_VERSION: "1.11.0"
 
 jobs:
   changes:
