@@ -25,7 +25,7 @@ class LastQuizSchema(BaseModel):
     """Kullanıcının son tamamlanan quiz'i için şema."""
 
     quiz_name: str
-    score: float
+    score: Optional[float] = None  # None = henüz hesaplanmadı veya değerlendirilmedi
     completed_at: datetime
 
 
