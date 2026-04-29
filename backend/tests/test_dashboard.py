@@ -143,52 +143,39 @@ async def test_dashboard_last_quiz_logic(
 async def test_dashboard_all_sections_completed(
     client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
 ):
-    # 1. Kurs Kurulumu
+    """Tüm bölümler tamamlandığında next_section null dönmeli."""
+    # 1. NOT NULL kısıtlamasına takılmamak için section_id_str ekledik
     course = Course(
         id=uuid4(), slug="full-course", title="Full Course", is_published=True
     )
     db_session.add(course)
     await db_session.flush()
 
-    # 2. Bölüm Kurulumu (section_id_str zorunlu alanı eklendi)
-    sec_1 = Section(
-        course_id=course.id, section_id_str="sec-1", title="Bölüm 1", order_index=1
-    )
-    sec_2 = Section(
-        course_id=course.id, section_id_str="sec-2", title="Bölüm 2", order_index=2
-    )
+    sec_1 = Section(course_id=course.id, section_id_str="sec-1", title="B 1", order_index=1)
+    sec_2 = Section(course_id=course.id, section_id_str="sec-2", title="B 2", order_index=2)
     db_session.add_all([sec_1, sec_2])
     await db_session.flush()
 
-    # 3. Kayıt ve TÜM bölümleri tamamlama
+    # 2. Kayıt
     enrollment = Enrollment(user_id=test_user.id, course_id=course.id)
     db_session.add(enrollment)
-
-    progress_1 = UserProgress(
-        user_id=test_user.id, section_id=sec_1.id, is_completed=True
-    )
-    progress_2 = UserProgress(
-        user_id=test_user.id, section_id=sec_2.id, is_completed=True
-    )
-    db_session.add_all([progress_1, progress_2])
-    await db_session.commit()
+    
+    # 3. 'is_completed' yerine modeldeki doğru alan olan 'completed' kullanıldı
+    p1 = UserProgress(user_id=test_user.id, section_id=sec_1.id, completed=True)
+    p2 = UserProgress(user_id=test_user.id, section_id=sec_2.id, completed=True)
+    db_session.add_all([p1, p2])
+    
+    # conftest içindeki transaction yönetimi gereği flush yeterli, commit'e gerek yok
+    await db_session.flush()
 
     # 4. API Çağrısı
     response = await client.get("/v1/dashboard/summary", headers=token_headers)
     assert response.status_code == 200
     data = response.json()
 
-    # 5. Doğrulama
-    # Kurs tamamlandığında in_progress listesinden düşebilir veya
-    # listede kalıp next_section null olabilir.
-    # Mevcut DashboardService mantığına göre filtreleme yapıyoruz:
-    in_progress_ids = [c["id"] for c in data["in_progress_courses"]]
-
-    if str(course.id) in in_progress_ids:
-        course_data = next(
-            c for c in data["in_progress_courses"] if c["id"] == str(course.id)
-        )
-        assert course_data["next_section"] is None
-    else:
-        # Eğer tamamlanan kurslar in_progress'te listelenmiyorsa bu da doğrudur
-        assert True
+    # 5. KeyError almamak için 'course_id' anahtarını kullanıyoruz
+    # DashboardService.py: "course_id": enc.course.id şeklinde dönüyor
+    target = next((c for c in data["in_progress_courses"] if c["course_id"] == str(course.id)), None)
+    
+    if target:
+        assert target["next_section"] is None
