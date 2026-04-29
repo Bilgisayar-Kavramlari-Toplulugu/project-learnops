@@ -12,6 +12,7 @@ on:
       - "backend/scripts/db_update.py"
       - "backend/Dockerfile.job"
       - ".github/workflows/content-deploy.yaml" 
+      - "backend/**"  # Trigger on migration changes to run them in the same job 
   workflow_dispatch:
 
 concurrency:
