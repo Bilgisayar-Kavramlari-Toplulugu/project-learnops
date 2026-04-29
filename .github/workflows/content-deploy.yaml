@@ -11,7 +11,7 @@ on:
       - "content/**"
       - "backend/scripts/db_update.py"
       - "backend/Dockerfile.job"
-      - ".github/workflows/content-deploy.yaml"
+      - ".github/workflows/content-deploy.yaml" 
   workflow_dispatch:
 
 concurrency:
