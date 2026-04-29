@@ -42,7 +42,7 @@ class DashboardService:
         if enrollments:
             course_ids = [enc.course_id for enc in enrollments]
 
-            # ÇÖZÜM 3: Subquery DB içinde kalıyor (Bellek regresyonu engellendi)
+            # ÇÖZÜM 3: Subquery DB içinde kalıyor
             completed_sections_subq = (
                 select(UserProgress.section_id).where(
                     UserProgress.user_id == user_id,
@@ -51,7 +51,6 @@ class DashboardService:
             ).scalar_subquery()
 
             # ÇÖZÜM 4: N+1 Problemi Giderildi.
-            # Tüm kurslar için sıradaki bölümleri tek sorguda çekiyoruz.
             next_sections_stmt = (
                 select(Section)
                 .where(
@@ -62,9 +61,7 @@ class DashboardService:
                 .order_by(Section.course_id, Section.order_index.asc())
             )
 
-            next_sections_res = (
-                await db.execute(next_sections_stmt)
-            ).scalars().all()
+            next_sections_res = (await db.execute(next_sections_stmt)).scalars().all()
 
             # Hızlı erişim için kurs_id -> section eşlemesi
             next_sections_map = {s.course_id: s for s in next_sections_res}
@@ -76,22 +73,22 @@ class DashboardService:
                     {
                         "course_id": enc.course_id,
                         "title": enc.course.title if enc.course else "Unknown",
-                        "next_section": {
-                            "id": next_sec.id,
-                            "title": next_sec.title,
-                            "order_index": next_sec.order_index,
-                        }
-                        if next_sec
-                        else None,
+                        "next_section": (
+                            {
+                                "id": next_sec.id,
+                                "title": next_sec.title,
+                                "order_index": next_sec.order_index,
+                            }
+                            if next_sec
+                            else None
+                        ),
                     }
                 )
 
         # 3. Son Quiz (Tek Sorgu, selectinload)
         last_attempt_stmt = (
             select(QuizAttempt)
-            .options(
-                selectinload(QuizAttempt.quiz).selectinload(Quiz.course)
-            )
+            .options(selectinload(QuizAttempt.quiz).selectinload(Quiz.course))
             .where(
                 QuizAttempt.user_id == user_id,
                 QuizAttempt.submitted_at.isnot(None),
@@ -99,9 +96,7 @@ class DashboardService:
             .order_by(QuizAttempt.submitted_at.desc())
             .limit(1)
         )
-        last_attempt = (
-            await db.execute(last_attempt_stmt)
-        ).scalar_one_or_none()
+        last_attempt = (await db.execute(last_attempt_stmt)).scalar_one_or_none()
 
         last_quiz_data = None
         if last_attempt and last_attempt.quiz and last_attempt.quiz.course:
