@@ -25,6 +25,7 @@ import asyncio
 import logging
 import os
 import sys
+import traceback
 from pathlib import Path
 
 from alembic import command as alembic_command
@@ -205,8 +206,13 @@ async def main() -> None:
 
         logger.info("=== DB update completed successfully ===")
 
-    except Exception:
-        logger.exception("DB update failed")
+    except BaseException:
+        # Use print+traceback as fallback: alembic's fileConfig() call in env.py
+        # reconfigures logging with disable_existing_loggers=True, silencing our
+        # logger after migrations start. stderr is always visible in Cloud Run logs.
+        print("DB update failed:", file=sys.stderr, flush=True)
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
         sys.exit(1)
     finally:
         await engine.dispose()
