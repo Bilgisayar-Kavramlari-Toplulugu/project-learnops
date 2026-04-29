@@ -18,6 +18,15 @@ async def get_dashboard_summary(
 ):
     """
     Kimliği doğrulanmış kullanıcı için dashboard özetini alır.
+
+    Returns:
+        DashboardSummarySchema: Tamamlanan kurslar, devam eden kurslar
+        ile sonraki bölüm ve son quiz dahil özet veriler.
+
+    Gereksinimler:
+        - BE-22: Dashboard Summary API
+        - Performans: p95 < 500ms
+        - Önbellek yok: Her istekte taze veri
     """
-    # Testlerin patlamaması ve MyPy'ın geçmesi için str -> UUID dönüşümü şarttır
+    # str olarak gelen id'yi DashboardService'in beklediği UUID tipine dönüştürüyoruz
     return await DashboardService.get_summary(db, UUID(current_user_id))
