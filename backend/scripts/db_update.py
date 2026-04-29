@@ -133,7 +133,10 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
     from sqlalchemy import text
 
     # ── Step A: Fix ownership of any objects not owned by postgres ────────────
-    # Query pg_tables (safe, always exists) to find tables owned by other users.
+    # REASSIGN OWNED BY requires the caller to be a member of the source role.
+    # Cloud SQL postgres has CREATEROLE which, in PostgreSQL 15, allows granting
+    # membership in any non-superuser role — including IAM user roles created
+    # automatically by Cloud SQL. So we: GRANT role TO postgres → REASSIGN → REVOKE.
     non_postgres_owners = connection.execute(
         text(
             "SELECT DISTINCT tableowner FROM pg_tables "
@@ -142,12 +145,12 @@ def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
     ).fetchall()
 
     for (owner,) in non_postgres_owners:
-        logger.warning(f"Reassigning public schema objects owned by '{owner}' to postgres")
-        # Double-quote the owner name — IAM usernames contain @ and . characters.
-        connection.execute(
-            text(f'REASSIGN OWNED BY "{owner}" TO postgres')
-        )
-        logger.info(f"REASSIGN OWNED BY \"{owner}\" TO postgres — done.")
+        logger.warning(f"Fixing ownership: '{owner}' → postgres")
+        # GRANT membership so REASSIGN OWNED BY is permitted (PG 15 CREATEROLE)
+        connection.execute(text(f'GRANT "{owner}" TO postgres'))
+        connection.execute(text(f'REASSIGN OWNED BY "{owner}" TO postgres'))
+        connection.execute(text(f'REVOKE "{owner}" FROM postgres'))
+        logger.info(f"Ownership of all objects by '{owner}' transferred to postgres.")
 
     # ── Step B: Sync alembic_version if schema exists but is untracked ────────
     alembic_table_exists = (
