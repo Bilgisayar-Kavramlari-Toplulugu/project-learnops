@@ -1,0 +1,150 @@
+name: Content Deploy to Staging
+
+# Trigger on every push to release or content-workflow branches when content
+# files (or this workflow) change. Also allows manual runs.
+on:
+  push:
+    branches:
+      - release
+      - content-workflow
+    paths:
+      - "content/**"
+      - "backend/scripts/db_update.py"
+      - "backend/Dockerfile.job"
+      - ".github/workflows/content-deploy.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false # Never cancel a running DB update
+
+# ── Stable infrastructure values derived from Terraform defaults ──────────────
+# All values are deterministic from the Terraform configuration in
+# infrastructure/staging/ and require no additional secrets.
+env:
+  GCP_REGION: "europe-west3"
+  DB_INSTANCE_NAME: "learnops-staging-db"  # var.db_instance_name
+  DB_NAME: "learnops-staging-db"           # var.db_name
+  VPC_CONNECTOR: "learnops-vpc-connector"  # google_vpc_access_connector.connector
+  JOB_NAME: "content-update-job"
+  # Content-job image goes into the existing backend Artifact Registry repo
+  # so no new repository needs to be created.
+  AR_REPOSITORY: "project-learnops-backend"
+  IMAGE_NAME: "content-job"
+
+jobs:
+  content-update:
+    name: Build, Deploy & Run Content Update Job
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for Workload Identity Federation
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # ── GCP authentication (Workload Identity — same as other workflows) ────
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GA_SERVICE_ACCOUNT }}
+          token_format: "access_token"
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # ── Docker setup ─────────────────────────────────────────────────────────
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── Build & push content-job image ───────────────────────────────────────
+      # Build context is the repo root so Dockerfile.job can copy both
+      # backend/ and content/ into the image.
+      - name: Build & Push Content Job Image
+        id: build
+        run: |
+          IMAGE_BASE="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.AR_REPOSITORY }}/${{ env.IMAGE_NAME }}"
+          IMAGE_SHA="${IMAGE_BASE}:sha-${{ github.sha }}"
+          IMAGE_LATEST="${IMAGE_BASE}:latest"
+
+          docker build \
+            --file backend/Dockerfile.job \
+            --platform linux/amd64 \
+            --tag "${IMAGE_SHA}" \
+            --tag "${IMAGE_LATEST}" \
+            .
+
+          docker push "${IMAGE_SHA}"
+          docker push "${IMAGE_LATEST}"
+
+          echo "image_sha=${IMAGE_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_base=${IMAGE_BASE}" >> "$GITHUB_OUTPUT"
+
+      # ── Deploy Cloud Run Job (create-or-update) ───────────────────────────────
+      # GA_SERVICE_ACCOUNT already has roles/run.admin which covers Cloud Run Jobs.
+      # backend-runtime-sa already has roles/cloudsql.instanceUser + roles/cloudsql.client.
+      - name: Deploy Cloud Run Job
+        run: |
+          # Derived from GCP_PROJECT_ID — no extra secrets needed
+          BACKEND_SA="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+          INSTANCE_CONN="${{ secrets.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:${{ env.DB_INSTANCE_NAME }}"
+          # IAM DB user is the SA email without .gserviceaccount.com suffix
+          DB_USER="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}"
+          VPC_FULL="projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/connectors/${{ env.VPC_CONNECTOR }}"
+
+          gcloud run jobs deploy "${{ env.JOB_NAME }}" \
+            --image="${{ steps.build.outputs.image_sha }}" \
+            --service-account="${BACKEND_SA}" \
+            --vpc-connector="${VPC_FULL}" \
+            --vpc-egress="private-ranges-only" \
+            --set-env-vars="INSTANCE_CONNECTION_NAME=${INSTANCE_CONN},DB_USER=${DB_USER},DB_NAME=${{ env.DB_NAME }},ENVIRONMENT=staging" \
+            --max-retries=1 \
+            --tasks=1 \
+            --region="${{ env.GCP_REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --quiet
+
+      # ── Execute Cloud Run Job and wait for completion ────────────────────────
+      # --wait blocks until the execution finishes; non-zero exit = failure.
+      - name: Execute Content Update Job
+        run: |
+          gcloud run jobs execute "${{ env.JOB_NAME }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --project="${{ secrets.GCP_PROJECT_ID }}" \
+            --wait
+
+      # ── Summary ──────────────────────────────────────────────────────────────
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "## Content Update Completed Successfully" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Details" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Job**: \`${{ env.JOB_NAME }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Image**: \`${{ steps.build.outputs.image_sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Deployed by**: @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Commit**: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Steps Executed" >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Alembic migrations applied (upgrade to head)" >> "$GITHUB_STEP_SUMMARY"
+          echo "2. Courses + sections seeded (UPSERT, skipped \`_ornek-kurs\`)" >> "$GITHUB_STEP_SUMMARY"
+          echo "3. Quiz data seeded (UPSERT)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "## Content Update Failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Check the Cloud Run Job logs for details." >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Actor**: @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Commit**: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
