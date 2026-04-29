@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { routes } from "@/lib/routes";
 
 export function EmptyCoursesState() {

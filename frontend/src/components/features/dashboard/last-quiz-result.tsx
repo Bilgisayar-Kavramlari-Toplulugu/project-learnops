@@ -3,8 +3,7 @@
 
 import { FileCheck2 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge, Card, CardContent } from "@/components/ui";
 import type { DashboardLastQuizResult } from "@/types";
 
 interface LastQuizResultProps {

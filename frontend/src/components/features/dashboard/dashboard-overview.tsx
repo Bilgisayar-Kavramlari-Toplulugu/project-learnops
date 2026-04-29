@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import type { CourseCardItem, DashboardSuggestion, LearningPath, UpcomingExam } from "@/types";
 import { ContinueLearningCard } from "./continue-learning-card";
 import { EnrolledCoursesSection } from "./enrolled-courses-section";
