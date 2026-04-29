@@ -8,7 +8,7 @@ import { DashboardSkeleton } from "@/components/features/dashboard/dashboard-ske
 import { EmptyCoursesState } from "@/components/features/dashboard/empty-courses-state";
 import { StatsSummary } from "@/components/features/dashboard/stats-summary";
 import { WelcomeHeader } from "@/components/features/dashboard/welcome-header";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { useDashboard } from "@/hooks/dashboard/use-dashboard";
 import { useEffect, useState } from "react";
 import { LastQuizResult } from "@/components/features/dashboard/last-quiz-result";

@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { type AxiosError } from "axios";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 import { useCourseDetail } from "@/hooks/courses/use-course-detail";
 import { useMarkSectionComplete, useSectionProgress } from "@/hooks/courses/use-section-progress";
 import type { SectionItem } from "@/lib/content";
 import { routes } from "@/lib/routes";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button, Skeleton, toast } from "@/components/ui";
 import { SectionSidebar } from "./section-sidebar";
 
 interface SectionActionsProps {
@@ -71,10 +70,11 @@ export function SectionActions({
   const completeButton = progressLoading ? (
     <Skeleton className="h-10 w-full rounded-xl" />
   ) : (
-    <button
+    <Button
       onClick={handleMarkComplete}
       disabled={isButtonDisabled}
-      className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
+      variant={isCurrentCompleted ? "outline" : "default"}
+      className={`w-full gap-2 rounded-xl text-sm font-bold ${
         isCurrentCompleted
           ? "cursor-default border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
           : isButtonDisabled
@@ -88,7 +88,7 @@ export function SectionActions({
         <CheckCircle2 className="h-4 w-4" />
       )}
       {isCurrentCompleted ? "Tamamland\u0131" : "Tamamlad\u0131m"}
-    </button>
+    </Button>
   );
 
   return (

@@ -2,7 +2,7 @@ import { getEnrolledCourses } from "@/lib/fetchCourses";
 import WrapperContainer from "@/components/features/dashboard/wrapper-container";
 import CoursesClient from "@/components/features/courses/courses-client";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import { routes } from "@/lib/routes";
 
 export default async function MyCoursesPage() {

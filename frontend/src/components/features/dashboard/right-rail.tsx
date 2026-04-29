@@ -1,6 +1,6 @@
 import { GraduationCap, Trophy } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import type { DashboardSuggestion } from "@/types";
 
 interface DashboardRightRailProps {
@@ -33,16 +33,17 @@ export function DashboardRightRail({ suggestion }: DashboardRightRailProps) {
               </div>
             </div>
           </div>
-          <button
+          <Button
             type="button"
-            className="flex h-10 w-full items-center justify-between rounded-xl border border-blue-100 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            variant="outline"
+            className="h-10 w-full justify-between rounded-xl border-blue-100 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             <span className="inline-flex items-center gap-2">
               <GraduationCap className="size-4 text-slate-500 dark:text-slate-400" />
               Retake
             </span>
             <Trophy className="size-4 text-amber-500" />
-          </button>
+          </Button>
         </CardContent>
       </Card>
     </aside>
