@@ -113,98 +113,6 @@ def _create_engine():
 
 
 # ── Step 1: Alembic migrations ────────────────────────────────────────────────
-def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
-    """Pre-flight: reassign table ownership and stamp alembic if schema is untracked.
-
-    Two problems this function solves:
-
-    1. OWNERSHIP MISMATCH — Tables were created by the IAM user during an earlier
-       job run that used IAM auth. The job now connects as `postgres` (password auth)
-       for DDL privileges, but postgres cannot ALTER TABLE on objects it doesn't own.
-       Fix: REASSIGN OWNED BY <iam-user> TO postgres for all public schema objects.
-
-    2. ALEMBIC DESYNC — A previous run committed 001_initial DDL but crashed before
-       writing alembic_version. Fix: stamp at the correct revision so upgrade only
-       applies the missing migrations.
-
-    All existence checks use to_regclass / information_schema (never query a
-    potentially-missing table directly, which would abort the PG transaction).
-    """
-    from sqlalchemy import text
-
-    # ── Step A: Fix ownership of any objects not owned by postgres ────────────
-    # REASSIGN OWNED BY requires the caller to be a member of the source role.
-    # Cloud SQL postgres has CREATEROLE which, in PostgreSQL 15, allows granting
-    # membership in any non-superuser role — including IAM user roles created
-    # automatically by Cloud SQL. So we: GRANT role TO postgres → REASSIGN → REVOKE.
-    non_postgres_owners = connection.execute(
-        text(
-            "SELECT DISTINCT tableowner FROM pg_tables "
-            "WHERE schemaname = 'public' AND tableowner != 'postgres'"
-        )
-    ).fetchall()
-
-    for (owner,) in non_postgres_owners:
-        logger.warning(f"Fixing ownership: '{owner}' → postgres")
-        # GRANT membership so REASSIGN OWNED BY is permitted (PG 15 CREATEROLE)
-        connection.execute(text(f'GRANT "{owner}" TO postgres'))
-        connection.execute(text(f'REASSIGN OWNED BY "{owner}" TO postgres'))
-        connection.execute(text(f'REVOKE "{owner}" FROM postgres'))
-        logger.info(f"Ownership of all objects by '{owner}' transferred to postgres.")
-
-    # ── Step B: Sync alembic_version if schema exists but is untracked ────────
-    alembic_table_exists = (
-        connection.execute(
-            text("SELECT to_regclass('public.alembic_version')")
-        ).scalar() is not None
-    )
-
-    if alembic_table_exists:
-        row = connection.execute(
-            text("SELECT version_num FROM alembic_version LIMIT 1")
-        ).fetchone()
-        if row is not None:
-            logger.info(f"Alembic current revision: {row[0]} — no stamp needed.")
-            return
-        # Table exists but is empty — fall through to stamp
-
-    # alembic_version table absent or empty — check if schema was already applied.
-    users_exists = (
-        connection.execute(
-            text("SELECT to_regclass('public.users')")
-        ).scalar() is not None
-    )
-    if not users_exists:
-        return  # Truly fresh DB — let upgrade create everything
-
-    # Schema exists but Alembic has no record. Determine stamp target.
-    display_order_exists = (
-        connection.execute(
-            text(
-                "SELECT 1 FROM information_schema.columns "
-                "WHERE table_name='courses' AND column_name='display_order'"
-            )
-        ).scalar() is not None
-    )
-
-    if display_order_exists:
-        stamp_target = "head"
-        logger.warning(
-            "Schema (incl. 002+ columns) exists but alembic_version is untracked. "
-            "Stamping at head — all migrations already applied."
-        )
-    else:
-        stamp_target = "001_initial"
-        logger.warning(
-            "Base schema (001_initial) exists but alembic_version is untracked. "
-            "Stamping at 001_initial — upgrade will apply remaining migrations."
-        )
-
-    cfg.attributes["connection"] = connection
-    alembic_command.stamp(cfg, stamp_target)
-    logger.info(f"Alembic version stamped at {stamp_target}.")
-
-
 def _run_upgrade_sync(connection, cfg: AlembicConfig) -> None:
     """Synchronous callback invoked inside conn.run_sync() to apply migrations."""
     cfg.attributes["connection"] = connection
@@ -214,14 +122,50 @@ def _run_upgrade_sync(connection, cfg: AlembicConfig) -> None:
 async def apply_migrations(engine) -> None:
     logger.info("=== Step 1: Applying Alembic migrations ===")
     alembic_cfg = AlembicConfig(str(ALEMBIC_INI))
-    # Pre-flight: resync alembic_version if the schema is ahead of tracking.
-    async with engine.connect() as conn:
-        await conn.run_sync(_sync_alembic_if_untracked, alembic_cfg)
-        await conn.commit()
-    # Now run the actual upgrade (no-op if already at head).
     async with engine.begin() as conn:
         await conn.run_sync(_run_upgrade_sync, alembic_cfg)
     logger.info("Migrations applied successfully.")
+
+
+# ── Step 1b: Grant runtime privileges ────────────────────────────────────────
+async def grant_runtime_privileges(engine) -> None:
+    """Grant DML privileges on all tables/sequences to the backend IAM user.
+
+    The content job connects as 'postgres' for DDL.  The backend app connects
+    as 'backend-runtime-sa@<project>.iam' via Cloud SQL IAM auth.  When we
+    transferred table ownership from the IAM user to postgres (REASSIGN OWNED BY)
+    the IAM user lost all implicit owner privileges.  This step restores the
+    minimum required access.
+
+    RUNTIME_IAM_DB_USER is set by the workflow to:
+      backend-runtime-sa@<GCP_PROJECT_ID>.iam
+    """
+    from sqlalchemy import text
+
+    iam_user = os.environ.get("RUNTIME_IAM_DB_USER", "").strip()
+    if not iam_user:
+        logger.info("RUNTIME_IAM_DB_USER not set — skipping privilege grant.")
+        return
+
+    logger.info(f"=== Step 1b: Granting runtime privileges to '{iam_user}' ===")
+    async with engine.begin() as conn:
+        await conn.execute(text(
+            f'GRANT SELECT, INSERT, UPDATE, DELETE '
+            f'ON ALL TABLES IN SCHEMA public TO "{iam_user}"'
+        ))
+        await conn.execute(text(
+            f'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "{iam_user}"'
+        ))
+        # Ensure future tables/sequences created by postgres also get the grants.
+        await conn.execute(text(
+            f'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public '
+            f'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "{iam_user}"'
+        ))
+        await conn.execute(text(
+            f'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public '
+            f'GRANT USAGE, SELECT ON SEQUENCES TO "{iam_user}"'
+        ))
+    logger.info(f"Runtime privileges granted to '{iam_user}'.")
 
 
 # ── Step 2: Seed courses + sections ──────────────────────────────────────────
@@ -288,6 +232,7 @@ async def main() -> None:
     try:
         # Migrations run outside a session (need raw connection)
         await apply_migrations(engine)
+        await grant_runtime_privileges(engine)
 
         session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
