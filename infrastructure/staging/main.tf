@@ -187,6 +187,25 @@ resource "google_project_iam_member" "backend_secret_accessor" {
 }
 
 # ===========================
+# Postgres Admin Password in Secret Manager
+# ===========================
+# Stored here so the content-update Cloud Run Job can use the postgres admin
+# user for Alembic migrations (DDL requires superuser; IAM users in PostgreSQL
+# 15 are not auto-granted CREATE on the public schema).
+
+resource "google_secret_manager_secret" "postgres_password" {
+  secret_id = "POSTGRES_PASSWORD"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "postgres_password_version" {
+  secret      = google_secret_manager_secret.postgres_password.id
+  secret_data = random_password.postgres_password.result
+}
+
+# ===========================
 # Backend Cloud Run Service
 # ===========================
 

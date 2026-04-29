@@ -90,16 +90,14 @@ jobs:
 
       # ── Deploy Cloud Run Job (create-or-update) ───────────────────────────────
       # GA_SERVICE_ACCOUNT already has roles/run.admin which covers Cloud Run Jobs.
-      # backend-runtime-sa already has roles/cloudsql.instanceUser + roles/cloudsql.client.
+      # backend-runtime-sa already has roles/cloudsql.client + secretmanager.secretAccessor.
+      # Uses postgres admin (password auth) so the job has DDL privileges for migrations.
+      # PostgreSQL 15 no longer auto-grants CREATE on public schema to new users, so the
+      # IAM user cannot run CREATE TABLE — the postgres admin user has no such restriction.
       - name: Deploy Cloud Run Job
         run: |
-          # Derived from GCP_PROJECT_ID — no extra secrets needed
           BACKEND_SA="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
           INSTANCE_CONN="${{ secrets.GCP_PROJECT_ID }}:${{ env.GCP_REGION }}:${{ env.DB_INSTANCE_NAME }}"
-          # IAM DB user: SA email with .iam suffix, without .gserviceaccount.com
-          # Matches Terraform: trimsuffix(sa.email, ".gserviceaccount.com")
-          # e.g. backend-runtime-sa@learnops-staging.iam
-          DB_USER="backend-runtime-sa@${{ secrets.GCP_PROJECT_ID }}.iam"
           VPC_FULL="projects/${{ secrets.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/connectors/${{ env.VPC_CONNECTOR }}"
 
           gcloud run jobs deploy "${{ env.JOB_NAME }}" \
@@ -107,7 +105,8 @@ jobs:
             --service-account="${BACKEND_SA}" \
             --vpc-connector="${VPC_FULL}" \
             --vpc-egress="private-ranges-only" \
-            --set-env-vars="INSTANCE_CONNECTION_NAME=${INSTANCE_CONN},DB_USER=${DB_USER},DB_NAME=${{ env.DB_NAME }},ENVIRONMENT=staging" \
+            --set-env-vars="INSTANCE_CONNECTION_NAME=${INSTANCE_CONN},DB_USER=postgres,DB_NAME=${{ env.DB_NAME }},ENVIRONMENT=staging" \
+            --set-secrets="DB_PASSWORD=POSTGRES_PASSWORD:latest" \
             --max-retries=1 \
             --tasks=1 \
             --region="${{ env.GCP_REGION }}" \
