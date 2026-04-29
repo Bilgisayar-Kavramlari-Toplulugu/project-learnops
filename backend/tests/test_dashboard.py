@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -9,12 +8,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.courses import Course, Enrollment, Section, UserProgress
 from app.models.quizzes import Quiz, QuizAttempt
-from app.services.jwt_service import create_access_token
 
 
+# FIX 1: @pytest_asyncio.fixture + async yapıldı (test_user async fixture olduğu için
+#         sync fixture içinde await edilemiyordu → token üretilemiyordu → 401)
 @pytest_asyncio.fixture
 async def token_headers(test_user):
     """test_user için gerekli auth header'larını döndürür."""
+    from app.services.jwt_service import create_access_token
+
     token = create_access_token(sub=str(test_user.id))
     return {"Authorization": f"Bearer {token}"}
 
@@ -45,6 +47,7 @@ async def test_dashboard_logic_calculations(
     client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
 ):
     """Karmaşık senaryo: Tamamlanan kurs sayısı ve next_section doğrulaması."""
+    # FIX 2: slug eklendi (NOT NULL), Section'a section_id_str eklendi (NOT NULL)
     course_1 = Course(
         id=uuid4(),
         slug="tamamlanan-kurs",
@@ -68,14 +71,14 @@ async def test_dashboard_logic_calculations(
     sec_1 = Section(
         id=uuid4(),
         course_id=course_2.id,
-        section_id_str="devam-eden-bolum-1",
+        section_id_str="devam-eden-bolum-1",  # FIX: section_id_str zorunlu
         title="Bölüm 1",
         order_index=1,
     )
     sec_2 = Section(
         id=uuid4(),
         course_id=course_2.id,
-        section_id_str="devam-eden-bolum-2",
+        section_id_str="devam-eden-bolum-2",  # FIX: section_id_str zorunlu
         title="Bölüm 2",
         order_index=2,
     )
@@ -104,6 +107,7 @@ async def test_dashboard_last_quiz_logic(
     client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
 ):
     """En son yapılan quiz attempt verisinin doğru gelmesi."""
+    # FIX 2: slug eklendi
     course = Course(
         id=uuid4(),
         slug="quiz-kursu",
@@ -111,22 +115,29 @@ async def test_dashboard_last_quiz_logic(
         description="Desc",
     )
     db_session.add(course)
-    await db_session.flush()
+    await db_session.flush()  # course.id'nin quiz'e geçmesi için
 
+    # FIX 3: Quiz modelinde 'title' field'ı yok.
+    #         Zorunlu alanlar: course_id, duration_seconds
+    #         pass_threshold server_default'u var, verilmese de olur.
     quiz = Quiz(
         id=uuid4(),
         course_id=course.id,
         duration_seconds=1500,
     )
     db_session.add(quiz)
-    await db_session.flush()
+    await db_session.flush()  # quiz.id'nin attempt'e geçmesi için
+
+    # FIX 3: QuizAttempt'te 'submitted_at' değil 'started_at' zorunlu alan.
+    #         score alanı Integer (int), Numeric değil.
+    from datetime import datetime, timezone
 
     attempt = QuizAttempt(
         user_id=test_user.id,
         quiz_id=quiz.id,
         started_at=datetime.now(timezone.utc),
         submitted_at=datetime.now(timezone.utc),
-        score=85,
+        score=85,  # Integer — modelde Numeric değil
         total_questions=100,
         passed=True,
     )
