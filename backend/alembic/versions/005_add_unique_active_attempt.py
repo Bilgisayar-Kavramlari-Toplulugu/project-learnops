@@ -10,8 +10,6 @@ aynı kullanıcı için iki aktif attempt oluşturabiliyordu.
 DB seviyesinde partial unique index ile bu açık kapatılır.
 """
 
-import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -22,18 +20,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # submitted_at IS NULL olan satırlar için (user_id, quiz_id) benzersizliği.
-    # Bir kullanıcının aynı quiz'de yalnızca bir aktif attempt'i olabilir.
-    #
-    # Test DB: PostgreSQL (asyncpg) — conftest.py TEST_DATABASE_URL'den okunur.
-    # postgresql_where partial index sözdizimi test ortamında da geçerlidir;
-    # SQLite kullanılmadığından dialect uyumsuzluğu riski yoktur.
-    op.create_index(
-        "uq_active_attempt",
-        "quiz_attempts",
-        ["user_id", "quiz_id"],
-        unique=True,
-        postgresql_where=sa.text("submitted_at IS NULL"),
+    op.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_active_attempt "
+        "ON quiz_attempts (user_id, quiz_id) "
+        "WHERE submitted_at IS NULL"
     )
 
 

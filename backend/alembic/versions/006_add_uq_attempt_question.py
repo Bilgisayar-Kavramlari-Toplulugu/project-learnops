@@ -22,10 +22,11 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.create_unique_constraint(
-        "uq_attempt_question",
-        "quiz_attempt_answers",
-        ["attempt_id", "question_id"],
+    # IF NOT EXISTS guards against partial application from a prior crashed run.
+    op.execute(
+        "ALTER TABLE quiz_attempt_answers "
+        "ADD CONSTRAINT IF NOT EXISTS uq_attempt_question "
+        "UNIQUE (attempt_id, question_id)"
     )
 
 
