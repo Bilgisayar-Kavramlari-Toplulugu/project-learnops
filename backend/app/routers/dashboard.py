@@ -29,5 +29,5 @@ async def get_dashboard_summary(
         - Önbellek yok: Her istekte taze veri
     """
     # str olarak gelen id'yi DashboardService'in beklediği UUID tipine dönüştürüyoruz
-    user_uuid: UUID = UUID(current_user_id)
+    user_uuid: UUID = UUID(current_user_id) 
     return await DashboardService.get_summary(db, user_uuid)
