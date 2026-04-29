@@ -80,7 +80,7 @@ app.add_middleware(
 # Router kayıtları - Tüm router'lar /v1 prefix'i ile eklenmiştir
 app.include_router(auth.router, prefix="/v1")
 app.include_router(users.router, prefix="/v1")
-app.include_router(dashboard.router, prefix="/v1")  # Senin eklediğin router
+app.include_router(dashboard.router, prefix="/v1")
 app.include_router(courses.router, prefix="/v1")
 app.include_router(quizzes.router, prefix="/v1")
 app.include_router(quiz_attempts.router, prefix="/v1")

@@ -42,7 +42,8 @@ class DashboardService:
         if enrollments:
             course_ids = [enc.course_id for enc in enrollments]
 
-            # ÇÖZÜM 3: Subquery DB içinde kalıyor
+            # Tamamlanmış bölümler subquery olarak DB'de filtrelenir
+            # Python belleğine çekilmez
             completed_sections_subq = (
                 select(UserProgress.section_id).where(
                     UserProgress.user_id == user_id,
@@ -50,7 +51,8 @@ class DashboardService:
                 )
             ).scalar_subquery()
 
-            # ÇÖZÜM 4: N+1 Problemi Giderildi.
+            # Tüm kursların sonraki bölümü tek sorguda
+            # DISTINCT ON ile alınır
             next_sections_stmt = (
                 select(Section)
                 .where(
@@ -72,7 +74,7 @@ class DashboardService:
                 in_progress_list.append(
                     {
                         "course_id": enc.course_id,
-                        "title": enc.course.title if enc.course else "Unknown",
+                        "title": enc.course.title,
                         "next_section": (
                             {
                                 "id": next_sec.id,
