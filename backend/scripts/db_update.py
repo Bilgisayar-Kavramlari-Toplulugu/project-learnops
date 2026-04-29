@@ -62,7 +62,12 @@ def _create_engine():
     instance_conn_name = os.environ.get("INSTANCE_CONNECTION_NAME")
 
     if instance_conn_name:
-        logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, IAM auth)")
+        db_password = os.environ.get("DB_PASSWORD", "")
+        if db_password:
+            logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, password auth)")
+        else:
+            logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, IAM auth)")
+
         from google.cloud.sql.connector import IPTypes, create_async_connector
 
         _connector = None
@@ -74,14 +79,16 @@ def _create_engine():
                 async with _lock:
                     if _connector is None:
                         _connector = await create_async_connector()
-            return await _connector.connect_async(
-                instance_conn_name,
-                "asyncpg",
-                user=os.environ["DB_USER"],
-                db=os.environ["DB_NAME"],
-                enable_iam_auth=True,
-                ip_type=IPTypes.PRIVATE,
-            )
+            kwargs: dict = {
+                "user": os.environ["DB_USER"],
+                "db": os.environ["DB_NAME"],
+                "ip_type": IPTypes.PRIVATE,
+            }
+            if db_password:
+                kwargs["password"] = db_password
+            else:
+                kwargs["enable_iam_auth"] = True
+            return await _connector.connect_async(instance_conn_name, "asyncpg", **kwargs)
 
         return create_async_engine(
             "postgresql+asyncpg://",
