@@ -38,7 +38,7 @@ async def test_dashboard_logic_calculations(
 ):
     """Karmaşık senaryo: Tamamlanan kurs sayısı ve next_section doğrulaması."""
     # 1. Hazırlık: Bir kurs oluştur ve tamamla
-    # FIX: slug eklendi (NOT NULL constraint)
+    # slug eklenmeli (NOT NULL kısıtlaması)
     course_1 = Course(
         id=uuid4(), 
         slug="tamamlanan-kurs", 
@@ -63,7 +63,7 @@ async def test_dashboard_logic_calculations(
     )
     db_session.add(course_2)
 
-    # FIX: section_id_str eklendi (NOT NULL constraint)
+    # section_id_str eklenmeli (NOT NULL kısıtlaması)
     sec_1 = Section(
         id=uuid4(), 
         course_id=course_2.id, 
@@ -92,6 +92,7 @@ async def test_dashboard_logic_calculations(
 
     # Testi çalıştır
     response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    assert response.status_code == 200, f"Auth failed: {response.json()}"
     data = response.json()
 
     # Doğrulamalar
@@ -106,7 +107,6 @@ async def test_dashboard_last_quiz_logic(
     client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
 ):
     """En son yapılan quiz attempt verisinin doğru gelmesi."""
-    # FIX: slug eklendi
     course = Course(
         id=uuid4(),
         slug="quiz-kursu",
@@ -116,8 +116,7 @@ async def test_dashboard_last_quiz_logic(
     db_session.add(course)
     await db_session.flush()
 
-    # FIX: Quiz modelinde 'title' field'ı yok.
-    #         Zorunlu alanlar: course_id, duration_seconds
+    # Quiz modelinde duration_seconds zorunlu
     quiz = Quiz(
         id=uuid4(),
         course_id=course.id,
@@ -126,7 +125,7 @@ async def test_dashboard_last_quiz_logic(
     db_session.add(quiz)
     await db_session.flush()
 
-    # FIX: QuizAttempt'te 'started_at' zorunlu, 'score' integer
+    # QuizAttempt'te 'started_at' zorunlu, 'score' integer
     attempt = QuizAttempt(
         user_id=test_user.id,
         quiz_id=quiz.id,
@@ -140,6 +139,7 @@ async def test_dashboard_last_quiz_logic(
     await db_session.flush()
 
     response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    assert response.status_code == 200
     data = response.json()
 
     assert data["last_quiz"] is not None
