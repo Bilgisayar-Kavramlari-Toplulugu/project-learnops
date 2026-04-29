@@ -70,6 +70,9 @@ app.add_middleware(
     secret_key=settings.SESSION_SECRET,
     session_cookie="learnops_session",
     max_age=3600,  # 1 saat
+    # same_site="none": OAuth callback cross-site redirect gerektirdiği için
+    # tüm ortamlarda "none" kullanılır.
+    # https_only: Yalnızca "development" ortamında False.
     same_site="none",
     https_only=settings.ENVIRONMENT not in ("development"),
 )
@@ -77,7 +80,7 @@ app.add_middleware(
 # Router kayıtları - Tüm router'lar /v1 prefix'i ile eklenmiştir
 app.include_router(auth.router, prefix="/v1")
 app.include_router(users.router, prefix="/v1")
-app.include_router(dashboard.router, prefix="/v1")
+app.include_router(dashboard.router, prefix="/v1")  # Senin eklediğin router
 app.include_router(courses.router, prefix="/v1")
 app.include_router(quizzes.router, prefix="/v1")
 app.include_router(quiz_attempts.router, prefix="/v1")
