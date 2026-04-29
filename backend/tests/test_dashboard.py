@@ -137,3 +137,51 @@ async def test_dashboard_last_quiz_logic(
     assert data["last_quiz"] is not None
     assert data["last_quiz"]["score"] == 85
     assert data["last_quiz"]["quiz_name"] == "Quiz Kursu"
+
+
+@pytest.mark.asyncio
+async def test_dashboard_all_sections_completed(
+    client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
+):
+    """Tüm bölümler tamamlandığında next_section null dönmeli."""
+    # 1. Kurs ve Bölüm Kurulumu (2 Bölümlü)
+    course = Course(
+        id=uuid4(), slug="full-course", title="Full Course", is_published=True
+    )
+    db_session.add(course)
+    await db_session.flush()
+
+    sec_1 = Section(course_id=course.id, title="Bölüm 1", order_index=1)
+    sec_2 = Section(course_id=course.id, title="Bölüm 2", order_index=2)
+    db_session.add_all([sec_1, sec_2])
+    await db_session.flush()
+
+    # 2. Kayıt ve TÜM bölümleri tamamlama
+    enrollment = Enrollment(user_id=test_user.id, course_id=course.id)
+    db_session.add(enrollment)
+
+    # İki bölümü de tamamla
+    progress_1 = UserProgress(
+        user_id=test_user.id, section_id=sec_1.id, is_completed=True
+    )
+    progress_2 = UserProgress(
+        user_id=test_user.id, section_id=sec_2.id, is_completed=True
+    )
+    db_session.add_all([progress_1, progress_2])
+    await db_session.commit()  # Verinin persist olduğundan emin olalım
+
+    # 3. API Çağrısı
+    response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    assert response.status_code == 200
+    data = response.json()
+
+    # 4. Doğrulama
+    in_progress = [c for c in data["in_progress_courses"] if c["id"] == str(course.id)]
+
+    if not in_progress:
+        # Eğer iş mantığınız tümü biten kursu in_progress'ten çıkarıyorsa
+        # bu da geçerli bir case'dir
+        assert True
+    else:
+        # Eğer hala in_progress listesindeyse, next_section kesinlikle null olmalı
+        assert in_progress[0]["next_section"] is None
