@@ -113,6 +113,70 @@ def _create_engine():
 
 
 # ── Step 1: Alembic migrations ────────────────────────────────────────────────
+def _sync_alembic_if_untracked(connection, cfg: AlembicConfig) -> None:
+    """Pre-flight: if tables exist but alembic_version has no revision, stamp.
+
+    This handles the scenario where a previous job run committed DDL but crashed
+    before (or while) writing to alembic_version, leaving the DB schema ahead of
+    Alembic's tracking. Without this, the next run fails with DuplicateTableError.
+
+    Decision logic:
+    - alembic_version has a revision → nothing to do, upgrade handles the rest.
+    - alembic_version empty AND users table missing → fresh DB, let upgrade run.
+    - alembic_version empty AND users table present:
+        - display_order column present on courses → all migrations likely applied,
+          stamp head.
+        - display_order column absent → only 001_initial applied, stamp there so
+          upgrade applies 002 onward.
+    """
+    from sqlalchemy import text
+
+    try:
+        row = connection.execute(
+            text("SELECT version_num FROM alembic_version LIMIT 1")
+        ).fetchone()
+        if row is not None:
+            logger.info(f"Alembic current revision: {row[0]} — no stamp needed.")
+            return
+    except Exception:
+        pass  # alembic_version table doesn't exist yet — fresh DB
+
+    users_exists = (
+        connection.execute(text("SELECT to_regclass('public.users')")).scalar()
+        is not None
+    )
+    if not users_exists:
+        return  # Truly fresh DB — let upgrade create everything
+
+    # Schema exists but Alembic has no record. Determine stamp target.
+    display_order_exists = (
+        connection.execute(
+            text(
+                "SELECT 1 FROM information_schema.columns "
+                "WHERE table_name='courses' AND column_name='display_order'"
+            )
+        ).scalar()
+        is not None
+    )
+
+    if display_order_exists:
+        stamp_target = "head"
+        logger.warning(
+            "Schema (incl. 002+ columns) exists but alembic_version is untracked. "
+            "Stamping at head — all migrations already applied."
+        )
+    else:
+        stamp_target = "001_initial"
+        logger.warning(
+            "Base schema (001_initial) exists but alembic_version is untracked. "
+            "Stamping at 001_initial — upgrade will apply remaining migrations."
+        )
+
+    cfg.attributes["connection"] = connection
+    alembic_command.stamp(cfg, stamp_target)
+    logger.info(f"Alembic version stamped at {stamp_target}.")
+
+
 def _run_upgrade_sync(connection, cfg: AlembicConfig) -> None:
     """Synchronous callback invoked inside conn.run_sync() to apply migrations."""
     cfg.attributes["connection"] = connection
@@ -122,6 +186,11 @@ def _run_upgrade_sync(connection, cfg: AlembicConfig) -> None:
 async def apply_migrations(engine) -> None:
     logger.info("=== Step 1: Applying Alembic migrations ===")
     alembic_cfg = AlembicConfig(str(ALEMBIC_INI))
+    # Pre-flight: resync alembic_version if the schema is ahead of tracking.
+    async with engine.connect() as conn:
+        await conn.run_sync(_sync_alembic_if_untracked, alembic_cfg)
+        await conn.commit()
+    # Now run the actual upgrade (no-op if already at head).
     async with engine.begin() as conn:
         await conn.run_sync(_run_upgrade_sync, alembic_cfg)
     logger.info("Migrations applied successfully.")
