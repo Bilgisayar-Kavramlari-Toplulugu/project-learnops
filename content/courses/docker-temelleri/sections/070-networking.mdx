@@ -1,11 +1,11 @@
 ---
 id: "docker-007-network"
-title: "Docker Network Temelleri"
+title: "Container Network: Bridge, Host, None"
 order: 70
 order_index: 70
 ---
 
-# Docker Network Temelleri
+# Container Network: Bridge, Host, None
 
 Gerçek hayatta uygulamalar tek bir container'dan oluşmaz. Web uygulaması, API, veritabanı ve cache gibi birden fazla servis birlikte çalışabilir. Bu servislerin birbiriyle kontrollü şekilde iletişim kurması gerekir. Docker network konusu bu noktada devreye girer.
 
@@ -41,6 +41,48 @@ Docker'i sadece tek container denemeleri için kullanmak kolaydır. Ama gerçek 
 Özellikle "uygulama neden veritabanına bağlanamıyor?" gibi soruların cevabı çok sık network düşüncesinde yatar. Bu nedenle Docker network konusu ileri seviye değil, erken aşamada oturtulması gereken temel bir konudur.
 
 > **İpucu:** Network mantığını öğrenirken port maplemeyi ve servisler arası iletişimi birbirinden ayırmaya dikkat edin. Bu ayrım ileride çok işe yarar.
+
+## Network sürücüleri: Bridge, Host, None
+
+Docker, container'ların ağa nasıl bağlanacağını **network sürücüsü** ile belirler. Üç temel sürücü başlangıç seviyesinde bilinmesi gereken yapıyı oluşturur.
+
+### Bridge (Köprü) — Varsayılan
+
+Bridge, `docker run` çalıştırdığınızda Docker'ın otomatik olarak kullandığı varsayılan ağ sürücüsüdür. Her container kendi IP adresini alır ve izole bir sanal ağa bağlanır. Aynı bridge network'te bulunan container'lar birbirleriyle isim veya IP üzerinden haberleşebilir.
+
+```bash
+docker run --network bridge nginx   # varsayılan; --network belirtmek zorunlu değil
+```
+
+Dış dünyaya erişim port mapleme ile açılır (`-p 8080:80`). Container'lar arası iletişim ise network içinde kendi içinde çözülür.
+
+### Host — Host Ağını Paylaş
+
+Host sürücüsü, container'ın kendi ağ katmanı oluşturmak yerine doğrudan host makinenin ağ arayüzünü kullanmasını sağlar. Port maplemeye gerek kalmaz; container'ın 80 portuna erişmek için `localhost:80` yeterlidir.
+
+```bash
+docker run --network host nginx
+```
+
+Bu sürücü performans açısından avantajlıdır çünkü ağ trafiği sanal bir katmandan geçmez. Ancak izolasyon azalır — container, host'un ağ kaynaklarına doğrudan erişir. Yalnızca Linux'ta tam olarak desteklenir.
+
+### None — Ağ Yok
+
+None sürücüsü, container'ı tüm ağ bağlantısından yalıtır. Container ne internete ne de diğer container'lara bağlanamaz.
+
+```bash
+docker run --network none alpine
+```
+
+Bu sürücü ağ erişimi gerektirmeyen işlemler için kullanılır: dosya dönüştürme, şifreleme, test senaryoları gibi tamamen izole çalışması gereken container'lar için uygundur.
+
+### Karşılaştırma
+
+| Sürücü | İzolasyon | Container'lar arası | Host'a erişim |
+|---|---|---|---|
+| bridge | Orta | Aynı network'tekiler | Port mapleme gerekir |
+| host | Düşük | — | Doğrudan |
+| none | Tam | Yok | Yok |
 
 ## Özet
 

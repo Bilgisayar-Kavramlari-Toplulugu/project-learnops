@@ -1,80 +1,73 @@
 ---
 id: "docker-002-mimari"
-title: "Image ve Container Mimarisi"
+title: "Docker Daemon, Client, Registry"
 order: 20
 order_index: 20
 ---
 
-# Image ve Container Mimarisi
+# Docker Daemon, Client, Registry
 
-Docker öğrenirken en kritik noktalardan biri image ile container arasındaki farkı net anlamaktır. Bu iki kavram karıştırıldığında komutlar ezberlenir ama mimari mantık eksik kalır. Oysa Docker'in neredeyse tüm temel akışlarında bu ikili merkezde yer alır.
+`docker run` yazdığınızda perde arkasında birden fazla bileşen devreye girer. Docker'ın mimarisini anlamak, hem komutların ne yaptığını hem de hata aldığınızda nerede bakmanız gerektiğini netleştirir. Docker üç ana bileşen üzerine kuruludur: **Daemon**, **Client** ve **Registry**.
 
-## Image nedir?
+## Docker Daemon
 
-Image, bir uygulamanın çalışması için gereken her şeyin paketlenmiş şablonudur. İçinde uygulama kodu, kütüphaneler, sistem paketleri ve çalışma talimatları bulunabilir. Tek başına çalışan bir süreç değildir; daha çok taşınabilir bir kalıp gibidir.
+Docker Daemon (`dockerd`), arka planda çalışan ve tüm Docker operasyonlarını yürüten süreçtir. Container'ları oluşturmak, başlatmak, durdurmak ve silmek bu sürecin sorumluluğundadır. Image'ları yönetir, network yapısını kurar, volume'ları bağlar.
 
-Image'ları "taşınabilir uygulama paketi" gibi düşünmek faydalıdır. Bir image oluşturulduğunda, bu image farklı bilgisayarlarda aynı mantıkla kullanılabilir. Bu nedenle image kavramı Docker'in taşınabilirlik vaadinin merkezindedir.
+Daemon bir REST API üzerinden komut alır. Kullanıcı doğrudan Daemon'la değil; Docker Client aracılığıyla haberleşir.
 
-Bir image dolaylı olarak şu bilgileri taşıyabilir:
+Eğer Docker çalışmıyorsa ya da terminalde `Cannot connect to the Docker daemon` hatası görüyorsanız, büyük ihtimalle `dockerd` başlamamış demektir. Docker Desktop veya `systemctl start docker` ile başlatılması gerekir.
 
-- Hangi temel ortam üzerine kurulduğu
-- Hangi paketlerin yüklendiği
-- Uygulama dosyalarının nereye yerleştirildiği
-- Container başladığında hangi komutun çalışacağı
+## Docker Client
 
-## Container nedir?
+Docker Client, kullanıcının Docker ile etkileşime geçtiği araçtır. Terminal üzerinden yazdığınız `docker build`, `docker run`, `docker ps` gibi komutlar bu istemci tarafından alınır ve REST API aracılığıyla Daemon'a iletilir.
 
-Container, bir image'ın çalışan örneğidir. Aynı image'dan birden fazla container oluşturabilirsiniz. Yani image şablon, container ise çalışan kopyadır.
+```
+[Kullanıcı] → docker run nginx → [Client] → REST API → [Daemon] → container başlatır
+```
 
-Bunu basit bir benzetmeyle düşünebiliriz:
+Client ve Daemon aynı makinede çalışabilir ya da uzak bir Daemon'a bağlanabilir. Bu ayrım Docker'ın uzak sunucularda da yönetilebilmesini sağlar.
 
-- Image = tarif
-- Container = o tariften üretilmiş çalışan sonuç
+## Docker Registry
 
-Tarif aynı kalsa bile aynı tariften birden fazla sonuç üretebilirsiniz. Docker'da da aynı image'dan ihtiyaca göre birden fazla container başlatabilirsiniz.
+Registry, image'lerin depolandığı ve dağıtıldığı merkezi sistemdir. En bilinen örneği **Docker Hub**'dır. Bunun yanında GitHub Container Registry (`ghcr.io`), Google Artifact Registry veya şirkete özel private registry çözümleri de kullanılabilir.
 
-## Mimari açıdan neden önemlidir?
+```bash
+docker pull nginx        # Daemon, Docker Hub'dan nginx image'ini indirir
+docker push kullanici/uygulama:1.0  # Daemon, image'i registry'ye gönderir
+```
 
-Bu ayrım Docker komutlarını doğru anlamanızı sağlar. Örneğin:
+Registry mantığı ekip çalışması ve CI/CD süreçleri için kritiktir. Image yalnızca lokalde kalırsa başka biri onu kullanamaz.
 
-- `docker pull` image indirir
-- `docker build` image üretir
-- `docker run` image'dan container başlatır
-- `docker stop` çalışan container'i durdurur
-- `docker rm` container'i siler
+## Üçü birlikte nasıl çalışır?
 
-Bu akışta image daha kalıcı ve tekrar kullanılabilir bir yapıyı temsil ederken, container daha operasyonel bir varlıktır. Başlatılır, durur, log üretir, silinir ve gerekirse yeniden oluşturulur.
+`docker run nginx` komutunu çalıştırdığınızda şu adımlar gerçekleşir:
 
-## Aynı image'dan birden fazla container
+1. **Client** komutu alır ve Daemon'a iletir
+2. **Daemon** lokal image deposuna bakar — `nginx` var mı?
+3. Yoksa **Registry**'den (Docker Hub) indirir
+4. Image mevcut veya indirildi — **Daemon** container'ı başlatır
+5. Çalışan container bilgisi **Client**'a döner
 
-Docker'in güçlü yanlarından biri aynı image'i tekrar tekrar kullanabilmesidir. Bu sayede:
+Bu akışı bilmek, "image neden indirilmiyor?", "container neden başlamıyor?" gibi soruları çözerken hangi katmana bakmanız gerektiğini gösterir.
 
-- Aynı uygulamanın birden fazla kopyası çalıştırılabilir
-- Test senaryoları daha kolay oluşturulabilir
-- Farklı ortamlarda aynı paket kullanılabilir
-- Yatay ölçekleme mantığı daha kolay anlaşılır
+## Image ve Container hatırlatması
 
-Bu fikir ileride orkestrasyon araçlarında daha da önem kazanır. Ancak başlangıç seviyesinde bilinmesi gereken şey şudur: image tek olabilir, ama o image'dan birden fazla çalışan container üretilebilir.
+Bu noktada iki kavramı da netleştirmek faydalıdır:
 
-## Sıklıkla yapılan hata
+- **Image**: uygulamanın paketlenmiş şablonu. Daemon tarafından saklanır, Registry'den indirilir veya Registry'ye gönderilir.
+- **Container**: image'dan üretilen çalışan örnek. Daemon tarafından yönetilir.
 
-Yeni başlayanlar bazen image'i "kurulu uygulama", container'i ise "dosya" gibi düşünebilir. Bu kafa karışıklığı daha sonra komutların amacını da bulandırır. Bu nedenle her zaman şu ikiliyi akılda tutmak faydalıdır:
-
-- Image = şablon
-- Container = çalışan örnek
-
-Bu mantık oturduğunda Dockerfile, volume ve Compose gibi konular da daha kolay yerine oturur.
-
-| Kavram | Kısa Anlam |
-|--------|------------|
-| Image | Paketlenmiş şablon |
-| Container | Çalışan örnek |
+| Bileşen | Görevi |
+|---|---|
+| Docker Daemon | Container ve image operasyonlarını yürütür |
+| Docker Client | Kullanıcı komutlarını Daemon'a iletir |
+| Docker Registry | Image'ları depolar ve dağıtır |
 
 ## Özet
 
-Bu bölümde image ve container farkını netleştirdik.
+Bu bölümde Docker'ın üç temel bileşenini gördük.
 
-- Image, uygulamanın paketlenmiş şablonudur
-- Container, bu şablonun çalışan örneğidir
-- Docker komutlarının büyük kısmı bu ikili etrafında şekillenir
-- Bu ayrım anlaşıldığında sonraki konular daha kolay öğrenilir
+- Daemon arka planda çalışır; container ve image operasyonlarını yürütür
+- Client terminal komutlarını Daemon'a REST API aracılığıyla iletir
+- Registry image'ların depolandığı ve paylaşıldığı sistemdir
+- Bu üçü birlikte `docker run` gibi basit bir komutun arkasındaki tam akışı oluşturur
