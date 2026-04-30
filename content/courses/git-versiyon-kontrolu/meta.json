@@ -3,7 +3,7 @@
   "title": "Git ve Versiyon Kontrolü",
   "description": "Git'in temel kavramlarından branch stratejilerine, remote depolardan GitHub Flow'a kadar versiyon kontrolünün eksiksiz temeli.",
   "difficulty": "beginner",
-  "is_published": false,
+  "is_published": true,
   "category": "devops",
   "duration_minutes": 90
 }
