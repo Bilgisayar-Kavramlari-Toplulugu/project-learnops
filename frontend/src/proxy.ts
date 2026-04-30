@@ -1,15 +1,18 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 // Authenticated user / veya /login'e gelirse dashboard'a fırlat
 // Aynı zamanda bunlar exact public path'ler
-const AUTH_REDIRECT_PATHS = ["/", "/login"] as const;
-const PUBLIC_PREFIXES = ["/courses"] as const;
+const AUTH_REDIRECT_PATHS: readonly string[] = ["/", "/login"];
+const PUBLIC_PREFIXES: readonly string[] = ["/courses"];
+
 const PROTECTED_COURSE_PATTERN = /^\/courses\/[^/]+\/[^/]+/;
 
 function isPublicPath(pathname: string): boolean {
   if (PROTECTED_COURSE_PATTERN.test(pathname)) return false;
-  if ((AUTH_REDIRECT_PATHS as readonly string[]).includes(pathname)) return true;
-  return PUBLIC_PREFIXES.some((p) => pathname.startsWith(p + "/") || pathname === p);
+
+  if (AUTH_REDIRECT_PATHS.includes(pathname)) return true;
+
+  return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export function proxy(request: NextRequest) {
@@ -20,7 +23,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if ((AUTH_REDIRECT_PATHS as readonly string[]).includes(pathname) && token) {
+  if (AUTH_REDIRECT_PATHS.includes(pathname) && token) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
