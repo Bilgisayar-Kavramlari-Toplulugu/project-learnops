@@ -28,7 +28,6 @@ import sys
 import traceback
 from pathlib import Path
 
-from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -36,6 +35,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.pool import NullPool
+
+from alembic import command as alembic_command
 
 # ── Path setup ───────────────────────────────────────────────────────────────
 # backend/scripts/db_update.py  →  SCRIPT_DIR = backend/scripts/
