@@ -25,9 +25,9 @@ from sqlalchemy.orm import Session
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
-BACKEND_DIR = PROJECT_ROOT / "backend"
+SCRIPT_DIR = Path(__file__).resolve().parent  # backend/scripts/
+PROJECT_ROOT = SCRIPT_DIR.parent.parent  # backend/ -> repo root
+BACKEND_DIR = SCRIPT_DIR.parent  # backend/
 CONTENT_DIR = PROJECT_ROOT / "content" / "courses"
 
 # Add backend to sys.path so we can import app modules
@@ -223,7 +223,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
 
         stmt = pg_insert(Course.__table__).values(**course_values)
         stmt = stmt.on_conflict_do_update(
-            constraint="uq_courses_slug",
+            index_elements=["slug"],
             set_={
                 "title": stmt.excluded.title,
                 "description": stmt.excluded.description,
@@ -257,7 +257,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
             }
             stmt = pg_insert(Section.__table__).values(**section_values)
             stmt = stmt.on_conflict_do_update(
-                constraint="uq_sections_section_id_str",
+                index_elements=["section_id_str"],
                 set_={
                     "course_id": stmt.excluded.course_id,
                     "title": stmt.excluded.title,

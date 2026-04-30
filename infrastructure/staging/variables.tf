@@ -139,3 +139,9 @@ variable "secret_frontend_public_url" {
   type        = string
   default     = "FRONTEND_PUBLIC_URL"
 }
+
+variable "content_job_image" {
+  description = "Content update Cloud Run Job Docker image (managed by content-deploy workflow after initial creation)"
+  type        = string
+  default     = "europe-west3-docker.pkg.dev/learnops-staging/project-learnops-backend/content-job:latest"
+}

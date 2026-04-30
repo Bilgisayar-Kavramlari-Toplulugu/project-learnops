@@ -22,10 +22,23 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.create_unique_constraint(
-        "uq_attempt_question",
-        "quiz_attempt_answers",
-        ["attempt_id", "question_id"],
+    # PostgreSQL does not support ADD CONSTRAINT IF NOT EXISTS.
+    # Use a DO block to check pg_constraint first so this is idempotent.
+    op.execute(
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint
+                WHERE conname = 'uq_attempt_question'
+                  AND conrelid = 'quiz_attempt_answers'::regclass
+            ) THEN
+                ALTER TABLE quiz_attempt_answers
+                    ADD CONSTRAINT uq_attempt_question
+                    UNIQUE (attempt_id, question_id);
+            END IF;
+        END $$;
+        """
     )
 
 

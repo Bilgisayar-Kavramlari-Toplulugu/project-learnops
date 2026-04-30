@@ -11,8 +11,6 @@ Create Date: 2026-04-08 12:00:00.000000
   BaseModel defines updated_at but 001_initial omitted it for these tables.
 """
 
-import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -23,24 +21,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("courses", sa.Column("display_order", sa.Integer(), nullable=True))
-    op.add_column(
-        "courses",
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.func.now(),
-            nullable=False,
-        ),
+    # Use IF NOT EXISTS so this migration is safe to run even when a previous
+    # job execution committed the DDL but crashed before writing alembic_version.
+    op.execute("ALTER TABLE courses ADD COLUMN IF NOT EXISTS display_order INTEGER")
+    op.execute(
+        "ALTER TABLE courses ADD COLUMN IF NOT EXISTS "
+        "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
     )
-    op.add_column(
-        "sections",
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.func.now(),
-            nullable=False,
-        ),
+    op.execute(
+        "ALTER TABLE sections ADD COLUMN IF NOT EXISTS "
+        "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
     )
 
 

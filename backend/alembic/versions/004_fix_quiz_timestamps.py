@@ -9,8 +9,6 @@ Create Date: 2026-04-17 00:00:00.000000
   Mevcut satırlar için now() değeri atanır.
 """
 
-import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -21,35 +19,17 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # quizzes: updated_at eksik
-    op.add_column(
-        "quizzes",
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.func.now(),
-            nullable=False,
-        ),
+    op.execute(
+        "ALTER TABLE quizzes ADD COLUMN IF NOT EXISTS "
+        "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
     )
-
-    # questions: created_at ve updated_at eksik
-    op.add_column(
-        "questions",
-        sa.Column(
-            "created_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.func.now(),
-            nullable=False,
-        ),
+    op.execute(
+        "ALTER TABLE questions ADD COLUMN IF NOT EXISTS "
+        "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
     )
-    op.add_column(
-        "questions",
-        sa.Column(
-            "updated_at",
-            sa.DateTime(timezone=True),
-            server_default=sa.func.now(),
-            nullable=False,
-        ),
+    op.execute(
+        "ALTER TABLE questions ADD COLUMN IF NOT EXISTS "
+        "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
     )
 
 

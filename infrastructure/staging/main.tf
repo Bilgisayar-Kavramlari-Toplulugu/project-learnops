@@ -187,6 +187,25 @@ resource "google_project_iam_member" "backend_secret_accessor" {
 }
 
 # ===========================
+# Postgres Admin Password in Secret Manager
+# ===========================
+# Stored here so the content-update Cloud Run Job can use the postgres admin
+# user for Alembic migrations (DDL requires superuser; IAM users in PostgreSQL
+# 15 are not auto-granted CREATE on the public schema).
+
+resource "google_secret_manager_secret" "postgres_password" {
+  secret_id = "POSTGRES_PASSWORD"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "postgres_password_version" {
+  secret      = google_secret_manager_secret.postgres_password.id
+  secret_data = random_password.postgres_password.result
+}
+
+# ===========================
 # Backend Cloud Run Service
 # ===========================
 
@@ -666,4 +685,76 @@ resource "google_compute_global_forwarding_rule" "frontend_https_fr" {
   port_range            = "443"
   ip_address            = google_compute_global_address.frontend_ip.address
   load_balancing_scheme = "EXTERNAL_MANAGED"
+}
+
+# ===========================
+# Content Update Cloud Run Job
+# ===========================
+# Applies Alembic migrations and seeds course/quiz content from the
+# content/ directory into Cloud SQL over private IP (IAM auth).
+#
+# The job template is managed by the content-deploy GitHub Actions workflow
+# (lifecycle.ignore_changes = [template]) — Terraform only provisions the
+# initial skeleton. The workflow updates the image and env vars on every push.
+
+resource "google_cloud_run_v2_job" "content_update" {
+  name     = "content-update-job"
+  location = var.region
+
+  # Allow the CI/CD workflow to update image + env vars without Terraform drift.
+  lifecycle {
+    ignore_changes = [template]
+  }
+
+  template {
+    template {
+      service_account = google_service_account.backend_runtime.email
+      max_retries     = 1
+
+      # Route outbound traffic through the VPC connector so the job can reach
+      # Cloud SQL on its private IP.
+      vpc_access {
+        connector = google_vpc_access_connector.connector.id
+        egress    = "PRIVATE_RANGES_ONLY"
+      }
+
+      containers {
+        image = var.content_job_image
+
+        env {
+          name  = "INSTANCE_CONNECTION_NAME"
+          value = google_sql_database_instance.postgres.connection_name
+        }
+
+        env {
+          name  = "DB_USER"
+          value = local.backend_db_iam_user
+        }
+
+        env {
+          name  = "DB_NAME"
+          value = google_sql_database.database.name
+        }
+
+        env {
+          name  = "ENVIRONMENT"
+          value = "staging"
+        }
+
+        resources {
+          limits = {
+            cpu    = "1"
+            memory = "1Gi"
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [
+    google_sql_database_instance.postgres,
+    google_sql_database.database,
+    google_sql_user.iam_user,
+    google_vpc_access_connector.connector,
+  ]
 }

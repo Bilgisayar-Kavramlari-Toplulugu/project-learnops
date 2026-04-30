@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - release
+      - content-workflow
     paths:
       - "backend/**"
       - "frontend/**"
@@ -18,7 +19,7 @@ concurrency:
 
 env:
   GCP_REGION: "europe-west3"
-  TF_VERSION: "1.6.0"
+  TF_VERSION: "1.11.0"
 
 jobs:
   changes:
@@ -297,7 +298,8 @@ jobs:
       - name: Build & Push Frontend
         uses: docker/build-push-action@v7
         with:
-          context: ./frontend
+          context: .
+          file: frontend/Dockerfile
           platforms: linux/amd64
           push: true
           tags: |
