@@ -52,6 +52,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("db_update")
 
+
 # ── Engine factory ────────────────────────────────────────────────────────────
 def _create_engine():
     """
@@ -65,9 +66,13 @@ def _create_engine():
     if instance_conn_name:
         db_password = os.environ.get("DB_PASSWORD", "")
         if db_password:
-            logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, password auth)")
+            logger.info(
+                "Cloud Run mode: Cloud SQL Python Connector (private IP, password auth)"
+            )
         else:
-            logger.info("Cloud Run mode: Cloud SQL Python Connector (private IP, IAM auth)")
+            logger.info(
+                "Cloud Run mode: Cloud SQL Python Connector (private IP, IAM auth)"
+            )
 
         from google.cloud.sql.connector import IPTypes, create_async_connector
 
@@ -89,7 +94,9 @@ def _create_engine():
                 kwargs["password"] = db_password
             else:
                 kwargs["enable_iam_auth"] = True
-            return await _connector.connect_async(instance_conn_name, "asyncpg", **kwargs)
+            return await _connector.connect_async(
+                instance_conn_name, "asyncpg", **kwargs
+            )
 
         return create_async_engine(
             "postgresql+asyncpg://",
@@ -131,13 +138,17 @@ async def apply_migrations(engine) -> None:
 async def grant_runtime_privileges(engine) -> None:
     """Grant DML privileges on all tables/sequences to the backend IAM user.
 
-    The content job connects as 'postgres' for DDL.  The backend app connects
-    as 'backend-runtime-sa@<project>.iam' via Cloud SQL IAM auth.  When we
-    transferred table ownership from the IAM user to postgres (REASSIGN OWNED BY)
-    the IAM user lost all implicit owner privileges.  This step restores the
-    minimum required access.
+    This job connects as 'postgres' (password auth) to run Alembic migrations,
+    so all tables are owned by 'postgres'.  PostgreSQL does not auto-grant DML
+    to other roles on objects they do not own, so the backend app user
+    ('backend-runtime-sa@<project>.iam', Cloud SQL IAM auth) needs explicit
+    grants to SELECT/INSERT/UPDATE/DELETE.
 
-    RUNTIME_IAM_DB_USER is set by the workflow to:
+    This step is idempotent and correct for both fresh environments (tables
+    just created by Alembic) and existing environments (tables already owned
+    by postgres from a prior run).
+
+    RUNTIME_IAM_DB_USER is set by the content-deploy workflow to:
       backend-runtime-sa@<GCP_PROJECT_ID>.iam
     """
     from sqlalchemy import text
@@ -149,22 +160,30 @@ async def grant_runtime_privileges(engine) -> None:
 
     logger.info(f"=== Step 1b: Granting runtime privileges to '{iam_user}' ===")
     async with engine.begin() as conn:
-        await conn.execute(text(
-            f'GRANT SELECT, INSERT, UPDATE, DELETE '
-            f'ON ALL TABLES IN SCHEMA public TO "{iam_user}"'
-        ))
-        await conn.execute(text(
-            f'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "{iam_user}"'
-        ))
+        await conn.execute(
+            text(
+                f"GRANT SELECT, INSERT, UPDATE, DELETE "
+                f'ON ALL TABLES IN SCHEMA public TO "{iam_user}"'
+            )
+        )
+        await conn.execute(
+            text(
+                f'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "{iam_user}"'
+            )
+        )
         # Ensure future tables/sequences created by postgres also get the grants.
-        await conn.execute(text(
-            f'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public '
-            f'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "{iam_user}"'
-        ))
-        await conn.execute(text(
-            f'ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public '
-            f'GRANT USAGE, SELECT ON SEQUENCES TO "{iam_user}"'
-        ))
+        await conn.execute(
+            text(
+                f"ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public "
+                f'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "{iam_user}"'
+            )
+        )
+        await conn.execute(
+            text(
+                f"ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public "
+                f'GRANT USAGE, SELECT ON SEQUENCES TO "{iam_user}"'
+            )
+        )
     logger.info(f"Runtime privileges granted to '{iam_user}'.")
 
 
@@ -190,7 +209,6 @@ async def seed_courses(session: AsyncSession) -> None:
     def _upsert_sync(connection) -> None:
         with SyncSession(bind=connection) as sync_session:
             upsert_courses_and_sections(sync_session, courses)
-            sync_session.commit()
 
     # run_sync bridges the async connection to the sync Session expected by seed_content
     conn = await session.connection()

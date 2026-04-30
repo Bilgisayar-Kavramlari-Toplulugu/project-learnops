@@ -11,7 +11,11 @@ RUN npm ci
 # Kaynak kodu kopyala
 COPY frontend/ ./
 
-# Copy course content so MDX sections are available at build and runtime
+# Copy course content required for static generation.
+# generateStaticParams() in courses/[slug]/sections/[section_id_str]/page.tsx
+# calls getAllSectionParams() at build time, which reads all MDX files under
+# content/courses/ to pre-render section pages as static HTML.
+# Without this, next build fails — no runtime file reads occur after build.
 COPY content/ ./content/
 
 # Production build
