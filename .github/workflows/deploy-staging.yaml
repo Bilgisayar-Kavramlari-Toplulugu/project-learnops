@@ -5,10 +5,10 @@ on:
     branches:
       - main
       - release
-      - content-workflow
     paths:
       - "backend/**"
       - "frontend/**"
+      - "content/**"
       - "infrastructure/**"
       - ".github/workflows/deploy-staging.yaml"
   workflow_dispatch:
@@ -31,6 +31,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      content: ${{ steps.filter.outputs.content }}
       infrastructure: ${{ steps.filter.outputs.infrastructure }}
     steps:
       - uses: actions/checkout@v6
@@ -43,6 +44,8 @@ jobs:
               - 'backend/**'
             frontend:
               - 'frontend/**'
+            content:
+              - 'content/**'
             infrastructure:
               - 'infrastructure/**'
 
@@ -239,7 +242,7 @@ jobs:
     needs: [changes, terraform-deploy]
     if: |
       always() &&
-      needs.changes.outputs.frontend == 'true' &&
+      (needs.changes.outputs.frontend == 'true' || needs.changes.outputs.content == 'true') &&
       (needs.terraform-deploy.result == 'success' || needs.terraform-deploy.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:

@@ -116,15 +116,15 @@ resource "google_artifact_registry_repository" "repos" {
 
 resource "google_project_iam_member" "github_actions_roles" {
   for_each = toset([
-    "roles/run.admin",                          # Cloud Run: Deploy services and manage IAM (needed for allUsers invoker binding)
-    "roles/cloudsql.admin",                     # Cloud SQL: Create and manage instances, databases, users
-    "roles/iam.serviceAccountUser",             # Impersonate service accounts
-    "roles/secretmanager.secretAccessor",       # Read secret values
-    "roles/secretmanager.viewer",               # Read secret metadata and versions (needed for data sources)
-    "roles/compute.networkAdmin",               # Manage VPC, global addresses, VPC connector
-    "roles/compute.loadBalancerAdmin",          # Manage URL maps, SSL certs, backend services, forwarding rules
-    "roles/resourcemanager.projectIamAdmin",    # Set project-level IAM bindings for runtime service accounts
-    "roles/vpcaccess.admin",                    # Create and manage Serverless VPC Access connectors
+    "roles/run.admin",                       # Cloud Run: Deploy services and manage IAM (needed for allUsers invoker binding)
+    "roles/cloudsql.admin",                  # Cloud SQL: Create and manage instances, databases, users
+    "roles/iam.serviceAccountUser",          # Impersonate service accounts
+    "roles/secretmanager.secretAccessor",    # Read secret values
+    "roles/secretmanager.viewer",            # Read secret metadata and versions (needed for data sources)
+    "roles/compute.networkAdmin",            # Manage VPC, global addresses, VPC connector
+    "roles/compute.loadBalancerAdmin",       # Manage URL maps, SSL certs, backend services, forwarding rules
+    "roles/resourcemanager.projectIamAdmin", # Set project-level IAM bindings for runtime service accounts
+    "roles/vpcaccess.admin",                 # Create and manage Serverless VPC Access connectors
   ])
 
   project = google_project.staging.project_id
