@@ -32,16 +32,17 @@ repos:
     hooks:
       - id: eslint
         name: eslint
-        entry: npm --prefix frontend run lint -- --fix .
+        entry: npm --prefix frontend run lint -- .
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
       - id: prettier
         name: prettier
-        entry: npm --prefix frontend exec prettier --write
+        entry: npm --prefix frontend exec prettier -- --write frontend/
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|json|css|md)$
+        pass_filenames: false
 
       - id: mypy
         name: mypy
