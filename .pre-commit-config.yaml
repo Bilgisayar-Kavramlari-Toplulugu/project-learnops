@@ -32,12 +32,28 @@ repos:
     hooks:
       - id: eslint
         name: eslint
-        entry: bash -c 'cd frontend && { [ -f node_modules/.package-lock.json ] || npm ci --silent; } && for f in "$@"; do npx eslint --fix "${f#frontend/}"; done' --
+        entry: npm --prefix frontend run lint -- .
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
 
       - id: prettier
         name: prettier
-        entry: bash -c 'cd frontend && { [ -f node_modules/.package-lock.json ] || npm ci --silent; } && files=(); for f in "$@"; do files+=("${f#frontend/}"); done; npx prettier --write "${files[@]}"' --
+        entry: npm --prefix frontend exec prettier -- --write frontend/
         language: system
         files: ^frontend/.*\.(ts|tsx|js|jsx|json|css|md)$
+        pass_filenames: false
+
+      - id: mypy
+        name: mypy
+        entry: poetry -C backend run mypy app/
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+
+      - id: tsc
+        name: tsc --noEmit
+        entry: npm --prefix frontend run type-check
+        language: system
+        files: ^frontend/.*\.(ts|tsx)$
+        pass_filenames: false
