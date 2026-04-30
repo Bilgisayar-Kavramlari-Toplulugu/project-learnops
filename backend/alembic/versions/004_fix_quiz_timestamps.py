@@ -9,8 +9,6 @@ Create Date: 2026-04-17 00:00:00.000000
   Mevcut satırlar için now() değeri atanır.
 """
 
-import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.

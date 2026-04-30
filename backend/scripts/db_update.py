@@ -30,7 +30,11 @@ from pathlib import Path
 
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
 
 # ── Path setup ───────────────────────────────────────────────────────────────

@@ -11,8 +11,6 @@ Create Date: 2026-04-08 12:00:00.000000
   BaseModel defines updated_at but 001_initial omitted it for these tables.
 """
 
-import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
