@@ -4,6 +4,7 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { QuizResultScreen } from "@/components/quiz/quiz-result-screen";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 
 interface AnswerResultItem {
   question_id: string;
@@ -18,10 +19,10 @@ interface AnswerResultItem {
 interface QuizAttemptDetailResponse {
   attempt_id: string;
   score: number;
-  total: number; 
+  total: number;
   passed: boolean;
   time_spent_seconds?: number;
-  course_slug?: string; 
+  course_slug?: string;
   answers: AnswerResultItem[];
 }
 
@@ -46,7 +47,9 @@ export default function ResultsPage() {
   const quizId = params.quizId as string;
   const attemptId = searchParams.get("attemptId");
 
-  const [loadingState, setLoadingState] = useState<LoadingState>(attemptId ? "loading" : "not-found");
+  const [loadingState, setLoadingState] = useState<LoadingState>(
+    attemptId ? "loading" : "not-found",
+  );
   const [resultData, setResultData] = useState<QuizResultData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,7 +58,7 @@ export default function ResultsPage() {
 
     async function fetchResults() {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      
+
       try {
         const response = await fetch(`${API_URL}/quiz-attempts/${attemptId}`, {
           cache: "no-store",
@@ -109,7 +112,7 @@ export default function ResultsPage() {
 
   // Handlers
   const handleRetry = () => router.push(`/quiz/${quizId}`);
-  
+
   const handleBackToCourse = () => {
     router.push("/courses");
   };
@@ -136,12 +139,9 @@ export default function ResultsPage() {
         <div className="max-w-md text-center">
           <p className="text-lg font-semibold text-[#991B1B]">Hata</p>
           <p className="mt-2 text-sm text-[#4B5563]">{error || "Bir hata tespit edildi."}</p>
-          <button
-            onClick={handleRetry}
-            className="mt-4 rounded-xl bg-[#4F46E5] px-4 py-2 text-sm font-bold text-white hover:bg-[#4338CA]"
-          >
+          <Button onClick={handleRetry} className="mt-4 rounded-xl text-sm font-bold">
             Quiz&apos;e Geri Dön
-          </button>
+          </Button>
         </div>
       </div>
     );

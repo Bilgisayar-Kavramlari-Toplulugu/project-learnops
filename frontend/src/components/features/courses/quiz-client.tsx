@@ -3,15 +3,12 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Clock, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 
 import { useCourseDetail } from "@/hooks/courses/use-course-detail";
 import { useQuiz } from "@/hooks/courses/use-quiz";
 import { api } from "@/lib/api";
 import { routes } from "@/lib/routes";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +18,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Progress,
+  toast,
+} from "@/components/ui";
 import type { QuizAnswer, QuizResult, QuizSubmitPayload } from "@/types";
 
 interface QuizClientProps {
@@ -233,12 +237,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
       </div>
 
       {/* İlerleme Çubuğu — cevaplanan soru sayısını gösterir */}
-      <div className="bg-secondary h-1.5 w-full rounded-full">
-        <div
-          className="bg-primary h-1.5 rounded-full transition-all duration-300"
-          style={{ width: `${(Object.keys(answers).length / totalQuestions) * 100}%` }}
-        />
-      </div>
+      <Progress value={(Object.keys(answers).length / totalQuestions) * 100} className="h-1.5" />
 
       {/* Soru Kartı */}
       <Card>
@@ -251,15 +250,17 @@ export default function QuizClient({ slug }: QuizClientProps) {
           {currentQuestion.options.map((option) => {
             const isSelected = answers[currentQuestion.id] === option.id;
             return (
-              <button
+              <Button
                 key={option.id}
+                type="button"
+                variant="outline"
                 onClick={() =>
                   setAnswers((prev) => ({
                     ...prev,
                     [currentQuestion.id]: option.id,
                   }))
                 }
-                className={`rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
+                className={`h-auto justify-start rounded-lg px-4 py-3 text-left text-sm whitespace-normal ${
                   isSelected
                     ? "border-primary bg-primary/10 text-primary font-medium"
                     : "border-border hover:bg-accent hover:text-accent-foreground"
@@ -267,7 +268,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
                 disabled={isSubmitting}
               >
                 {option.text}
-              </button>
+              </Button>
             );
           })}
         </CardContent>
@@ -334,8 +335,11 @@ export default function QuizClient({ slug }: QuizClientProps) {
       {/* Soru Genel Bakışı */}
       <div className="flex flex-wrap justify-center gap-2 pt-2">
         {questions.map((q, i) => (
-          <button
+          <Button
             key={q.id}
+            type="button"
+            variant={i === currentIndex ? "default" : "secondary"}
+            size="icon-sm"
             onClick={() => setCurrentIndex(i)}
             disabled={isSubmitting}
             aria-label={`Soru ${i + 1}'e git${answers[q.id] ? " (cevaplandı)" : ""}`}
@@ -348,7 +352,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
             }`}
           >
             {i + 1}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

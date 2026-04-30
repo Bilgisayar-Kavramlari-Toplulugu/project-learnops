@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Award } from "lucide-react";
 import type { CourseProgress } from "@/types";
-import { ProgressBar } from "./progress-bar";
+import { ProgressBar } from "@/components/ui";
 import { CompletionButton } from "./completion-button";
 
 interface SectionCompletionProps {

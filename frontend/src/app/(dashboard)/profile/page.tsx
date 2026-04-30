@@ -2,18 +2,26 @@
 
 import { useState } from "react";
 import type { DashboardProfile } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { toInitials, InitialsAvatar, pickTone } from "@/components/ui/initials-avatar";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Skeleton,
+  Textarea,
+  toast,
+} from "@/components/ui";
+import { toInitials, InitialsAvatar, pickTone } from "@/components/ui";
 import { DeleteAccountModal } from "@/components/features/profile/delete-account-modal";
 import { useProfile } from "@/hooks/profile/use-profile";
 import { useUpdateProfile } from "@/hooks/profile/use-update-profile";
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { DashboardErrorState } from "@/components/ui/dashboard-error-state";
+import { DashboardErrorState } from "@/components/ui";
 
 const SYSTEM_AVATARS = Array.from({ length: 10 }, (_, i) => String(i + 1));
 
@@ -222,10 +230,12 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
               </div>
             </div>
             <div className="grid grid-cols-11 gap-2">
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setForm((f) => ({ ...f, selectedAvatar: "initials" }))}
                 className={cn(
-                  "aspect-square rounded-full border-2 flex items-center justify-center text-xs font-medium transition-all",
+                  "aspect-square h-auto rounded-full border-2 p-0 text-xs font-medium",
                   initialsColor,
                   selectedAvatar === "initials"
                     ? "border-primary ring-2 ring-primary/20 scale-105"
@@ -233,13 +243,15 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                 )}
               >
                 {initials}
-              </button>
+              </Button>
               {SYSTEM_AVATARS.map((id) => (
-                <button
+                <Button
                   key={id}
+                  type="button"
+                  variant="ghost"
                   onClick={() => setForm((f) => ({ ...f, selectedAvatar: id }))}
                   className={cn(
-                    "relative aspect-square rounded-full border-2 overflow-hidden transition-all",
+                    "relative aspect-square h-auto overflow-hidden rounded-full border-2 p-0",
                     selectedAvatar === id
                       ? "border-primary ring-2 ring-primary/20 scale-105"
                       : "border-border hover:border-muted-foreground",
@@ -251,7 +263,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                     fill
                     className="object-cover"
                   />
-                </button>
+                </Button>
               ))}
             </div>
           </CardContent>
@@ -264,7 +276,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Görünen ad</label>
-              <input
+              <Input
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 value={display_name}
                 onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
@@ -273,7 +285,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Biyografi</label>
-              <textarea
+              <Textarea
                 className="w-full border rounded-md px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring resize-none transition-shadow"
                 rows={3}
                 maxLength={200}

@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 import type { CourseCardItem } from "@/types";
 import { CourseCard } from "./course-card";
 

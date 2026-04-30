@@ -4,7 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { type CourseDetail, type CourseProgress } from "@/types";
 import { routes } from "@/lib/routes";
-import { ProgressBar } from "./progress-bar";
+import { Button, ProgressBar } from "@/components/ui";
 import { CompletionBadge } from "./completion-badge";
 import { cn } from "@/lib/utils";
 
@@ -99,22 +99,24 @@ export default function CourseProgressCard({
 
           {/* Devam Et Butonu */}
           {targetSection && (
-            <Link
-              href={routes.section(course.slug, targetSection.section_id_str)}
-              className="w-full flex items-center justify-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-3 px-4 rounded-2xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+            <Button
+              asChild
+              className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-md hover:bg-indigo-700 hover:shadow-lg active:scale-[0.98]"
             >
-              {isCompleted ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5" />
-                  Kursu Gözden Geçir
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="w-5 h-5" />
-                  Devam Et
-                </>
-              )}
-            </Link>
+              <Link href={routes.section(course.slug, targetSection.section_id_str)}>
+                {isCompleted ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5" />
+                    Kursu Gözden Geçir
+                  </>
+                ) : (
+                  <>
+                    <ArrowRight className="w-5 h-5" />
+                    Devam Et
+                  </>
+                )}
+              </Link>
+            </Button>
           )}
         </div>
       </div>

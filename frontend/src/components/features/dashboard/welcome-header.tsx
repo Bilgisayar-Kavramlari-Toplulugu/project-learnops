@@ -1,7 +1,6 @@
 import { CalendarDays, Sparkles } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { Badge, InitialsAvatar } from "@/components/ui";
 
 const todayLabel = new Intl.DateTimeFormat("tr-TR", {
   day: "2-digit",

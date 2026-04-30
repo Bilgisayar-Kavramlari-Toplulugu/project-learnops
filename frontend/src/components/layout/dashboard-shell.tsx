@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { Menu } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button, Sheet, SheetContent, SheetTrigger } from "@/components/ui";
 import { routes } from "@/lib/routes";
 import type { DashboardProfile, SidebarItem } from "@/types";
 import { AppFooter } from "./app-footer";

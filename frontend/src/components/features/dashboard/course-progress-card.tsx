@@ -2,9 +2,15 @@
 import { ArrowRight, BookOpen } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Progress,
+} from "@/components/ui";
 import type { DashboardInProgressCourse } from "@/types";
 
 interface CourseProgressCardProps {
