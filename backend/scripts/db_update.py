@@ -138,13 +138,17 @@ async def apply_migrations(engine) -> None:
 async def grant_runtime_privileges(engine) -> None:
     """Grant DML privileges on all tables/sequences to the backend IAM user.
 
-    The content job connects as 'postgres' for DDL.  The backend app connects
-    as 'backend-runtime-sa@<project>.iam' via Cloud SQL IAM auth.  When we
-    transferred table ownership from the IAM user to postgres (REASSIGN OWNED BY)
-    the IAM user lost all implicit owner privileges.  This step restores the
-    minimum required access.
+    This job connects as 'postgres' (password auth) to run Alembic migrations,
+    so all tables are owned by 'postgres'.  PostgreSQL does not auto-grant DML
+    to other roles on objects they do not own, so the backend app user
+    ('backend-runtime-sa@<project>.iam', Cloud SQL IAM auth) needs explicit
+    grants to SELECT/INSERT/UPDATE/DELETE.
 
-    RUNTIME_IAM_DB_USER is set by the workflow to:
+    This step is idempotent and correct for both fresh environments (tables
+    just created by Alembic) and existing environments (tables already owned
+    by postgres from a prior run).
+
+    RUNTIME_IAM_DB_USER is set by the content-deploy workflow to:
       backend-runtime-sa@<GCP_PROJECT_ID>.iam
     """
     from sqlalchemy import text
@@ -205,7 +209,6 @@ async def seed_courses(session: AsyncSession) -> None:
     def _upsert_sync(connection) -> None:
         with SyncSession(bind=connection) as sync_session:
             upsert_courses_and_sections(sync_session, courses)
-            sync_session.commit()
 
     # run_sync bridges the async connection to the sync Session expected by seed_content
     conn = await session.connection()

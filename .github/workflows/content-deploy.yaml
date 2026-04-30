@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - release
-      - content-workflow
+      - content-workflow  # temporary branch for testing content workflow changes; will be removed once workflow is stable
     paths:
       - "content/**"
       - "backend/scripts/db_update.py"

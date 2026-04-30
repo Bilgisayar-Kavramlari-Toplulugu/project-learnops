@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
-RUN pip install poetry==2.3.2
+# keep this compatible with pyproject.toml tool.poetry.
+RUN pip install poetry==2.3.2  
 
 # Copy dependency manifests first for layer caching
 COPY backend/pyproject.toml backend/poetry.lock ./
