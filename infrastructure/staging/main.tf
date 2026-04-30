@@ -443,7 +443,7 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
-        name  = "FRONTEND_PUBLIC_URL"
+        name = "FRONTEND_PUBLIC_URL"
         value_source {
           secret_key_ref {
             secret  = var.secret_frontend_public_url
@@ -453,7 +453,7 @@ resource "google_cloud_run_v2_service" "backend" {
       }
 
       env {
-        name  = "ALLOWED_ORIGINS"
+        name = "ALLOWED_ORIGINS"
         value_source {
           secret_key_ref {
             secret  = var.secret_frontend_public_url
