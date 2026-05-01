@@ -103,6 +103,7 @@ class Section(BaseModel):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     order_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
     course: Mapped["Course"] = relationship("Course", back_populates="sections")
