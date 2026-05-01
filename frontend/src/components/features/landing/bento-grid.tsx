@@ -1,11 +1,4 @@
-import {
-  BookMarked,
-  CircleCheckBig,
-  GitBranch,
-  PlayCircle,
-  Users,
-  Zap,
-} from "lucide-react";
+import { BookMarked, CircleCheckBig, GitBranch, PlayCircle, Users, Zap } from "lucide-react";
 
 const items = [
   {
@@ -89,7 +82,9 @@ export function BentoGrid() {
                 <h3 className={`mt-3 font-semibold ${"big" in item ? "text-lg" : "text-sm"}`}>
                   {item.title}
                 </h3>
-                <p className={`mt-1 leading-relaxed text-muted-foreground ${"big" in item ? "text-sm" : "text-xs"}`}>
+                <p
+                  className={`mt-1 leading-relaxed text-muted-foreground ${"big" in item ? "text-sm" : "text-xs"}`}
+                >
                   {item.desc}
                 </p>
 

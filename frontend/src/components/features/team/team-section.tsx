@@ -79,9 +79,7 @@ function MemberCard({
   const gradient = gradients[index % gradients.length];
 
   const links = member.links ?? {};
-  const orderedLinks: Array<[LinkKey, string]> = (
-    ["website", "github", "linkedin"] as const
-  )
+  const orderedLinks: Array<[LinkKey, string]> = (["website", "github", "linkedin"] as const)
     .filter((k) => Boolean(links[k]))
     .map((k) => [k, links[k] as string]);
 
@@ -137,20 +135,13 @@ function MemberCard({
             {member.name}
           </h3>
           {member.tagline && (
-            <p className="mt-0.5 text-xs text-white/85 drop-shadow sm:text-sm">
-              {member.tagline}
-            </p>
+            <p className="mt-0.5 text-xs text-white/85 drop-shadow sm:text-sm">{member.tagline}</p>
           )}
 
           {orderedLinks.length > 0 && (
             <div className="mt-3 flex gap-2">
               {orderedLinks.map(([kind, href]) => (
-                <SocialButton
-                  key={kind}
-                  kind={kind}
-                  href={href}
-                  memberName={member.name}
-                />
+                <SocialButton key={kind} kind={kind} href={href} memberName={member.name} />
               ))}
             </div>
           )}
@@ -195,12 +186,7 @@ export function TeamSection() {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {teamMembers.map((m, i) => (
-        <MemberCard
-          key={m.slug}
-          member={m}
-          index={i}
-          isPriority={i < ABOVE_THE_FOLD_COUNT}
-        />
+        <MemberCard key={m.slug} member={m} index={i} isPriority={i < ABOVE_THE_FOLD_COUNT} />
       ))}
     </div>
   );

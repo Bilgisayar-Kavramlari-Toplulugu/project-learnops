@@ -1,4 +1,4 @@
-import { lstat } from "fs";
+
 import { NextResponse, type NextRequest } from "next/server";
 
 // Authenticated user / veya /login'e gelirse dashboard'a fırlat

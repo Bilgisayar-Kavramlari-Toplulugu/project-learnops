@@ -5,8 +5,14 @@ import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
 const stack = [
-  "Linux", "Docker", "Git", "Terraform",
-  "Kubernetes", "CI/CD", "AWS", "Ansible",
+  "Linux",
+  "Docker",
+  "Git",
+  "Terraform",
+  "Kubernetes",
+  "CI/CD",
+  "AWS",
+  "Ansible",
 ] as const;
 
 export function HeroSection() {
@@ -27,13 +33,13 @@ export function HeroSection() {
               className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-card px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
             >
               <Github className="size-3" />
-              GitHub'da yıldız ver
+              GitHub&apos;da yıldız ver
               <Star className="size-3" />
             </Link>
           </div>
 
           <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            DevOps'u{" "}
+            DevOps&apos;u{" "}
             <span className="bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent">
               birlikte
             </span>{" "}
@@ -42,8 +48,8 @@ export function HeroSection() {
 
           <p className="mt-5 max-w-lg text-base text-muted-foreground">
             Bir grup geliştirici tarafından açık kaynak olarak yazılan,{" "}
-            <span className="text-foreground">Türkçe</span> bir DevOps öğrenme
-            platformu. Bölümler, quizler, kaldığın yerden devam — hepsi tek yerde.
+            <span className="text-foreground">Türkçe</span> bir DevOps öğrenme platformu. Bölümler,
+            quizler, kaldığın yerden devam — hepsi tek yerde.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-2.5">

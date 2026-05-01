@@ -23,8 +23,8 @@ export function CtaSection() {
             <span className="text-primary">çok daha eğlenceli.</span>
           </h2>
           <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-            LearnOps açık kaynak. Hesabını aç, öğrenmeye başla — ya da repo'ya
-            dalıp sen de bir bölüm yaz, bir quiz ekle, bir hatayı düzelt. Ekibe katıl.
+            LearnOps açık kaynak. Hesabını aç, öğrenmeye başla — ya da repo&apos;ya dalıp sen de bir
+            bölüm yaz, bir quiz ekle, bir hatayı düzelt. Ekibe katıl.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -34,9 +34,13 @@ export function CtaSection() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-11 rounded-full px-6">
-              <Link href="https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops" target="_blank" rel="noopener noreferrer">
+              <Link
+                href="https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Github className="size-3.5" />
-                Repo'yu incele
+                Repo&apos;yu incele
               </Link>
             </Button>
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
