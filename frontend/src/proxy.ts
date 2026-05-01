@@ -1,9 +1,10 @@
+
 import { NextResponse, type NextRequest } from "next/server";
 
 // Authenticated user / veya /login'e gelirse dashboard'a fırlat
 // Aynı zamanda bunlar exact public path'ler
 const AUTH_REDIRECT_PATHS: readonly string[] = ["/", "/login"];
-const PUBLIC_PREFIXES: readonly string[] = ["/courses"];
+const PUBLIC_PREFIXES: readonly string[] = ["/courses", "/team"];
 
 const PROTECTED_COURSE_PATTERN = /^\/courses\/[^/]+\/[^/]+/;
 
