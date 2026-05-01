@@ -58,7 +58,7 @@ export default function DashboardPage() {
   }
 
   return (
-     <section className="mx-auto w-full max-w-6xl space-y-6">
+    <section className="mx-auto w-full max-w-6xl space-y-6">
       <WelcomeHeader userName={userName} courseCount={courses.length} avatarType={avatarType} />
 
       {isEmpty ? (
