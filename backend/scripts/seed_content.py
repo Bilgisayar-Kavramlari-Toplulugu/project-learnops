@@ -169,9 +169,13 @@ def discover_courses() -> list[dict]:
         sections = []
         if sections_dir.exists():
             for mdx_file in sorted(sections_dir.glob("*.mdx")):
-                content = mdx_file.read_text(encoding="utf-8")
-                fm = parse_frontmatter(content)
-                sections.append({"frontmatter": fm, "path": str(mdx_file)})
+                raw = mdx_file.read_text(encoding="utf-8")
+                fm = parse_frontmatter(raw)
+                # Strip frontmatter block to get the MDX body
+                body = FRONTMATTER_RE.sub("", raw, count=1).strip()
+                sections.append(
+                    {"frontmatter": fm, "path": str(mdx_file), "body": body}
+                )
 
         courses.append(
             {
@@ -254,6 +258,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
                 "section_id_str": fm["id"],
                 "title": fm["title"],
                 "order_index": fm["order"],
+                "content": section_data["body"],
             }
             stmt = pg_insert(Section.__table__).values(**section_values)
             stmt = stmt.on_conflict_do_update(
@@ -262,6 +267,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
                     "course_id": stmt.excluded.course_id,
                     "title": stmt.excluded.title,
                     "order_index": stmt.excluded.order_index,
+                    "content": stmt.excluded.content,
                     "updated_at": sa.func.now(),
                 },
             )

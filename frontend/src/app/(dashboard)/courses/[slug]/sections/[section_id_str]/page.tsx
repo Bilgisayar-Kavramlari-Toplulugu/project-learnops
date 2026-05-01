@@ -1,15 +1,11 @@
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 
-import { getAllSectionParams, getSectionContent } from "@/lib/content";
+import { getCourseBySlug, getSection } from "@/lib/fetchCourses";
+import type { SectionItem } from "@/lib/content";
 import { SectionActions } from "@/components/features/courses/section-actions";
 
-// ---------------------------------------------------------------------------
-// SSG: pre-render all sections at build time
-// ---------------------------------------------------------------------------
-export async function generateStaticParams() {
-  return getAllSectionParams();
-}
+export const dynamic = "force-dynamic";
 
 // ---------------------------------------------------------------------------
 // MDX components override — maps HTML elements to styled variants
@@ -89,11 +85,32 @@ interface PageProps {
 
 export default async function SectionPage({ params }: PageProps) {
   const { slug, section_id_str } = await params;
-  const data = getSectionContent(slug, section_id_str);
 
-  if (!data) notFound();
+  const [course, section] = await Promise.all([
+    getCourseBySlug(slug),
+    getSection(slug, section_id_str),
+  ]);
 
-  const { frontmatter, content, allSections, prevSection, nextSection } = data;
+  if (!course || !section) notFound();
+
+  const allSections: SectionItem[] = course.sections.map((s) => ({
+    id: s.section_id_str,
+    title: s.title,
+    order_index: s.order_index,
+    filename: "",
+  }));
+
+  const currentIndex = allSections.findIndex((s) => s.id === section_id_str);
+  const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
+  const nextSection = currentIndex < allSections.length - 1 ? allSections[currentIndex + 1] : null;
+
+  const content = section.content ?? "";
+  const frontmatter = {
+    id: section.section_id_str,
+    title: section.title,
+    order_index: section.order_index,
+    filename: "",
+  };
 
   return (
     <div className="flex h-full bg-zinc-50 dark:bg-slate-900/40 p-4 lg:p-6 gap-4 rounded-2xl">

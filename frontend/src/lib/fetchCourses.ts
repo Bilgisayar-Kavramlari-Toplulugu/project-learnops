@@ -1,4 +1,4 @@
-import { Course, CourseDetail, CourseListResponse } from "@/types";
+import { Course, CourseDetail, CourseListResponse, SectionWithContent } from "@/types";
 
 // Server-side fetch for SSG build time and server components.
 // BACKEND_INTERNAL_URL is called directly; browser proxy (/api) is not used.
@@ -47,6 +47,18 @@ export async function getCourseBySlug(slug: string): Promise<CourseDetail | null
   } catch (err: unknown) {
     // Keep build resilient when backend is down or returns 404/5xx.
     console.error("Build-time fetch failed for slug:", slug, err);
+    return null;
+  }
+}
+// GET /courses/{slug}/sections/{section_id_str}
+export async function getSection(
+  slug: string,
+  sectionIdStr: string,
+): Promise<SectionWithContent | null> {
+  try {
+    return await serverGet<SectionWithContent>(`/courses/${slug}/sections/${sectionIdStr}`);
+  } catch (err: unknown) {
+    console.error("Failed to fetch section content:", slug, sectionIdStr, err);
     return null;
   }
 }
