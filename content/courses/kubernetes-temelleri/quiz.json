@@ -11,11 +11,11 @@
       "options": [
         {
           "index": 0,
-          "text": "Kubernetes 8 bileşenden oluştuğu için"
+          "text": "'K' ve 's' harfleri arasında tam olarak 8 harf bulunduğu için"
         },
         {
           "index": 1,
-          "text": "'K' ve 's' harfleri arasında tam olarak 8 harf bulunduğu için"
+          "text": "Kubernetes 8 bileşenden oluştuğu için"
         },
         {
           "index": 2,
@@ -26,7 +26,7 @@
           "text": "8 ana node desteğinden dolayı"
         }
       ],
-      "correct_index": 1,
+      "correct_index": 0,
       "explanation": "'Kubernetes' kelimesindeki 'K' ve 's' harfleri arasında 'ubernete' olarak tam 8 harf bulunur. Bu nedenle kısaca K8s yazılır. Bu, yazılım dünyasında yaygın kullanılan bir numeronym (sayı kısaltması) formatıdır; i18n (internationalization), l10n (localization) de aynı mantıkla kısaltılır."
     },
     {
@@ -161,11 +161,11 @@
       "options": [
         {
           "index": 0,
-          "text": "Deployment'ı tamamen siler ve yeniden başlatır"
+          "text": "Deployment'ı bir önceki revision'a geri döndürür"
         },
         {
           "index": 1,
-          "text": "Deployment'ı bir önceki revision'a geri döndürür"
+          "text": "Deployment'ı tamamen siler ve yeniden başlatır"
         },
         {
           "index": 2,
@@ -176,7 +176,7 @@
           "text": "Yalnızca image'ı eski versiyona geri döndürür, diğer ayarları korumaz"
         }
       ],
-      "correct_index": 1,
+      "correct_index": 0,
       "explanation": "kubectl rollout undo komutu, Deployment'ı bir önceki başarılı revision'a geri döndürür. Kubernetes, her güncelleme ile yeni bir ReplicaSet oluşturur ve eskisini sıfır replica'ya düşürür ama silmez. Rollback sırasında eski ReplicaSet tekrar aktif hale getirilir. Belirli bir revision'a dönmek için --to-revision=<N> parametresi kullanılır. Bu mekanizma, üretim ortamında hatalı bir güncellemenin hızla geri alınmasını sağlar."
     },
     {
@@ -390,7 +390,7 @@
         },
         {
           "index": 1,
-          "text": "Uygulamanın eski ve yeni versiyonunun aynı anda çalışamadığı durumda (örn. veritabanı şema değişikliği)"
+          "text": "Rolling update stratejisi etkinleştirilemediğinde"
         },
         {
           "index": 2,
@@ -398,10 +398,10 @@
         },
         {
           "index": 3,
-          "text": "Rolling update stratejisi etkinleştirilemediğinde"
+          "text": "Uygulamanın eski ve yeni versiyonunun aynı anda çalışamadığı durumda (örn. veritabanı şema değişikliği)"
         }
       ],
-      "correct_index": 1,
+      "correct_index": 3,
       "explanation": "Recreate stratejisi, tüm eski pod'ları silerek sıfır replica'ya indirip ardından yeni pod'ları başlatır. Bu süreçte kısa bir hizmet kesintisi yaşanır. Bu stratejinin tercih edildiği durum, uygulamanın iki farklı versiyonunun aynı anda çalışmasının sistemi bozacağı senaryolardur; örneğin veritabanı şemasını değiştiren bir migration söz konusuysa, eski kod yeni şemayla veya yeni kod eski şemayla çalışamıyor olabilir. Bu tür 'breaking change' güncellemelerde Recreate daha güvenlidir."
     },
     {
@@ -490,7 +490,7 @@
         },
         {
           "index": 1,
-          "text": "kubectl debug komutu ile pod'a geçici bir debug container eklemek"
+          "text": "Pod'u silip yeni bir debug image ile oluşturmak"
         },
         {
           "index": 2,
@@ -498,10 +498,10 @@
         },
         {
           "index": 3,
-          "text": "Pod'u silip yeni bir debug image ile oluşturmak"
+          "text": "kubectl debug komutu ile pod'a geçici bir debug container eklemek"
         }
       ],
-      "correct_index": 1,
+      "correct_index": 3,
       "explanation": "Kubernetes 1.23+ sürümünde gelen 'kubectl debug' komutu, mevcut bir pod'a shell gibi araçları içeren geçici bir container eklemek için kullanılır: 'kubectl debug -it <pod-name> --image=busybox --target=<container-name>'. Bu sayede production'da çalışan pod'u değiştirmeden, aynı process namespace'ini paylaşan bir debug container başlatılabilir. Pod'u silip yeniden oluşturmak production trafiğini etkiler. Image'ı değiştirmek de aynı riski taşır. Bu nedenle 'kubectl debug' doğru ve güvenli yaklaşımdır."
     }
   ]
