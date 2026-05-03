@@ -25,9 +25,9 @@ from sqlalchemy.orm import Session
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent.parent  # backend/scripts -> backend -> project root
-BACKEND_DIR = SCRIPT_DIR.parent
+SCRIPT_DIR = Path(__file__).resolve().parent  # backend/scripts/
+PROJECT_ROOT = SCRIPT_DIR.parent.parent  # backend/ -> repo root
+BACKEND_DIR = SCRIPT_DIR.parent  # backend/
 CONTENT_DIR = PROJECT_ROOT / "content" / "courses"
 
 # Add backend to sys.path so we can import app modules
@@ -61,6 +61,7 @@ VALID_DIFFICULTIES = {"beginner", "intermediate", "advanced"}
 # ---------------------------------------------------------------------------
 # Frontmatter parser (lightweight — no extra dependency)
 # ---------------------------------------------------------------------------
+# Module-level constant — referenced in parse_frontmatter() and seed loop.
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
 
 
@@ -169,9 +170,13 @@ def discover_courses() -> list[dict]:
         sections = []
         if sections_dir.exists():
             for mdx_file in sorted(sections_dir.glob("*.mdx")):
-                content = mdx_file.read_text(encoding="utf-8")
-                fm = parse_frontmatter(content)
-                sections.append({"frontmatter": fm, "path": str(mdx_file)})
+                raw = mdx_file.read_text(encoding="utf-8")
+                fm = parse_frontmatter(raw)
+                # Strip frontmatter block to get the MDX body
+                body = FRONTMATTER_RE.sub("", raw, count=1).strip()
+                sections.append(
+                    {"frontmatter": fm, "path": str(mdx_file), "body": body}
+                )
 
         courses.append(
             {
@@ -223,7 +228,7 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
 
         stmt = pg_insert(Course.__table__).values(**course_values)
         stmt = stmt.on_conflict_do_update(
-            constraint="uq_courses_slug",
+            index_elements=["slug"],
             set_={
                 "title": stmt.excluded.title,
                 "description": stmt.excluded.description,
@@ -254,14 +259,16 @@ def upsert_courses_and_sections(session: Session, courses: list[dict]) -> None:
                 "section_id_str": fm["id"],
                 "title": fm["title"],
                 "order_index": fm["order"],
+                "content": section_data["body"],
             }
             stmt = pg_insert(Section.__table__).values(**section_values)
             stmt = stmt.on_conflict_do_update(
-                constraint="uq_sections_section_id_str",
+                index_elements=["section_id_str"],
                 set_={
                     "course_id": stmt.excluded.course_id,
                     "title": stmt.excluded.title,
                     "order_index": stmt.excluded.order_index,
+                    "content": stmt.excluded.content,
                     "updated_at": sa.func.now(),
                 },
             )
