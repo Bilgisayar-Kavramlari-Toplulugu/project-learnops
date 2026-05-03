@@ -1,11 +1,11 @@
 ---
 id: "docker-007-network"
-title: "Docker Network Temelleri"
+title: "Container Network: Bridge, Host, None"
 order: 70
 order_index: 70
 ---
 
-# Docker Network Temelleri
+# Container Network: Bridge, Host, None
 
 Gerçek hayatta uygulamalar tek bir container'dan oluşmaz. Web uygulaması, API, veritabanı ve cache gibi birden fazla servis birlikte çalışabilir. Bu servislerin birbiriyle kontrollü şekilde iletişim kurması gerekir. Docker network konusu bu noktada devreye girer.
 
@@ -42,11 +42,36 @@ Docker'i sadece tek container denemeleri için kullanmak kolaydır. Ama gerçek 
 
 > **İpucu:** Network mantığını öğrenirken port maplemeyi ve servisler arası iletişimi birbirinden ayırmaya dikkat edin. Bu ayrım ileride çok işe yarar.
 
+## Network sürücüleri: Bridge, Host, None
+
+Docker farklı ağ ihtiyaçlarına cevap vermek için birkaç yerleşik network sürücüsü sunar.
+
+### Bridge
+
+Bridge, Docker'ın varsayılan network sürücüsüdür. Bir container'i özellikle belirtmeden başlattığınızda bridge ağına bağlanır. Bu sürücü, container'ları birbirinden ve host sistemden izole eden sanal bir ağ oluşturur. Aynı bridge ağındaki container'lar birbirleriyle isim üzerinden iletişim kurabilir. Dışarıdan erişim için port mapleme gerekir.
+
+### Host
+
+Host sürücüsü container'ı ayrı bir ağ yığınına koymak yerine doğrudan host makinenin ağ yığınını kullanmasını sağlar. Container, host üzerindeki portlara doğrudan bağlanır; port mapleme gerekmez. Bu durum performansı artırabilir ama izolasyonu zayıflatır. Genellikle özel performans gereksinimleri olan durumlar için uygundur.
+
+### None
+
+None sürücüsü container için hiçbir ağ arayüzü oluşturmaz. Container tamamen ağdan yalıtılmış şekilde çalışır. Dışarıyla veya diğer container'larla ağ iletişimi kuramaz. Güvenlik açısından katı izolasyon gereken veya ağa erişimi tamamen kısıtlanması istenen durumlar için tercih edilir.
+
+## Karşılaştırma
+
+| Sürücü | İzolasyon | Port mapleme | Tipik kullanım |
+|---|---|---|---|
+| Bridge | Container-container arası izolasyonlu | Gerekli | Varsayılan, çoklu servis |
+| Host | Yok (host ağı kullanılır) | Gereksiz | Yüksek performans senaryoları |
+| None | Tam izolasyon | Yok | Ağsız iş yükleri |
+
 ## Özet
 
-Bu bölümde Docker network mantığının temelini gördük.
+Bu bölümde Docker network mantığının temelini ve yerleşik sürücüleri gördük.
 
 - Network, container'lar arası iletişimi düzenler
 - Port mapleme ile aynı şey değildir
-- İsimle erişim servisleri daha okunabilir hale getirir
+- Bridge varsayılan sürücüdür; container'ları izole eder ama aynı ağda isimle erişime izin verir
+- Host, container'ı doğrudan host ağına bağlar; None ise tüm ağı devre dışı bırakır
 - Çoklu servis yapılarında network düşüncesi zorunludur

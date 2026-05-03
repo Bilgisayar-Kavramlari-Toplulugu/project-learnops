@@ -1,66 +1,59 @@
 ---
 id: "docker-001-container"
-title: "Docker'a Giriş ve Neden Kullanılır?"
+title: "Container vs Sanal Makine"
 order: 10
 order_index: 10
 ---
 
-# Docker'a Giriş ve Neden Kullanılır?
+# Container vs Sanal Makine
 
-Modern yazılım geliştirme sürecinde en sık duyulan problemlerden biri şudur: "Proje bende çalışıyor ama başkasında çalışmıyor." Bunun nedeni genellikle kodun kendisinden çok, kodun çalıştığı ortamın farklı olmasıdır. İşletim sistemi sürümü, kütüphane paketleri, runtime sürümü ve ortam ayarları değiştiğinde aynı proje farklı davranabilir. Docker tam da bu noktada devreye girer.
+Docker'ı anlamanın ilk adımı container ile sanal makine arasındaki farkı kavramaktır. Bu iki teknoloji dışarıdan bakıldığında benzer görünse de çalışma biçimleri, kaynak tüketimleri ve kullanım amaçları açısından birbirinden önemli ölçüde ayrılır.
 
-Docker, bir uygulamayı yalnızca kaynak kod olarak değil, ihtiyaç duyduğu çalışma ortamı ile birlikte paketlemeyi kolaylaştıran bir container platformudur. Böylece uygulama geliştiricinin bilgisayarında, test ortamında ve sunucuda daha tutarlı şekilde davranır. Bu tutarlılık, hem bireysel çalışmada hem de ekip çalışmasında ciddi avantaj sağlar.
+## Sanal makine nasıl çalışır?
 
-## Docker neyi çözer?
+Sanal makine, bir fiziksel bilgisayar üzerinde birden fazla bağımsız işletim sistemi çalıştırmayı sağlar. Bunu mümkün kılan katmana **hypervisor** denir. Hypervisor, fiziksel donanım kaynaklarını (CPU, RAM, disk) sanal makine örneklerine dağıtır.
 
-Docker'ın en büyük katkısı ortam farklarını azaltmasıdır. Örneğin bir projede:
+Her sanal makinenin kendi tam işletim sistemi vardır. Bu durum şu sonuçları doğurur:
 
-- Belirli bir Node.js, Python veya Java sürümü gerekebilir
-- İşletim sistemi paketleri eksik ya da farklı olabilir
-- Her geliştirici projeyi farklı şekilde kurmuş olabilir
-- Test ortamı ile production ortamı birbirinden uzaklaşmış olabilir
+- Başlangıç süresi dakikalar alabilir
+- Her örnek için ayrı bellek ve disk ayrılır
+- İşletim sistemi güncelleme, lisans ve yönetim yükü taşınır
 
-Docker bu farkları tamamen yok etmese de daha yönetilebilir hale getirir. Uygulama ve bağımlılıklar önce bir image içinde toplanır, sonra bu image'dan container üretilip çalıştırılır. Bu sayede "kurulum adımlarını tek tek tekrar etme" ihtiyacı azalır.
+Bu model özellikle güçlü izolasyon ve farklı işletim sistemi ortamları gerektiren senaryolarda değerini korur.
 
-## Container mantığı neden önemlidir?
+## Container nasıl çalışır?
 
-Container, uygulamanın izole bir ortamda çalışan paketlenmiş halidir. Sanal makine ile benzer gibi görünse de aynı şey değildir. Sanal makine tam bir işletim sistemi ile gelir. Container ise host sistemin çekirdeğini kullanır ve bu nedenle daha hafiftir.
+Container, uygulamayı ve bağımlılıklarını paketler; ama host işletim sisteminin çekirdeğini (kernel) paylaşır. Kendi tam işletim sistemi taşımaz. Bu nedenle sanal makineye kıyasla çok daha hafiftir.
 
-Bu fark şu avantajları sağlar:
+Container başlatmak genellikle saniyeler alır. Bellek ve disk kullanımı da sanal makineye göre oldukça düşüktür. Aynı makinede onlarca hatta yüzlerce container çalıştırmak mümkündür.
 
-- Daha hızlı başlangıç
-- Daha az kaynak tüketimi
-- Daha kolay taşıma
-- Daha hızlı ortam kurulumu
+## Karşılaştırma tablosu
 
-Özellikle geliştirme ve test aşamalarında bu hafiflik ciddi bir pratiklik kazandırır.
+| Özellik | Sanal Makine | Container |
+|---|---|---|
+| İzolasyon | Tam işletim sistemi seviyesinde | Süreç seviyesinde |
+| Başlangıç süresi | Dakikalar | Saniyeler |
+| Boyut | Birkaç GB | Birkaç MB - yüzlerce MB |
+| Kernel | Kendi kerneli | Host kernelini paylaşır |
+| Taşınabilirlik | Daha zor | Çok kolay |
 
-## Docker neden DevOps tarafında bu kadar popüler?
+## Sanal makineler hâlâ gerekli mi?
 
-Docker sadece geliştiriciler için değil, operasyon ve platform ekipleri için de faydalıdır. Çünkü uygulamanın nasıl paketleneceği ve nasıl çalışacağı daha açık hale gelir. CI/CD süreçlerinde aynı image tekrar tekrar kullanılabilir. Bu da deployment adımlarını daha standart bir hale getirir.
+Evet. Container her durumun çözümü değildir. Farklı işletim sistemi gerektiren senaryolarda (örneğin Linux host üzerinde Windows uygulaması çalıştırmak), güçlü donanım izolasyonu gereken durumlarda veya eski sistemlerin sanalizasyonunda sanal makineler tercih edilir.
 
-DevOps bakış açısıyla Docker'ın önemi biraz da ortak dil oluşturmasından gelir. Geliştirici, test mühendisi ve operasyon ekibi aynı artifact üzerinden konuşabilir. Bu durum "lokalde böyleydi ama sunucuda farklı oldu" türü tartışmaları azaltır.
+Docker ve container teknolojisi sanal makinelerin yerini almaz; farklı problemleri çözer.
 
-## Docker her şeyi çözer mi?
+## Docker'ın rolü
 
-Hayır. Docker çok güçlü bir araç olsa da tek başına tüm mimari veya operasyon problemlerini çözen sihirli bir teknoloji değildir. Veri kalıcılığı, güvenlik, servisler arası iletişim ve konfigürasyon yönetimi gibi konular yine dikkatli düşünülmelidir. Docker bu süreci düzenler ve kolaylaştırır; ama doğru teknik kararların yerini tutmaz.
+Docker, container oluşturma, çalıştırma ve yönetme süreçlerini standartlaştıran bir platform ve araç setidir. Doğrudan container çalıştırma işlemini yapmaz; Linux çekirdeğinin sağladığı **namespace** ve **cgroups** mekanizmalarını kullanarak bu izolasyonu gerçekleştirir.
 
-Bu nedenle Docker öğrenirken sadece komutlara değil, şu sorulara da odaklanmak faydalıdır:
-
-- Uygulamam hangi bağımlılıklara ihtiyaç duyuyor?
-- Bu uygulamayı ekipte başka biri nasıl tekrar çalıştıracak?
-- Veriler nerede tutulacak?
-- Birden fazla servis birbirine nasıl bağlanacak?
-
-Bu soruların cevabı, kursun sonraki bölümlerinde göreceğimiz mimari, Dockerfile, volume, network ve Compose konularına bağlanır.
-
-> **İpucu:** Docker'ı ilk aşamada "tutarlılık aracı" olarak düşünmek öğrenmeyi kolaylaştırır. Önce problemi anlayın, sonra komutları öğrenin.
+Yani Docker, container teknolojisini kullanılabilir ve erişilebilir hale getiren katmandır.
 
 ## Özet
 
-Bu bölümde Docker'ın neden ortaya çıktığını ve neden bu kadar yaygın kullanıldığını gördük.
+Bu bölümde container ile sanal makine arasındaki temel farkı ve Docker'ın bu mimarideki rolünü gördük.
 
-- Docker, ortam farklarını azaltır
-- Uygulama ve bağımlılıkları birlikte paketlemeyi kolaylaştırır
-- DevOps süreçlerinde tutarlılık ve tekrar üretilebilirlik sağlar
-- Ama veri, network ve güvenlik gibi konular yine ayrı düşünülmelidir
+- Sanal makine tam işletim sistemi taşır; container host kernelini paylaşır
+- Container daha hafif, daha hızlı ve daha taşınabilirdir
+- Sanal makineler güçlü izolasyon ve OS farklılığı gereken yerlerde hâlâ değerlidir
+- Docker, container yönetimini standartlaştıran araç setidir
