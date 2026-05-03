@@ -4,9 +4,9 @@ Reads meta.json for course metadata and MDX frontmatter for sections.
 UPSERT logic based on slug (courses) and section_id_str (sections).
 
 Usage (run from project root):
-    poetry run python scripts/seed_content.py --env development
-    poetry run python scripts/seed_content.py --env production
-    poetry run python scripts/seed_content.py --env development --dry-run
+    poetry run python backend/scripts/seed_content.py --env development
+    poetry run python backend/scripts/seed_content.py --env production
+    poetry run python backend/scripts/seed_content.py --env development --dry-run
 """
 
 import argparse
@@ -26,8 +26,8 @@ from sqlalchemy.orm import Session
 # Paths
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
-BACKEND_DIR = PROJECT_ROOT / "backend"
+PROJECT_ROOT = SCRIPT_DIR.parent.parent  # backend/scripts -> backend -> project root
+BACKEND_DIR = SCRIPT_DIR.parent
 CONTENT_DIR = PROJECT_ROOT / "content" / "courses"
 
 # Add backend to sys.path so we can import app modules
