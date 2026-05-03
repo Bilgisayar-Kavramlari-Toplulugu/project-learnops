@@ -1,8 +1,6 @@
 import { ArrowRight } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import type { UpcomingExam } from "@/types";
 
 interface UpcomingExamCardProps {

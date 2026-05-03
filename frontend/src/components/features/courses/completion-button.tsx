@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import type { AxiosError } from "axios";
+
+import { Button, toast } from "@/components/ui";
 import { api } from "@/lib/api";
 
 interface CompletionButtonProps {
@@ -15,7 +16,11 @@ interface CompletionButtonProps {
    * @param progressPercent - Updated course progress percentage
    * @param courseCompletedAt - Course completion timestamp if course is now fully completed, null otherwise
    */
-  onSuccess?: (completedAt: string, progressPercent: number, courseCompletedAt: string | null) => void;
+  onSuccess?: (
+    completedAt: string,
+    progressPercent: number,
+    courseCompletedAt: string | null,
+  ) => void;
   onError?: (error: unknown) => void;
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -42,11 +47,11 @@ export function CompletionButton({
     setCompleted(isCompleted);
   }, [isCompleted]);
 
-  const sizeClasses = {
-    sm: "px-3 py-1.5 text-xs",
-    md: "px-4 py-2.5 text-sm",
-    lg: "px-6 py-3 text-base",
-  };
+  const buttonSize = {
+    sm: "sm",
+    md: "default",
+    lg: "lg",
+  } as const;
 
   const variantClasses = {
     primary: completed
@@ -63,9 +68,7 @@ export function CompletionButton({
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
-      const response = await api.post(
-        `/progress/sections/${sectionIdStr}/complete`,
-      );
+      const response = await api.post(`/progress/sections/${sectionIdStr}/complete`);
 
       setCompleted(true);
 
@@ -103,15 +106,14 @@ export function CompletionButton({
   const isDisabled = completed || isCompleting;
 
   return (
-    <button
+    <Button
       type="button"
       onClick={handleComplete}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all ${
+      size={buttonSize[size]}
+      className={`font-bold rounded-xl ${
         fullWidth ? "w-full" : ""
-      } ${sizeClasses[size]} ${variantClasses[variant]} ${
-        isCompleting ? "opacity-50 cursor-not-allowed" : ""
-      } ${className}`}
+      } ${variantClasses[variant]} ${isCompleting ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
     >
       {isCompleting ? (
         <>
@@ -124,6 +126,6 @@ export function CompletionButton({
           <span>{completed ? "Bölüm Tamamlandı" : "Bölümü Tamamla"}</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }

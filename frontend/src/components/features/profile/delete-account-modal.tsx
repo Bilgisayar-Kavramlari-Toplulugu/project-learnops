@@ -1,12 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { routes } from "@/lib/routes";
 import { AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import {
+  Button,
+  Input,
+  Modal,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+  toast,
+} from "@/components/ui";
 import { api } from "@/lib/api";
-import { toast } from "sonner";
+import { routes } from "@/lib/routes";
 
 const CONFIRM_TEXT = "HESABIMI SİL";
 
@@ -19,6 +29,7 @@ export function DeleteAccountModal({ open, onClose }: { open: boolean; onClose: 
 
   async function handleDelete() {
     if (!confirmed) return;
+
     setLoading(true);
     try {
       await api.delete("/users/me", {
@@ -31,39 +42,35 @@ export function DeleteAccountModal({ open, onClose }: { open: boolean; onClose: 
     }
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-[400px] max-w-[90vw] rounded-xl border border-border bg-background p-6 shadow-lg">
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-          <AlertTriangle className="h-5 w-5 text-destructive" />
-        </div>
+    <Modal open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <ModalContent className="max-w-[400px]">
+        <ModalHeader>
+          <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="size-5 text-destructive" />
+          </div>
+          <ModalTitle className="text-base">Hesabı sil</ModalTitle>
+          <ModalDescription>Tüm verileriniz kalıcı olarak silinir.</ModalDescription>
+        </ModalHeader>
 
-        <h2 className="mb-1 text-base font-medium text-foreground">Hesabı sil</h2>
-
-        <p className="mb-2 text-sm text-muted-foreground">Tüm verileriniz kalıcı olarak silinir.</p>
-
-        <div className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
+        <div className="rounded-md bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
           Bu işlem geri alınamaz.
         </div>
 
-        <label className="mb-1.5 block text-xs text-muted-foreground">
+        <label className="block text-xs text-muted-foreground">
           Devam etmek için <strong className="text-foreground">{CONFIRM_TEXT}</strong> yazın
         </label>
 
-        <input
-          className="mb-4 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        <Input
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(event) => setInput(event.target.value)}
           placeholder={CONFIRM_TEXT}
         />
 
-        <div className="flex justify-end gap-2">
+        <ModalFooter>
           <Button variant="outline" size="sm" onClick={onClose}>
             İptal
           </Button>
-
           <Button
             variant="destructive"
             size="sm"
@@ -72,8 +79,8 @@ export function DeleteAccountModal({ open, onClose }: { open: boolean; onClose: 
           >
             {loading ? "Siliniyor..." : "Hesabı sil"}
           </Button>
-        </div>
-      </div>
-    </div>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

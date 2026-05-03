@@ -48,9 +48,7 @@ export function CompletionBadge({
 
   return (
     <div className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
-      {showIcon && variant === "inline" && (
-        <CheckCircle2 className={iconClasses[variant]} />
-      )}
+      {showIcon && variant === "inline" && <CheckCircle2 className={iconClasses[variant]} />}
       {showIcon && (variant === "block" || variant === "highlight") && (
         <Award className={iconClasses[variant]} />
       )}

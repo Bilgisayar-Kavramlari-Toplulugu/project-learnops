@@ -13,11 +13,11 @@ Elinizde sensörlerden gelen gerçek zamanlı verileri toplayan, işleyen ve bu 
 
 ## **Belirlenen Hedefler ve Şartlar**
 
-1. **Sürekli Kontrol:** Kod her push edildiğinde otomatik testler devreye girmelidir.  
-2. **Dal Filtreleme (Push):** Otomasyon sadece main branch’ine yapılan push işlemlerinde tam akışla çalışmalıdır.  
-3. **Güvenli Birleştirme (PR):** Sadece main branch’ine açılan Pull Request’lerde kodun doğruluğu kontrol edilmelidir.  
-4. **Ortam Hazırlığı:** Runner üzerinde Python kurulmalı, tüm bağımlılıklar yüklenmeli ve testler (Pytest) koşulmalıdır.  
-5. **Artifact Üretimi:** Testler başarıyla sonuçlanırsa, uygulama bir Docker imajına dönüştürülmelidir.  
-6. **Gizlilik ve Güvenlik:** Docker giriş bilgileri ve hassas anahtarlar GitHub Secrets üzerinde şifrelenmiş olarak tutulmalı ve pipeline içinde bu şekilde çağrılmalıdır.  
-7. **Registry Entegrasyonu:** Oluşturulan güvenli imaj, GitHub Container Registry (GHCR) üzerinde depolanmalıdır.  
+1. **Sürekli Kontrol:** Kod her push edildiğinde otomatik testler devreye girmelidir.
+2. **Dal Filtreleme (Push):** Otomasyon sadece main branch’ine yapılan push işlemlerinde tam akışla çalışmalıdır.
+3. **Güvenli Birleştirme (PR):** Sadece main branch’ine açılan Pull Request’lerde kodun doğruluğu kontrol edilmelidir.
+4. **Ortam Hazırlığı:** Runner üzerinde Python kurulmalı, tüm bağımlılıklar yüklenmeli ve testler (Pytest) koşulmalıdır.
+5. **Artifact Üretimi:** Testler başarıyla sonuçlanırsa, uygulama bir Docker imajına dönüştürülmelidir.
+6. **Gizlilik ve Güvenlik:** Docker giriş bilgileri ve hassas anahtarlar GitHub Secrets üzerinde şifrelenmiş olarak tutulmalı ve pipeline içinde bu şekilde çağrılmalıdır.
+7. **Registry Entegrasyonu:** Oluşturulan güvenli imaj, GitHub Container Registry (GHCR) üzerinde depolanmalıdır.
 8. **Final Bildirimi:** Tüm süreç hatasız tamamlandığında sistem "Canlıya Hazır" sinyali vermelidir.

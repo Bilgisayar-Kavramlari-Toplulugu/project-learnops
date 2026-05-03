@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import CourseItem from "@/components/features/courses/course-item";
 import { Course } from "@/types";
 import { Search, SlidersHorizontal, BookOpen, XCircle } from "lucide-react";
+import { Button, Input } from "@/components/ui";
 
 interface CoursesClientProps {
   courses: Course[];
@@ -11,10 +12,10 @@ interface CoursesClientProps {
   subtitle?: string;
 }
 
-export default function CoursesClient({ 
-  courses, 
-  title = "Tüm Kurslar", 
-  subtitle = "Yeni beceriler keşfetmek için eğitimlerimize göz atın." 
+export default function CoursesClient({
+  courses,
+  title = "Tüm Kurslar",
+  subtitle = "Yeni beceriler keşfetmek için eğitimlerimize göz atın.",
 }: CoursesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -59,28 +60,29 @@ export default function CoursesClient({
               <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
                 {title}
               </h1>
-              <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">
-                {subtitle}
-              </p>
+              <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{subtitle}</p>
             </div>
           </div>
 
           <div className="relative w-full max-w-2xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
-            <input
+            <Input
               type="text"
               placeholder="Kurs ara ..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 shadow-sm"
+              className="h-auto rounded-2xl border-zinc-200 bg-zinc-50 py-3.5 pr-4 pl-12 text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-100"
             />
             {searchQuery && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               >
                 <XCircle className="w-5 h-5" />
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -141,13 +143,14 @@ export default function CoursesClient({
             Arama kriterlerinize uygun kurs bulamadık. Arama sorgunuzu veya filtreleri değiştirmeyi
             deneyin.
           </p>
-          <button
+          <Button
             onClick={clearFilters}
-            className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-95 flex items-center gap-2"
+            size="lg"
+            className="gap-2 rounded-xl bg-indigo-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 hover:shadow-indigo-500/40 active:scale-95"
           >
             <XCircle className="w-5 h-5" />
             Filtreleri Temizle
-          </button>
+          </Button>
         </div>
       )}
     </div>

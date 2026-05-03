@@ -302,7 +302,7 @@
         }
       ],
       "correct_index": 0,
-      "explanation": "'ss' (socket statistics) komutu, modern Linux dağıtımlarında ağ istatistiklerini netlink üzerinden doğrudan çekirdekten aldığı için daha performanslı bir araçtır."
+      "explanation": "'ss' (socket statistics) komutu, modern Linux dağıtımlarında ağ istatistiklerini netlink üzerinden doğrudan çekirdekten aldığı için daha performanslı bir araçtır. netstat'ın okuma yaptığı /proc dosya sistemi yolunun aksine ss doğrudan kernel'dan veri çektiği için büyük bağlantı tablolarında belirgin şekilde daha hızlıdır."
     },
     {
       "order_index": 13,
@@ -352,7 +352,7 @@
         }
       ],
       "correct_index": 3,
-      "explanation": "Zombie süreçler, işini bitirmiş ancak çıkış kodu ebeveyn süreç tarafından alınana kadar listede kalan 'hayalet' süreçlerdir."
+      "explanation": "Zombie süreçler, işini bitirmiş ancak çıkış kodu ebeveyn süreç tarafından alınana kadar listede kalan 'hayalet' süreçlerdir. Ebeveyn süreç wait() çağrısıyla çocuğun çıkış kodunu okuduğunda zombie temizlenir; ebeveyn süreç sonlanırsa da init (PID 1) kalan tüm zombie'leri devralıp sistemi temizler."
     },
     {
       "order_index": 15,

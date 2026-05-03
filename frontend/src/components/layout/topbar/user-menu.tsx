@@ -2,16 +2,16 @@
 import { LogOut, UserRound } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { InitialsAvatar } from "@/components/ui/initials-avatar";
+  InitialsAvatar,
+} from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { routes } from "@/lib/routes";

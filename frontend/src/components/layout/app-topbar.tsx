@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui";
 import type { DashboardProfile } from "@/types";
 import { UserMenu } from "./topbar/user-menu";
 import { ThemeToggle } from "./theme-toggle";

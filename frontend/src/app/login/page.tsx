@@ -1,5 +1,5 @@
 import { ShieldCheck } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import OAuthButtonContainer from "@/components/oauth-button-container";
 
 const ERROR_MESSAGES: Record<string, string> = {
