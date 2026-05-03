@@ -100,15 +100,19 @@ export default async function SectionPage({ params }: PageProps) {
     filename: "",
   }));
 
+  // Derive metadata from course.sections (already fetched); use getSection only for content.
+  const courseSection = course.sections.find((s) => s.section_id_str === section_id_str);
+  if (!courseSection) notFound();
+
   const currentIndex = allSections.findIndex((s) => s.id === section_id_str);
   const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
   const nextSection = currentIndex < allSections.length - 1 ? allSections[currentIndex + 1] : null;
 
   const content = section.content ?? "";
   const frontmatter = {
-    id: section.section_id_str,
-    title: section.title,
-    order_index: section.order_index,
+    id: courseSection.section_id_str,
+    title: courseSection.title,
+    order_index: courseSection.order_index,
     filename: "",
   };
 
