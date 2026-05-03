@@ -10,8 +10,6 @@ Create Date: 2026-05-01 00:00:00.000000
   the content/ directory mounted or baked into the image.
 """
 
-import sqlalchemy as sa
-
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -22,7 +20,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("sections", sa.Column("content", sa.Text(), nullable=True))
+    # Use raw SQL for idempotency — consistent with migrations 002-006 pattern.
+    op.execute("ALTER TABLE sections ADD COLUMN IF NOT EXISTS content TEXT")
 
 
 def downgrade() -> None:

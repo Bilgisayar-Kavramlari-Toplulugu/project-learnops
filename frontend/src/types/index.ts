@@ -121,7 +121,7 @@ export interface CourseDetail {
 
 // GET /courses/{slug}/sections/{section_id_str}
 export interface SectionWithContent {
-  id: string;
+  id: number; // DB integer PK — matches backend SectionOut.id
   section_id_str: string;
   title: string;
   order_index: number;

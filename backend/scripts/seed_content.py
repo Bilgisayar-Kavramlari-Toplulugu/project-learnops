@@ -61,6 +61,7 @@ VALID_DIFFICULTIES = {"beginner", "intermediate", "advanced"}
 # ---------------------------------------------------------------------------
 # Frontmatter parser (lightweight — no extra dependency)
 # ---------------------------------------------------------------------------
+# Module-level constant — referenced in parse_frontmatter() and seed loop.
 FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
 
 
