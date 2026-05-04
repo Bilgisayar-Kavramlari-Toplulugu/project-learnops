@@ -1,19 +1,16 @@
-// app/dashboard/page.tsx - useProfile tamamen çıktı
 "use client";
 
 import { RefreshCw } from "lucide-react";
-
 import { CourseProgressCard } from "@/components/features/dashboard/course-progress-card";
 import { DashboardSkeleton } from "@/components/features/dashboard/dashboard-skeleton";
 import { EmptyCoursesState } from "@/components/features/dashboard/empty-courses-state";
 import { StatsSummary } from "@/components/features/dashboard/stats-summary";
 import { WelcomeHeader } from "@/components/features/dashboard/welcome-header";
+import { LastQuizResult } from "@/components/features/dashboard/last-quiz-result";
 import { Button } from "@/components/ui";
 import { useDashboard } from "@/hooks/dashboard/use-dashboard";
-import { useEffect, useState } from "react";
-import { LastQuizResult } from "@/components/features/dashboard/last-quiz-result";
+
 export default function DashboardPage() {
-  const [showSkeleton, setShowSkeleton] = useState(false);
   const {
     userName,
     stats,
@@ -27,19 +24,7 @@ export default function DashboardPage() {
     refetch,
   } = useDashboard();
 
-  useEffect(() => {
-    const timer = setTimeout(
-      () => {
-        setShowSkeleton(isLoading);
-      },
-      isLoading ? 300 : 0,
-    ); // false için delay yok, true için 300ms
-
-    return () => clearTimeout(timer);
-  }, [isLoading]);
-
-  if (isLoading && showSkeleton) return <DashboardSkeleton />;
-  if (isLoading && !showSkeleton) return null;
+  if (isLoading) return <DashboardSkeleton />;
 
   if (isError) {
     return (
