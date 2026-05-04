@@ -16,39 +16,6 @@ export interface DashboardProfile {
 }
 
 // ─── Dashboard Feature Types ──────────────────────────────────────────────────
-
-export interface LearningPath {
-  title: string;
-  progress: number;
-  nextStep: string;
-}
-
-export interface UpcomingExam {
-  title: string;
-  nextAttempt: string;
-  readiness: number;
-  level: string;
-}
-
-export type CourseProgressTone = "emerald" | "blue" | "indigo";
-
-export interface CourseCardItem {
-  id: string;
-  title: string;
-  description: string;
-  progress: number;
-  completedLessons: number;
-  totalLessons: number;
-  level: string;
-  progressTone: CourseProgressTone;
-  icon: LucideIcon;
-}
-
-export interface DashboardSuggestion {
-  title: string;
-  level: string;
-  icon: LucideIcon;
-}
 export interface DashboardInProgressCourse {
   course_id: string;
   title: string;
