@@ -1,4 +1,3 @@
-
 import { NextResponse, type NextRequest } from "next/server";
 
 // Authenticated user / veya /login'e gelirse dashboard'a fırlat
@@ -39,7 +38,8 @@ export function proxy(request: NextRequest) {
     request: { headers: requestHeaders },
   });
 }
-
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|logos|images|fonts|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|otf)$).*)",
+  ],
 };

@@ -4,16 +4,7 @@ import { ArrowRight, Github, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
 
-const stack = [
-  "Linux",
-  "Docker",
-  "Git",
-  "Terraform",
-  "Kubernetes",
-  "CI/CD",
-  "AWS",
-  "Ansible",
-] as const;
+const stack = ["Linux", "Docker", "Git", "Terraform", "Kubernetes", "CI/CD"] as const;
 
 export function HeroSection() {
   return (
