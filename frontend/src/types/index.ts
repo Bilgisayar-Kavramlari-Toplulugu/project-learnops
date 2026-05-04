@@ -119,6 +119,15 @@ export interface CourseDetail {
   sections: CourseSection[];
 }
 
+// GET /courses/{slug}/sections/{section_id_str}
+export interface SectionWithContent {
+  id: number; // DB integer PK — matches backend SectionOut.id
+  section_id_str: string;
+  title: string;
+  order_index: number;
+  content: string | null;
+}
+
 // GET /courses paginated response wrapper
 export interface CourseListResponse {
   items: Course[];

@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.courses import Course
+from app.models.courses import Course, Section
 
 
 async def get_courses(
@@ -57,4 +57,21 @@ async def get_course_by_slug(
         )
     )
 
+    return await db.scalar(query)
+
+
+async def get_section_content(
+    db: AsyncSession,
+    slug: str,
+    section_id_str: str,
+) -> Optional["Section"]:
+    query = (
+        select(Section)
+        .join(Course, Section.course_id == Course.id)
+        .where(
+            Course.slug == slug,
+            Course.is_published == True,  # noqa: E712
+            Section.section_id_str == section_id_str,
+        )
+    )
     return await db.scalar(query)

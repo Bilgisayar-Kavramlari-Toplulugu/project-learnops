@@ -73,6 +73,11 @@ output "frontend_service_account" {
   value       = google_service_account.frontend_runtime.email
 }
 
+output "content_job_name" {
+  description = "Content update Cloud Run Job name"
+  value       = google_cloud_run_v2_job.content_update.name
+}
+
 output "deployment_info" {
   description = "Deployment information"
   value = {
