@@ -5,37 +5,33 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class NextSectionSchema(BaseModel):
-    """Devam eden bir kurstaki sonraki bölüm için şema."""
-
-    id: UUID
-    title: str
-    order_index: int
-
-
 class InProgressCourseSchema(BaseModel):
-    """Şu anda devam eden kurslar için şema."""
+    """MVP 5.6 — Devam eden kurs özeti."""
 
     course_id: UUID
     title: str
-    next_section: Optional[NextSectionSchema]
+    slug: str
+    progress_percent: float
+    last_section_id_str: Optional[str]
+    last_section_title: Optional[str]
 
 
-class LastQuizSchema(BaseModel):
-    """Kullanıcının son tamamlanan quiz'i için şema."""
+class LastQuizResultSchema(BaseModel):
+    """MVP 5.6 — Son quiz sonucu."""
 
-    quiz_name: str
-    score: Optional[float] = None  # None = henüz hesaplanmadı veya değerlendirilmedi
-    completed_at: datetime
+    quiz_id: UUID
+    course_title: str
+    score: int
+    total: int
+    passed: bool
+    submitted_at: datetime
 
 
 class DashboardSummarySchema(BaseModel):
-    """
-    Ana dashboard özet şeması.
+    """MVP 5.6 — Dashboard özet şeması."""
 
-    Kullanıcının dashboard görünümü için toplanmış verileri içerir.
-    """
-
-    completed_courses_count: int
+    display_name: str
+    avatar_type: str
+    completed_course_count: int
     in_progress_courses: List[InProgressCourseSchema]
-    last_quiz: Optional[LastQuizSchema]
+    last_quiz_result: Optional[LastQuizResultSchema]

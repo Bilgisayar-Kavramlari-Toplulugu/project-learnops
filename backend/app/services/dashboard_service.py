@@ -7,13 +7,14 @@ from sqlalchemy.orm import selectinload
 
 from app.models.courses import Enrollment, Section, UserProgress
 from app.models.quizzes import Quiz, QuizAttempt
+from app.models.users import User
 
 
 class DashboardService:
     @staticmethod
     async def get_summary(db: AsyncSession, user_id: UUID) -> Dict[str, Any]:
         """
-        Kullanıcı dashboard özeti.
+        Kullanıcı dashboard özeti — MVP §5.6 contract.
 
         Performans Optimizasyonları:
         1. Subquery: Tamamlanmış bölümler Python belleğine çekilmeden
@@ -23,13 +24,17 @@ class DashboardService:
         3. Eager Loading: selectinload ile asenkron performans optimize edildi.
         """
 
-        # 1. Tamamlanan Kurs Sayısı
+        # 1. Kullanıcı bilgileri (display_name, avatar_type)
+        user_stmt = select(User).where(User.id == user_id)
+        user = (await db.execute(user_stmt)).scalar_one_or_none()
+
+        # 2. Tamamlanan Kurs Sayısı
         completed_count_stmt = select(func.count(Enrollment.id)).where(
             Enrollment.user_id == user_id, Enrollment.completed_at.isnot(None)
         )
         completed_count = (await db.execute(completed_count_stmt)).scalar() or 0
 
-        # 2. Devam Eden Kurslar ve 'Next Section' Bulma
+        # 3. Devam Eden Kurslar ve 'Next Section' Bulma
         enrollments_stmt = (
             select(Enrollment)
             .options(selectinload(Enrollment.course))
@@ -75,19 +80,14 @@ class DashboardService:
                     {
                         "course_id": enc.course_id,
                         "title": enc.course.title,
-                        "next_section": (
-                            {
-                                "id": next_sec.id,
-                                "title": next_sec.title,
-                                "order_index": next_sec.order_index,
-                            }
-                            if next_sec
-                            else None
-                        ),
+                        "slug": enc.course.slug,
+                        "progress_percent": float(enc.progress_percent),
+                        "last_section_id_str": next_sec.section_id_str if next_sec else None,
+                        "last_section_title": next_sec.title if next_sec else None,
                     }
                 )
 
-        # 3. Son Quiz (Tek Sorgu, selectinload)
+        # 4. Son Quiz (Tek Sorgu, selectinload)
         last_attempt_stmt = (
             select(QuizAttempt)
             .options(selectinload(QuizAttempt.quiz).selectinload(Quiz.course))
@@ -100,16 +100,21 @@ class DashboardService:
         )
         last_attempt = (await db.execute(last_attempt_stmt)).scalar_one_or_none()
 
-        last_quiz_data = None
+        last_quiz_result = None
         if last_attempt and last_attempt.quiz and last_attempt.quiz.course:
-            last_quiz_data = {
-                "quiz_name": last_attempt.quiz.course.title,
+            last_quiz_result = {
+                "quiz_id": last_attempt.quiz_id,
+                "course_title": last_attempt.quiz.course.title,
                 "score": last_attempt.score,
-                "completed_at": last_attempt.submitted_at,
+                "total": last_attempt.total_questions,
+                "passed": last_attempt.passed,
+                "submitted_at": last_attempt.submitted_at,
             }
 
         return {
-            "completed_courses_count": completed_count,
+            "display_name": user.display_name if user else "Öğrenci",
+            "avatar_type": user.avatar_type if user else "initials",
+            "completed_course_count": completed_count,
             "in_progress_courses": in_progress_list,
-            "last_quiz": last_quiz_data,
+            "last_quiz_result": last_quiz_result,
         }
