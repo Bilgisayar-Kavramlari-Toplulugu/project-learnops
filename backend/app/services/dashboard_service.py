@@ -76,14 +76,16 @@ class DashboardService:
             for enc in enrollments:
                 next_sec = next_sections_map.get(enc.course_id)
 
+                last_section_id_str = next_sec.section_id_str if next_sec else None
+                last_section_title = next_sec.title if next_sec else None
                 in_progress_list.append(
                     {
                         "course_id": enc.course_id,
                         "title": enc.course.title,
                         "slug": enc.course.slug,
                         "progress_percent": float(enc.progress_percent),
-                        "last_section_id_str": next_sec.section_id_str if next_sec else None,
-                        "last_section_title": next_sec.title if next_sec else None,
+                        "last_section_id_str": last_section_id_str,
+                        "last_section_title": last_section_title,
                     }
                 )
 
