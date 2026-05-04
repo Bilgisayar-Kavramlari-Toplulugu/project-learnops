@@ -512,7 +512,7 @@ async def test_merge_after_conflict_creates_github_account(
     response = await client.post(
         "/v1/auth/merge",
         json={"merge_token": merge_token},
-        headers={"Authorization": f"Bearer {access_token}"},
+        cookies={"access_token": access_token},
     )
 
     assert response.status_code == 200

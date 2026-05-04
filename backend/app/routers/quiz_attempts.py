@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies.auth import get_current_user
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
 from app.models.users import User

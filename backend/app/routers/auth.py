@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.core.security import encrypt_token
 from app.database import get_db
-from app.deps import get_current_user_id
+from app.dependencies.auth import get_current_user
 from app.models.users import OAuthAccount, User
 from app.schemas.auth import (
     AccountConflictResponse,
@@ -22,7 +22,6 @@ from app.schemas.auth import (
     MergeAccountResponse,
     OAuthProvider,
     TokenResponse,
-    UserMeResponse,
 )
 from app.services.jwt_service import (
     blacklist_token,
@@ -316,7 +315,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             status_code=302,
         )
         response.set_cookie(
-            key="access_token",
+            key=settings.ACCESS_TOKEN_COOKIE_NAME,
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
@@ -325,7 +324,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         )
 
         response.set_cookie(
-            key="refresh_token",
+            key=settings.REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
@@ -516,7 +515,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             status_code=302,
         )
         response.set_cookie(
-            key="access_token",
+            key=settings.ACCESS_TOKEN_COOKIE_NAME,
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
@@ -524,7 +523,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
         response.set_cookie(
-            key="refresh_token",
+            key=settings.REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
@@ -605,7 +604,7 @@ async def github_login(request: Request):
             key="oauth_state",
             value=state,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="lax",
             max_age=600,
         )
@@ -764,18 +763,18 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             status_code=302,
         )
         response.set_cookie(
-            key="access_token",
+            key=settings.ACCESS_TOKEN_COOKIE_NAME,
             value=access_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
         response.set_cookie(
-            key="refresh_token",
+            key=settings.REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
@@ -794,58 +793,14 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/me", response_model=UserMeResponse)
-async def get_me(request: Request, db: AsyncSession = Depends(get_db)):
-    """Return the current user's profile from the access_token cookie."""
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-
-    try:
-        payload = decode_token(token)
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token geçersiz veya süresi dolmuş",
-        )
-
-    if payload.get("type") != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Access token gerekli",
-        )
-
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token geçersiz",
-        )
-
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    return UserMeResponse(
-        id=str(user.id),
-        email=user.email,
-        display_name=user.display_name,
-        avatar_type=user.avatar_type,
-    )
+# GET /auth/me kaldırıldı (BE-26): canonical endpoint GET /users/me'dir.
+# Bkz. app/routers/users.py — get_current_user dependency ile.
 
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh(request: Request):
     """Cookie'deki refresh token ile yeni access + refresh token üretir."""
-    token = request.cookies.get("refresh_token")
+    token = request.cookies.get(settings.REFRESH_TOKEN_COOKIE_NAME)
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -895,7 +850,7 @@ async def refresh(request: Request):
         ).model_dump()
     )
     response.set_cookie(
-        key="access_token",
+        key=settings.ACCESS_TOKEN_COOKIE_NAME,
         value=new_access_token,
         httponly=True,
         secure=settings.ENVIRONMENT not in ("development", "testing"),
@@ -903,7 +858,7 @@ async def refresh(request: Request):
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
     response.set_cookie(
-        key="refresh_token",
+        key=settings.REFRESH_TOKEN_COOKIE_NAME,
         value=new_refresh_token,
         httponly=True,
         secure=settings.ENVIRONMENT not in ("development", "testing"),
@@ -916,7 +871,7 @@ async def refresh(request: Request):
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(request: Request):
     """Cookie'deki refresh token'ı blacklist'e ekleyerek logout yapar."""
-    token = request.cookies.get("refresh_token")
+    token = request.cookies.get(settings.REFRESH_TOKEN_COOKIE_NAME)
     if token:
         try:
             payload = decode_token(token)
@@ -927,8 +882,19 @@ async def logout(request: Request):
             pass  # zaten geçersiz, işlem yok
 
     response = JSONResponse(content=None, status_code=status.HTTP_204_NO_CONTENT)
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    is_secure = settings.ENVIRONMENT not in ("development", "testing")
+    response.delete_cookie(
+        settings.ACCESS_TOKEN_COOKIE_NAME,
+        httponly=True,
+        samesite="strict",
+        secure=is_secure,
+    )
+    response.delete_cookie(
+        settings.REFRESH_TOKEN_COOKIE_NAME,
+        httponly=True,
+        samesite="strict",
+        secure=is_secure,
+    )
     return response
 
 
@@ -936,11 +902,11 @@ async def logout(request: Request):
 async def merge_accounts_endpoint(
     request: MergeAccountRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         user, providers = await merge_oauth_accounts(
-            db, request.merge_token, current_user
+            db, request.merge_token, str(current_user.id)
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
