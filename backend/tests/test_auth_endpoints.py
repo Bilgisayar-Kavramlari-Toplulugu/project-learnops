@@ -49,7 +49,9 @@ def _make_access_token(sub: str = "user-123") -> str:
 
 def test_refresh_returns_new_tokens():
     token = _make_refresh_token()
-    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
+    resp = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: token}
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert "access_token" in data
@@ -60,17 +62,23 @@ def test_refresh_returns_new_tokens():
 def test_refresh_rotates_token_blacklists_old():
     token = _make_refresh_token()
 
-    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
+    resp = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: token}
+    )
     assert resp.status_code == 200
 
     # Same token should be blacklisted now (rotation)
-    resp2 = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
+    resp2 = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: token}
+    )
     assert resp2.status_code == 401
 
 
 def test_refresh_rejects_access_token():
     access = _make_access_token()
-    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": access})
+    resp = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: access}
+    )
     assert resp.status_code == 401
 
 
@@ -82,7 +90,9 @@ def test_refresh_rejects_expired_token():
         "jti": str(uuid.uuid4()),
     }
     token = jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
-    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
+    resp = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: token}
+    )
     assert resp.status_code == 401
 
 
@@ -96,7 +106,9 @@ def test_refresh_rejects_invalid_signature():
     token = jwt.encode(
         payload, "wrong-secret-key-12345678901234567", algorithm=ALGORITHM
     )
-    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
+    resp = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: token}
+    )
     assert resp.status_code == 401
 
 
@@ -107,7 +119,9 @@ def test_refresh_rejects_token_without_sub():
         "jti": str(uuid.uuid4()),
     }
     token = jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
-    resp = client.post("/v1/auth/refresh", cookies={"refresh_token": token})
+    resp = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: token}
+    )
     assert resp.status_code == 401
 
 
@@ -117,11 +131,15 @@ def test_refresh_rejects_token_without_sub():
 def test_logout_blacklists_refresh_token():
     refresh = _make_refresh_token()
 
-    resp = client.post("/v1/auth/logout", cookies={"refresh_token": refresh})
+    resp = client.post(
+        "/v1/auth/logout", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: refresh}
+    )
     assert resp.status_code == 204
 
     # Token should now be blacklisted — refresh should fail
-    resp2 = client.post("/v1/auth/refresh", cookies={"refresh_token": refresh})
+    resp2 = client.post(
+        "/v1/auth/refresh", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: refresh}
+    )
     assert resp2.status_code == 401
 
 
@@ -135,7 +153,7 @@ def test_logout_with_invalid_refresh_token_still_succeeds():
     """Logout with already-invalid refresh token should return 204 (idempotent)."""
     resp = client.post(
         "/v1/auth/logout",
-        cookies={"refresh_token": "garbage.token.value"},
+        cookies={settings.REFRESH_TOKEN_COOKIE_NAME: "garbage.token.value"},
     )
     assert resp.status_code == 204
 
@@ -144,5 +162,7 @@ def test_logout_with_access_token_as_refresh_cookie_still_succeeds():
     """Logout with access token in refresh cookie
     returns 204 (token not blacklisted)."""
     access = _make_access_token()
-    resp = client.post("/v1/auth/logout", cookies={"refresh_token": access})
+    resp = client.post(
+        "/v1/auth/logout", cookies={settings.REFRESH_TOKEN_COOKIE_NAME: access}
+    )
     assert resp.status_code == 204

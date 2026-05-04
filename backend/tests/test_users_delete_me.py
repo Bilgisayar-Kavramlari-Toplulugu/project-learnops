@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.models.users import User
 from app.services.jwt_service import (
     _blacklisted_tokens,
@@ -157,18 +158,21 @@ async def _seed_user_related_data(db_session: AsyncSession, user: User):
     }
 
 
+def _auth_cookies(user: User) -> dict[str, str]:
+    """Cookie bazlı auth helper (BE-26)."""
+    token = create_access_token(sub=str(user.id))
+    return {settings.ACCESS_TOKEN_COOKIE_NAME: token}
+
+
 @pytest.mark.asyncio
 async def test_delete_me_wrong_confirmation_returns_400(
     client: AsyncClient, test_user: User
 ):
-    access_token = create_access_token(sub=str(test_user.id))
-    headers = {"Authorization": f"Bearer {access_token}"}
-
     response = await client.request(
         "DELETE",
         "/v1/users/me",
         json={"confirmation": "WRONG TEXT"},
-        headers=headers,
+        cookies=_auth_cookies(test_user),
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -182,14 +186,11 @@ async def test_delete_me_success_hard_deletes_and_audit_logs(
 ):
     seeded = await _seed_user_related_data(db_session, test_user)
 
-    access_token = create_access_token(sub=str(test_user.id))
-    headers = {"Authorization": f"Bearer {access_token}"}
-
     response = await client.request(
         "DELETE",
         "/v1/users/me",
         json={"confirmation": "HESABIMI SİL"},
-        headers=headers,
+        cookies=_auth_cookies(test_user),
     )
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
@@ -236,21 +237,21 @@ async def test_delete_me_success_hard_deletes_and_audit_logs(
 
 @pytest.mark.asyncio
 async def test_delete_me_blacklists_refresh_token(client: AsyncClient, test_user: User):
-    access_token = create_access_token(sub=str(test_user.id))
     refresh_token = create_refresh_token(sub=str(test_user.id), jti=str(uuid.uuid4()))
-    headers = {"Authorization": f"Bearer {access_token}"}
 
     delete_response = await client.request(
         "DELETE",
         "/v1/users/me",
         json={"confirmation": "HESABIMI SİL"},
-        headers=headers,
-        cookies={"refresh_token": refresh_token},
+        cookies={
+            **_auth_cookies(test_user),
+            settings.REFRESH_TOKEN_COOKIE_NAME: refresh_token,
+        },
     )
     assert delete_response.status_code == status.HTTP_204_NO_CONTENT
 
     refresh_response = await client.post(
         "/v1/auth/refresh",
-        cookies={"refresh_token": refresh_token},
+        cookies={settings.REFRESH_TOKEN_COOKIE_NAME: refresh_token},
     )
     assert refresh_response.status_code == status.HTTP_401_UNAUTHORIZED
