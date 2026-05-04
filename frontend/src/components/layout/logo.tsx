@@ -1,5 +1,3 @@
-"use client"; // aslında "use client" bile gerekmez, server component yapılabilir
-
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -21,8 +19,8 @@ export function Logo({
   priority = false,
   alt = "LearnOps",
 }: LogoProps) {
-  const wrapper = (
-    <span className={cn("inline-flex items-center", className)}>
+  const images = (
+    <span className="inline-flex items-center h-full">
       <Image
         src="/logos/logo-light.svg"
         alt={alt}
@@ -42,10 +40,13 @@ export function Logo({
     </span>
   );
 
-  if (!href) return wrapper;
+  if (!href) {
+    return <span className={cn("inline-flex items-center", className)}>{images}</span>;
+  }
+
   return (
-    <Link href={href} aria-label={alt} className="inline-flex items-center">
-      {wrapper}
+    <Link href={href} aria-label={alt} className={cn("inline-flex items-center", className)}>
+      {images}
     </Link>
   );
 }
