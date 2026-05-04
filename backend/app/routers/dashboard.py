@@ -1,10 +1,9 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.deps import get_current_user_id
+from app.dependencies.auth import get_current_user
+from app.models.users import User
 from app.schemas.dashboard import DashboardSummarySchema
 from app.services.dashboard_service import DashboardService
 
@@ -14,7 +13,7 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 @router.get("/summary", response_model=DashboardSummarySchema)
 async def get_dashboard_summary(
     db: AsyncSession = Depends(get_db),
-    current_user_id: str = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Kimliği doğrulanmış kullanıcı için dashboard özetini alır.
@@ -28,6 +27,4 @@ async def get_dashboard_summary(
         - Performans: p95 < 500ms
         - Önbellek yok: Her istekte taze veri
     """
-    # str olarak gelen id'yi DashboardService'in beklediği UUID tipine dönüştürüyoruz
-    user_uuid: UUID = UUID(current_user_id)
-    return await DashboardService.get_summary(db, user_uuid)
+    return await DashboardService.get_summary(db, current_user.id)

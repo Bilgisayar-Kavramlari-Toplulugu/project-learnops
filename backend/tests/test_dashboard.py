@@ -19,10 +19,10 @@ async def test_get_dashboard_summary_unauthorized(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_get_dashboard_summary_authenticated_empty(
-    client: AsyncClient, token_headers: dict
+    client: AsyncClient, token_cookies: dict
 ):
-    """Authenticated kullanıcı için 200 OK ve boş/başlangıç verisi — MVP §5.6."""
-    response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    """Authenticated kullanıcı için 200 OK ve boş/başlangıç verisi doğrulaması."""
+    response = await client.get("/v1/dashboard/summary", cookies=token_cookies)
 
     assert response.status_code == 200
     data = response.json()
@@ -36,7 +36,7 @@ async def test_get_dashboard_summary_authenticated_empty(
 
 @pytest.mark.asyncio
 async def test_dashboard_logic_calculations(
-    client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
+    client: AsyncClient, db_session: AsyncSession, test_user, token_cookies: dict
 ):
     """Devam eden kurs: slug, progress_percent ve last_section_id_str doğrulaması."""
 
@@ -82,7 +82,8 @@ async def test_dashboard_logic_calculations(
 
     await db_session.flush()
 
-    response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    # Testi çalıştır
+    response = await client.get("/v1/dashboard/summary", cookies=token_cookies)
     assert response.status_code == 200, f"Auth failed: {response.json()}"
     data = response.json()
 
@@ -97,8 +98,8 @@ async def test_dashboard_logic_calculations(
 
 
 @pytest.mark.asyncio
-async def test_dashboard_last_quiz_result(
-    client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
+async def test_dashboard_last_quiz_logic(
+    client: AsyncClient, db_session: AsyncSession, test_user, token_cookies: dict
 ):
     """Son quiz sonucu — MVP §5.6 field isimleri doğrulaması."""
     course = Course(
@@ -130,7 +131,7 @@ async def test_dashboard_last_quiz_result(
     db_session.add(attempt)
     await db_session.flush()
 
-    response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    response = await client.get("/v1/dashboard/summary", cookies=token_cookies)
     assert response.status_code == 200
     data = response.json()
 
@@ -146,7 +147,7 @@ async def test_dashboard_last_quiz_result(
 
 @pytest.mark.asyncio
 async def test_dashboard_all_sections_completed(
-    client: AsyncClient, db_session: AsyncSession, test_user, token_headers: dict
+    client: AsyncClient, db_session: AsyncSession, test_user, token_cookies: dict
 ):
     """Tüm bölümler tamamlandığında last_section_id_str null dönmeli."""
     course = Course(
@@ -172,7 +173,8 @@ async def test_dashboard_all_sections_completed(
     db_session.add_all([p1, p2])
     await db_session.flush()
 
-    response = await client.get("/v1/dashboard/summary", headers=token_headers)
+    # 4. API Çağrısı
+    response = await client.get("/v1/dashboard/summary", cookies=token_cookies)
     assert response.status_code == 200
     data = response.json()
 

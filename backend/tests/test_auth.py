@@ -86,11 +86,11 @@ async def test_merge_valid_token(client: AsyncClient, test_user):
 
     # 2. Merge (auth gerekir)
     access_token = create_access_token(sub=str(test_user.id))
-    auth_headers = {"Authorization": f"Bearer {access_token}"}
+    auth_cookies = {"access_token": access_token}
     response = await client.post(
         "/v1/auth/merge",
         json={"merge_token": merge_token},
-        headers=auth_headers,
+        cookies=auth_cookies,
     )
 
     assert response.status_code == status.HTTP_200_OK
@@ -103,11 +103,11 @@ async def test_merge_valid_token(client: AsyncClient, test_user):
 async def test_merge_invalid_token(client: AsyncClient, test_user):
     """Unknown token → 400."""
     access_token = create_access_token(sub=str(test_user.id))
-    auth_headers = {"Authorization": f"Bearer {access_token}"}
+    auth_cookies = {"access_token": access_token}
     response = await client.post(
         "/v1/auth/merge",
         json={"merge_token": "invalid-token-xyz"},
-        headers=auth_headers,
+        cookies=auth_cookies,
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -126,19 +126,19 @@ async def test_merge_token_consumed(client: AsyncClient, test_user):
     merge_token = conflict_res.json()["merge_token"]
 
     access_token = create_access_token(sub=str(test_user.id))
-    auth_headers = {"Authorization": f"Bearer {access_token}"}
+    auth_cookies = {"access_token": access_token}
 
     first = await client.post(
         "/v1/auth/merge",
         json={"merge_token": merge_token},
-        headers=auth_headers,
+        cookies=auth_cookies,
     )
     assert first.status_code == status.HTTP_200_OK
 
     second = await client.post(
         "/v1/auth/merge",
         json={"merge_token": merge_token},
-        headers=auth_headers,
+        cookies=auth_cookies,
     )
     assert second.status_code == status.HTTP_400_BAD_REQUEST
     assert "daha önce kullanılmış" in second.json()["detail"]

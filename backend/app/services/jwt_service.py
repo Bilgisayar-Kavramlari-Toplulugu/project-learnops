@@ -9,9 +9,10 @@ from app.config import settings
 ALGORITHM = "HS256"
 
 # ---------- Blacklist (in-memory set) ----------
-# TODO: Bu in-memory implementasyon single-instance geliştirme içindir.
-# Production'da Cloud Run multi-instance çalıştığından Redis veya DB-backed
-# blacklist'e migrate edilmeli.
+# TODO(BE-26): in-memory blacklist, Cloud Run multi-instance'ta güvenilmez.
+# Instance-A'daki blacklist instance-B'de mevcut değildir → token geçerli kalır.
+# Redis-backed blacklist Sprint 8+ için planlandı. Bkz. geliştirici rehberi
+# "Bilinen Kısıtlamalar" bölümü.
 _blacklisted_tokens: set[str] = set()
 
 

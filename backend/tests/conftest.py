@@ -123,16 +123,19 @@ async def test_user(db_session: AsyncSession) -> User:
 
 
 @pytest_asyncio.fixture
-async def token_headers(test_user: User) -> dict:
+async def token_cookies(test_user: User) -> dict[str, str]:
     """
-    Merkezi auth fixture'ı.
+    Merkezi auth fixture'ı — Cookie bazlı (BE-26).
+
+    Kullanım:
+        resp = await client.get("/v1/endpoint", cookies=token_cookies)
+
     conftest içinde olduğu için db_session ile aynı transaction'ı paylaşır.
     """
     from app.services.jwt_service import create_access_token
 
-    # jwt_service.py'daki sub bekleyen tanıma uygun (string cast)
     token = create_access_token(sub=str(test_user.id))
-    return {"Authorization": f"Bearer {token}"}
+    return {settings.ACCESS_TOKEN_COOKIE_NAME: token}
 
 
 @pytest_asyncio.fixture
