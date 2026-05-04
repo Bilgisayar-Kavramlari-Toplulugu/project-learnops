@@ -5,6 +5,10 @@ import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import type { SectionProgressItem } from "@/types";
 
+interface EnrollmentProgressResponse {
+  sections: SectionProgressItem[];
+}
+
 // ---------------------------------------------------------------------------
 // GET /enrollments/{courseId}/progress  (BE-17)
 // Her section'ın completed durumu ve genel progress_percent döner.
@@ -15,8 +19,10 @@ export function useSectionProgress(courseId?: string) {
     queryKey: queryKeys.progress.byCourse(courseId ?? ""),
     queryFn: async () => {
       if (!courseId) return [];
-      const { data } = await api.get<SectionProgressItem[]>(`/enrollments/${courseId}/progress`);
-      return data;
+      const { data } = await api.get<EnrollmentProgressResponse>(
+        `/enrollments/${courseId}/progress`,
+      );
+      return data.sections;
     },
     enabled: Boolean(courseId),
     retry: false,
