@@ -604,7 +604,7 @@ async def github_login(request: Request):
             key="oauth_state",
             value=state,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="lax",
             max_age=600,
         )
@@ -766,7 +766,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             key=settings.ACCESS_TOKEN_COOKIE_NAME,
             value=access_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
@@ -774,7 +774,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             key=settings.REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             httponly=True,
-            secure=settings.ENVIRONMENT == "production",
+            secure=settings.ENVIRONMENT not in ("development", "testing"),
             samesite="strict",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
@@ -882,8 +882,19 @@ async def logout(request: Request):
             pass  # zaten geçersiz, işlem yok
 
     response = JSONResponse(content=None, status_code=status.HTTP_204_NO_CONTENT)
-    response.delete_cookie(settings.ACCESS_TOKEN_COOKIE_NAME)
-    response.delete_cookie(settings.REFRESH_TOKEN_COOKIE_NAME)
+    is_secure = settings.ENVIRONMENT not in ("development", "testing")
+    response.delete_cookie(
+        settings.ACCESS_TOKEN_COOKIE_NAME,
+        httponly=True,
+        samesite="strict",
+        secure=is_secure,
+    )
+    response.delete_cookie(
+        settings.REFRESH_TOKEN_COOKIE_NAME,
+        httponly=True,
+        samesite="strict",
+        secure=is_secure,
+    )
     return response
 
 
