@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -113,9 +114,12 @@ class DashboardService:
                 "submitted_at": last_attempt.submitted_at,
             }
 
+        if user is None:
+            raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+
         return {
-            "display_name": user.display_name if user else "Öğrenci",
-            "avatar_type": user.avatar_type if user else "initials",
+            "display_name": user.display_name,
+            "avatar_type": user.avatar_type,
             "completed_course_count": completed_count,
             "in_progress_courses": in_progress_list,
             "last_quiz_result": last_quiz_result,
