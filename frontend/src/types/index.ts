@@ -167,3 +167,26 @@ export interface CourseProgress {
   progress_percent: number;
   sections: SectionProgress[];
 }
+// ─── Enrollment Types ──────────────────────────────────────────────────────────
+
+// GET /v1/enrollments → { items: EnrolledCourseItem[] }
+export interface EnrolledCourseItem {
+  id: string;               // enrollment UUID
+  course_id: string;
+  enrolled_at: string;      // ISO datetime
+  completed_at: string | null;
+  progress_percent: number; // DB: NUMERIC(5,2) — parseInt kullanma
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+    category: string | null;
+    difficulty: string | null;
+    duration_minutes: number | null;
+    display_order: number | null;
+  };
+}
+
+export interface EnrollmentListResponse {
+  items: EnrolledCourseItem[];
+}
