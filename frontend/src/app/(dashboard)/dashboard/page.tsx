@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { CourseProgressCard } from "@/components/features/dashboard/course-progress-card";
 import { DashboardSkeleton } from "@/components/features/dashboard/dashboard-skeleton";
@@ -24,7 +25,21 @@ export default function DashboardPage() {
     refetch,
   } = useDashboard();
 
-  if (isLoading) return <DashboardSkeleton />;
+  const [showSkeleton, setShowSkeleton] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(
+      () => {
+        setShowSkeleton(isLoading);
+      },
+      isLoading ? 300 : 0,
+    );
+
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
+  if (isLoading && showSkeleton) return <DashboardSkeleton />;
+  if (isLoading && !showSkeleton) return null;
 
   if (isError) {
     return (
