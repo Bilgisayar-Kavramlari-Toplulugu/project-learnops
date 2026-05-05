@@ -3,13 +3,172 @@
 Bu dosya git-cliff tarafından otomatik oluşturulmaktadır.
 Tüm önemli değişiklikler burada belgelenmiştir.
 
-## [Yayınlanmamış]
+## [1.2.0] — 2026-05-05
 
 ### ⚙️ Genel
 - **changelog:** Update for v1.1.0 — lerkush ([`e7fd2d7`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/e7fd2d79e403fadaafda14c3ed273bcad972d5e5))
+- **release:** Generate full CHANGELOG.md from v0.2.0 to v1.1.0 — lerkush ([`b5bc571`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b5bc5710c6132c6dd16df7a937932ce0a1da3dfc))
+- **release:** Sync develop to release v1.1.0 — lerkush ([`72ed2bf`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/72ed2bfad4bd922788d42cff1d3fce1f3c8859c7))
+- Merge release v1.1.0 fixes back into develop — lerkush ([`68e43a3`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/68e43a3822d52141af238638794fe14c1d8b67b1))
+- **infra:** Regenerate changelog for v1.1.0 release fixes — lerkush ([`8d1660b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/8d1660b80df8fe5fe8a74839c489c3ce4a064291))
+- **scripts:** Move seed_content.py to backend/scripts/, remove root scripts/ dir (#INF-12) — lerkush ([`c888634`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c8886347d1dd01e633eba68996e5d2e59d19c8b3))
+- **scripts:** Fix CONTRIBUTING.md docker exec path — lerkush ([`c84b1d6`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c84b1d69365b59b55c21d3408270ae22757ff1a4))
+
+
+### ⚡ Performans
+- **frontend:** Load React Query Devtools only in development (#FE-19 — Alper ([`05769db`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/05769db9b2dea8ebd59ac0aee464be17e1735d36))
+- **frontend:** Disable fixed background attachment on mobile (#FE-19) — Alper ([`80c49cc`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/80c49ccd2f1fa62cd5bbc8599802e766ee01572a))
+- **dashboard:** Render loading skeleton immediately (#FE-19) — Alper ([`caec014`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/caec0142152b419cda46e3fad5f5bd11ce72080c))
+- **frontend:** Reduce critical font loading (#FE-19) — Alper ([`3deca82`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3deca8250ccab1f2ee4645f673db69bc000f69b0))
+
+
+### 🐛 Hata Düzeltmeleri
+- **auth:** Use frontend proxy for GitHub OAuth redirect URI in staging — karalarmehmet ([`dd90812`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/dd908129fe4c24d618335b872a232ba9f357cbba))
+- **FE-09:** Course detail and list component adjustments — belmaaz ([`3bdb4db`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3bdb4db5c640fdfddd806265462a25087ed95dce))
+- **BE-14:** Course schema, service and content volume mount corrections — belmaaz ([`5c68c22`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5c68c22e2453b8d3b73b87d5e938f8d49f87b210))
+- **infra:** Restore backend_deps cache volume and enforce read-only content mounts — belmaaz ([`85930ec`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/85930ec30e75d503cc72db2b43b9d59530d3420b))
+- **FE-10:** Build sırasında getCourseBySlug tüm hataları yakalar — belmaaz ([`f7a1f36`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/f7a1f365a854626cd27281955b394c755a295f3f))
+- **backend:** BE-16 Ruff hataları #34 — ismail arıcıoğlu ([`bef656e`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/bef656e687303d04796bc7df54c4777367ce77d9))
+- **backend:** BE-16 Test hataları giderildi #34 — ismail arıcıoğlu ([`12f4cf1`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/12f4cf137a1dcf074e516a4695f3fe158af2dd7c))
+- **backend:** BE-16 Test hataları giderildi #34 — ismail arıcıoğlu ([`4df87a6`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/4df87a68e01a7ac1eaf82944e4a1d1986512dede))
+- **backend:** BE-16 Test hataları giderildi #34 — ismail arıcıoğlu ([`b2f4822`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b2f48227eed48f7bdcd67770efbd1df3f8102595))
+- **backend:** BE-16 Ruff hataları giderildi #34 — ismail arıcıoğlu ([`91cc268`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/91cc268242741de5dfc6d98563e44d73b3dbc08d))
+- **backend:** BE-16 Ruff hataları giderildi #34 — ismail arıcıoğlu ([`8d13a1b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/8d13a1b587e43f821171dd12bebab7905683e61c))
+- **auth:** Restore pyjwt imports and clean lint issues — Shamsia ([`6f622d0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/6f622d0612a3cdafd86b0446a52ad9dda8a1ad3d))
+- **app:** Load models during lifespan startup — Shamsia ([`0e4762e`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0e4762e3a371a77ec7052e4c15a60af8e00a71a8))
+- **app:** Simplify alembic import for ruff — Shamsia ([`ccc7920`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/ccc7920039442eeab5205ffded8d77002bdc85ed))
+- **app:** Move startup-only imports out of main module — Shamsia ([`c2262c4`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c2262c43e6c14d2e1f2f814074511994cf850ef0))
+- **app:** Align main imports with develop — Shamsia ([`bca422d`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/bca422d95d242f2f6dcbbc2590c0756cd5e4c6d6))
+- **enrollment:** Map course model to response schema — Shamsia ([`1e0ccda`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/1e0ccdaec58898df3e4d5917e552ff61a087265c))
+- **enrollment:** Address review feedback — Shamsia ([`168b4ad`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/168b4ad07876a580001851d40388877fb0d3d11e))
+- **enrollment:** Address follow-up review notes — Shamsia ([`8a2d1bb`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/8a2d1bbc584389e311e50757e1e842aa15ced76f))
+- **backend:** Address BE-18 code review findings — belmaaz ([`69c343b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/69c343b266d9d5f99e8bc8ebcafdf17510eb513f))
+- **backend:** Resolve mypy return type error in quiz attempt router — belmaaz ([`3d3e361`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3d3e361b6e98ff0ff647fc1dd4a54df6fcf82d8d))
+- **BE-18:** Restore accidentally emptied migration file — belmaaz ([`57fada6`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/57fada6e9a93d042a85c394cde464d862533ea81))
+- **content:** Move seed script and update content paths — Shamsia ([`cdb7138`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/cdb71381acdb6ac8c998fa072c245449bb3825c3))
+- **main:** Restore enrollments & progress routers alongside quiz_attempts — belmaaz ([`149e0c6`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/149e0c6f2e60c635db3d3dd4ab41b019cdb35547))
+- **quiz:** Address BE-19 code review findings — belmaaz ([`75a0219`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/75a0219a79ea9476b3e8414511837a5f280e9cd5))
+- **backend:** BE-22 Ruff hataları #47 — ismail arıcıoğlu ([`2c22343`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2c22343d2b2bbf24e3f54e71d564136f31717332))
+- **backend:** BE-22 — ismail arıcıoğlu ([`d0e22bf`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d0e22bfb33ba7d35664cc806947aad9ce8bd1028))
+- **backend:** BE-22 Ruff — ismail arıcıoğlu ([`c4ac290`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c4ac2905c2a0594e4cc0f7f05207fa70e3f1bea5))
+- **backend:** BE-22 conflict — ismail arıcıoğlu ([`7dc4e90`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/7dc4e9019db8ebdd2130993a50b3026121275380))
+- **db:** Shorten migration 007 revision ID to fit VARCHAR(32) — maliuyanik ([`660bd99`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/660bd99eb6d48778fe54a421452259b3891e25b0))
+- **db:** Address code review findings for BE-21 — maliuyanik ([`28bb3c2`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/28bb3c267c943a436b6a7afaa10428c2bae16a8c))
+- **quiz:** Clear interval on submit success, remove stale use-client, add timer a11y [FE-13] — belmaaz ([`6c84ed0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/6c84ed001b331138aa664807b055158634507767))
+- **db:** Address second round of BE-21 code review findings — maliuyanik ([`465ecd9`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/465ecd90f24fa4d08ea750451db9a8919de4a0f6))
+- Theme-toogle type hatası düzeltildi — süleyman mercan ([`ac42f87`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/ac42f871ff690a89e34cfd051023938a80375c8a))
+- App.tsx updated — süleyman mercan ([`b7d24e2`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b7d24e21bc794f0d4dd947d004e09c11885802f6))
+- **fe-15:** Dashboard yanlış dosyalar kaldırıldı — süleyman mercan ([`23b65c1`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/23b65c1c2b0e522d30c71565c06accd4cc963cc3))
+- **fe-15:** Dashboard layout — süleyman mercan ([`0f1e420`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0f1e4207f7af03f50bd4cc062d1b52c7c2fc4034))
+- **fe-15:** Dashboard layout — süleyman mercan ([`b4009cf`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b4009cf0a666c46db639fafe8e1f2d4c7907096a))
+- **frontend-fe-15:** File name changed — süleyman mercan ([`c7793c4`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c7793c44a6209a0d0b26566de3d73ad51c175061))
+- **db:** Revert questions.is_active to Python-level default=True (#BE-21) — maliuyanik ([`92a3f3b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/92a3f3b95e101d74a3dd6c8279b26971225d3e1d))
+- **backend:** BE-22 review 2 edit — ismail arıcıoğlu ([`db2f1cc`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/db2f1cce9526cd2a8262c0e5355c7401797bdd3b))
+- **frontend:** Address shared ui review feedback (#FE-18) — Alper ([`332daaa`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/332daaa3ee28514bab4949888062d67d73b7e657))
+- **content:** Fix quiz explanation length and correct_index balance (#CNT-08) — Shamsia ([`5eb50f5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5eb50f58bf308378115c512e33ed9f129d3d8441))
+- **content:** Align docker-temelleri section titles and scope with master plan (#CNT-04) — Shamsia ([`c2f0e73`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/c2f0e730c7caa5ab644b7049ea7ffa333d09891a))
+- **content:** Update 050 section title to match master plan (#CNT-04) — Shamsia ([`1a407fd`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/1a407fdeb72864e52b61d177fce71608aab639b6))
+- **backend:** Dashboard summary MVP 5.6 contract uyumu (#FE-21) #96 — lerkush ([`72a915a`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/72a915aec697c3b2e9e45f1451d9b825cd0cf174))
+- **backend:** Ruff E501 satır uzunluğu düzeltmesi (#FE-21) #96 — lerkush ([`dd94d2f`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/dd94d2f5f7ebbb3fef11e40de31ce2128b24e720))
+- **backend:** Ruff format düzeltmesi (#FE-21) — lerkush ([`cdb4945`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/cdb494509125a358844b3b110ab6a1839b173eca))
+- **backend:** User None guard HTTPException ile değiştirildi (#FE-21) #96 — lerkush ([`8e13dd0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/8e13dd0f2110919a046e72bbd16cf8ad2bc12662))
+- **frontend:** Align Dockerfile paths with compose build context — Alper ([`b353fee`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b353fee3ea9da28e9a19c0a26a75a5ecaa07ce35))
+- **a11y:** Improve course listing controls and heading order (#FE-19) — Alper ([`7657f9c`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/7657f9c70854e75e8da2e2a1191d5228a78f21fe))
+- **ui:** Prevent section content overflow on mobile (#FE-19) — Alper ([`719cc12`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/719cc12d661223d9980ee9b5f75f3ec47c20b430))
+
+
+### 💅 Stil
+- Fix ruff import ordering — Shamsia ([`bf4e328`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/bf4e328fb38380949caa211c28d85bea271239e2))
+- Normalize main imports for ruff — Shamsia ([`8cbd3d6`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/8cbd3d659454d27f54ef5985155b166631097ffb))
+- Simplify main model import for ruff — Shamsia ([`57cab24`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/57cab24b6b0fe4ee6356379e20e753c2fdd9e606))
+- Reorder alembic imports for ruff — Shamsia ([`0bcc216`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0bcc216940fc11cec43f3389fec245e2029e5d2c))
+- Normalize main import groups for ruff — Shamsia ([`130f7d8`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/130f7d8d1bfe0f974c40b4c7e8dc3de05cf73239))
+- Reorder stdlib imports in main — Shamsia ([`56dab31`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/56dab31c2909a6c806f8e370d4af0f9fdccbdaf9))
+- Apply ruff import fix to main — Shamsia ([`56b0895`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/56b08953b2fabf455deef25a77fbf280a0a5e9be))
+- **enrollment:** Apply ruff import ordering — Shamsia ([`641884b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/641884bb5471984b1078b5f4da23199e079c21e0))
+- **frontend:** Use Infinity for course detail staleTime (#FE-22) — Alper ([`92248f0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/92248f06d7e1d555bc2f9c23376bd49aac77d50f))
+- Fix E501 in migration 007 (line too long) — maliuyanik ([`cd8bca8`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/cd8bca87ea642e3a407fd8ae0d30aeec6678eef3))
+- Apply pre-commit auto-fixes (whitespace, eof, prettier) — karalarmehmet ([`71f5290`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/71f5290cb87b48382397dc51950b876d1b4cd283))
+- Clean hardcoded quiz error button (#FE-18) — Alper ([`87b751e`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/87b751eeaf94bb26b96888c45e41537a5f871b4c))
+
+
+### 🔧 Refactoring
+- **api:** Replace regex status parsing with typed BackendError — belmaaz ([`06220de`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/06220deaefd6356d3dfc3fd7d81bf01e0ee0fe9c))
+- **backend:** BE-16 Python 3.13 ve Pydantic v2 uyumluluğu, test coverage ekleme #34 — ismail arıcıoğlu ([`878bf6f`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/878bf6f866f2b4a204721bfd9456a23e5a7ca90f))
+- **backend:** BE-16 çifte satır düzeltme #34 — ismail arıcıoğlu ([`b909cf1`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b909cf1e889d9894a29333794656421b340e5adf))
+- **enrollment:** Be-17 ruff refactor — fatih ([`204dae7`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/204dae7c47c69daa30d66e5fa62a147d5b00744a))
+- Be-17 review — fatih ([`2e21ee7`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2e21ee7af2969cea2ddc3ff29d0c3b39b557b813))
+- Be-17 review refactor — fatih ([`47cbcd5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/47cbcd54b772355465c05bf6906c23cde80ba8ce))
+- **enrollment:** Be-17 ruff refactor — fatih ([`7dcb487`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/7dcb487ef985f450ef2ba8ad055f96ec8aa82634))
+- Be-17 review — fatih ([`3a2c9c0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3a2c9c03806e09a1fa503faf50bed061af50881d))
+- **enrollment:** Be-17 ruff refactor — fatih ([`cfcfef6`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/cfcfef61c0f31d8dbe0b19ddfcc9866cea8b7c7f))
+- **frontend:** Remove build-time course fetch from section page (#FE-22) — Alper ([`9a81e22`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/9a81e22053e78f0a72bcc3fb6c28de635dd8d60a))
+- **frontend:** Resolve runtime courseId and gate section completion until loaded (#FE-22) — Alper ([`358df73`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/358df73d97cbfe809bf9f4d29bb4ce5238fa01a7))
+- **frontend:** Switch course fetches to pure SSG revalidation strategy (#FE-22) — Alper ([`d3d3196`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d3d319689bab0dea70da0e7ab75f8e57c06e47da))
+- **quiz:** Sort attempt answers, improve IDOR security and add happy path test — fatih ([`f0c7d99`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/f0c7d99f5c5a93d78d826f4f4cc2b28195b48d67))
+- **frontend:** Use shared ui components in course flows (#FE-18) — Alper ([`d6dfc04`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d6dfc0440caf59bbb96f357a5efe48b2638119f3))
+- **frontend:** Centralize dashboard ui component usage (#FE-18) — Alper ([`bf45fda`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/bf45fdae0638e5a1034d7cfad6d43eaa9f120469))
+- BE-26 review refactor — fatih ([`93094dd`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/93094ddcd7d64c4dee458787f1402cc5e3985ccb))
+- **frontend:** Shows skeleton in ui only if the 300ms+ condition is met (#FE-19) — Alper ([`2feb83c`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2feb83cd6d712e04313c265144c65341aeb0d228))
+- **my-courses:** Remove getEnrolledCourses stub from fetchCourses (#FE-26) — lerkush ([`d631a95`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d631a956236c53a026d568c604700bb7bbcabb00))
+
+
+### 🚀 Yeni Özellikler
+- **frontend:** Section içerik sayfası SSG + client progress (#FE-10) — belmaaz ([`4d080a5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/4d080a57801531d9ed0dd163d4abaf1ec9b37b8c))
+- **FE-10:** Section content page with MDX render and client progress — belmaaz ([`3330609`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/33306093065e964eb59b6cfa16b9455caae3c2cf))
+- **backend:** BE-16 Section Progress API için servis, router ve şemalar eklendi #34 — ismail arıcıoğlu ([`f4dde7d`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/f4dde7d76e9044da4a0ec21fb2a5b5e94173fd68))
+- **enrollment:** Add enrollment api with duplicate guard — Shamsia ([`0264647`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0264647c4fec8a78007ac47d532669c9ecf3b5a7))
+- **backend:** Add quiz attempt API with randomization and NF-05 security (#BE-18) — belmaaz ([`43675a8`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/43675a8c88cbb31bf446840c3f36dfaa5f9604c0))
+- **backend:** Implement BE-18 quiz attempt API with NF-05 security — belmaaz ([`3da9df1`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3da9df147e9638c9851713dbd63a7fb7094bd9cd))
+- **enrollment:** GET Enrollment Progress API implemented (#BE-17) — fatih ([`26acfab`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/26acfab42a410a52d8ac296f697a0090380b42cc))
+- **enrollment:** GET Enrollment Progress API implemented (#BE-17) — fatih ([`9066ee3`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/9066ee32003de1999f73f377221d1f6674bf6118))
+- **enrollment:** GET Enrollment Progress API implemented (#BE-17) — fatih ([`fa61ce0`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/fa61ce0cba757453378d2e7da4f8fcb426b26d7f))
+- **frontend:** Add reusable useCourseDetail hook with infinite stale cache (#FE-22) — Alper ([`aff677e`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/aff677e10a63a89262ec187461f03663025d7be4))
+- **quiz:** BE-19 quiz submit & evaluation API — belmaaz ([`f332e28`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/f332e288ae11a788eb1b61371de18e129d58f87d))
+- **backend:** BE-22 dashboard özet API geliştirmesi #47 — ismail arıcıoğlu ([`29a4a44`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/29a4a44d7c35d63d2960f1e2638d2da332ae51dc))
+- **db:** Remove duration_seconds server_default from quizzes (#BE-21) — maliuyanik ([`2742b57`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2742b57605270483ce315fbf29497d4e03815e1a))
+- **FE-13:** Quiz sayfası soru akışı ve timer — belmaaz ([`fbbcf5b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/fbbcf5bd178264eaacd9d9c769c9ad738bf350e0))
+- **quiz:** Implement quiz results and history with refactoring — fatih ([`ce4c212`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/ce4c2127a151fd39b5f699a07624fd121bf73b0b))
+- **quiz:** Quiz result screen (#FE-14) — Enes Eren Seven ([`ab3e95c`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/ab3e95c5e3d8f96e4b3ba751c6e09296b787cf99))
+- **quiz:** Location changed, question_text added, notes updated. (#FE-14) — Enes Eren Seven ([`0b84eac`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0b84eacbb6be267e8a24a8bc13d5d02e5e8c3333))
+- **quiz:** Window deleted, use-client added,api fixed,cookies deleted, guiz-attempts fixed, — Enes Eren Seven ([`3fbdc26`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3fbdc26af72518d188788f4cff51888218182620))
+- **quiz:** Conflict resolved (#FE-14-quiz-result) — Enes Eren Seven ([`a40be01`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/a40be01ba4e0eb5617dda1619d0104d76d1f32f6))
+- **quiz:** HandleBackToCourse modified, data-total is modified, time_spent_seconds modified, onViewHistory is commented (#FE-14) — Enes Eren Seven ([`d70261a`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d70261ac3e61887a334e82328123d03ce75030cf))
+- **quiz:** The courseslug variable has been removed. handleBackToCourse returns the courses. (#FE-14) — Enes Eren Seven ([`73e9a98`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/73e9a985b9374c959d223c09e4ea54c60139fe44))
+- **landing:** Proxy ile landing akışı sağlandı — süleyman mercan ([`bb94f4d`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/bb94f4de00e0de9a5e15a801971d35545a471170))
+- **dashboard:** Dashboard added — süleyman mercan ([`6868fce`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/6868fce2ecf0bd3b6b6d43325018e489bad25667))
+- **frontend:** Dasbhoard fe-15 — süleyman mercan ([`f6fdab5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/f6fdab512c87099da9c5b7d1e20b12078e039986))
+- **backend:** BE-22 Test File — ismail arıcıoğlu ([`7524a07`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/7524a07b8b6028b7e52b3aa803f1808d62a7299c))
+- Landing page — süleyman mercan ([`17044bf`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/17044bf4336f428b800ba80b6c2b7fbea0535ff3))
+- **frontend:** Add shared ui component exports (#FE-18) — Alper ([`3cd1a69`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3cd1a694058fba8a898a1be590a9db7274e0167d))
+- Update proxy — süleyman mercan ([`7054c9f`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/7054c9fd66df741332f9dbe5bfc33f13383b3b7f))
+- **team-page:** Team görselleri ve sayfaıs eklendi — süleyman mercan ([`f175563`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/f1755639eae7b7a098c782f11c0db6eec542212d))
+- **team-page:** Team görselleri ve sayfaıs eklendi — süleyman mercan ([`e687b48`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/e687b485e2a0d6c524cfecd5fed5f2b9ea0cba03))
+- **fe-17:** Empty stats — süleyman mercan ([`781ffef`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/781ffef6d7bacded8edfe0ab35d5edaaf300d91e))
+- **frontend:** Mock katman temizliği ve dashboard-ui.config düzenlemesi (#FE-21) #96 — lerkush ([`61d5bfc`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/61d5bfcea85b759080863c1ec676a13411e5cfce))
+- **auth:** Migrate to secure cookie-based authentication (#BE-26) — fatih ([`592dd1a`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/592dd1a3cbc07c1d9d9c52d62650d95864160ab0))
+- **logo:** Logo eklendi — süleyman mercan ([`73f8851`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/73f8851a8f863c681da5e9a2a77b9c3b5b754706))
+- **logo:** Logo eklendi — süleyman mercan ([`073afcd`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/073afcd1815533a6dfd123628ca37f1e8322a56a))
+- **logo:** Logo eklendi — süleyman mercan ([`3c18274`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/3c18274532f7d5bc149c91d10b7ed34ca16e50d4))
+- **my-courses:** Add enrollments query key (#FE-26) — lerkush ([`5b0ef39`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5b0ef39848c5ebfd418c1dc2832285f3835e4f0c))
+- **my-courses:** Add EnrolledCourseItem and EnrollmentListResponse types (#FE-26) — lerkush ([`8b1651f`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/8b1651f366aa300eeb6390fc9a5611bb07983daf))
+- **my-courses:** Add enrollment service (#FE-26) — lerkush ([`6d28063`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/6d280635e70a80a6a19c50fa35f1a25b4ebdad23))
+- **my-courses:** Add useEnrollments React Query hook (#FE-26) — lerkush ([`60d99ca`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/60d99ca18983b0f5871c0fc7db23474d6fc22088))
+- **my-courses:** Migrate page to client component with React Query (#FE-26) — lerkush ([`e916b4e`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/e916b4ed06c97edbb3b1d703935bd77916fcdbaa))
+- **my-courses:** Wire up enrollment button and add enrolled state check (#FE-26) — lerkush ([`52c9cad`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/52c9cad90acb01d2453237b76afa7c97494d98df))
 
 
 ## [1.1.0] — 2026-04-15
+
+### ⚙️ Genel
+- **infra:** Sync release-1.1.0 changes back to develop — lerkush ([`4c476ff`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/4c476ff0827243eeaab51101a6cbe4d084ad0dce))
+
+
+### 📚 Dokümantasyon
+- **readme:** Update README for v1.1.0 — fix paths, versions, project structure — lerkush ([`99f9f46`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/99f9f46d737df504cae134f133e70ebc38e82ef1))
+
+
+## [1.0.0] — 2026-04-03
 
 ### ⚙️ Genel
 - Apply lint/format fixes (#FE-05-06-07) — Alper ([`b2f46ad`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/b2f46adb7f08e307554c06f999c3d30d6c1af725))
@@ -17,7 +176,6 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - **auth:** Fix type annotations and formatting for oauth unlinking — maliuyanik ([`5f298c5`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5f298c52aeaaaccb9901ae5a84d31da4086fb92f))
 - Add infrastructure/**/.env to gitignore — karalarmehmet ([`09b9268`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/09b9268b58a12ee6f3442caa3ae5e989b5b024f7))
 - **content:** Remove placeholder MDX test courses — karalarmehmet ([`ac8b11c`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/ac8b11ce9db8e337b4e2d3e5f6cc0ca8f8c810f9))
-- **infra:** Sync release-1.1.0 changes back to develop — lerkush ([`4c476ff`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/4c476ff0827243eeaab51101a6cbe4d084ad0dce))
 
 
 ### ✅ Testler
@@ -92,7 +250,6 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - **content:** Add content team setup guide and mdx rules (#CNT-01) — lerkush ([`5a26ec3`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/5a26ec33c96fb6db5a5069129ad2e357a60a885f))
 - **frontend:** Add TODOs and remove comment-outed code (#FE-09) — Alper Akcan ([`05e8e64`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/05e8e64ad5ad5667443e58be13d55cad26a131a9))
 - Add Betterleaks CI article — Shamsia ([`d744f5b`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d744f5b5fb18f97731dd651f2da9dfeb86645372))
-- **readme:** Update README for v1.1.0 — fix paths, versions, project structure — lerkush ([`99f9f46`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/99f9f46d737df504cae134f133e70ebc38e82ef1))
 
 
 ### 🔁 CI/CD
@@ -152,6 +309,7 @@ Tüm önemli değişiklikler burada belgelenmiştir.
 - **BE-13:** Add seed_content.py with UPSERT and dry-run support — karalarmehmet ([`d101e33`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/d101e33dd6e422cf143ca81dfc9268ff0e36e49b))
 - **content:** Add terraform-ile-iac course 8 sections + quiz (#CNT-07) #183 — lerkush ([`0d65b21`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/0d65b21d5633f0be7b93321b4342d596bd4386b1))
 - **content:** Add cicd-kavramlarina-giris sections 1-8 and quiz 15 questions (#CNT-06) — Enes Eren Seven ([`62db6ca`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/62db6caba1b74e04f182d6f12d7b995ebb32a528))
+- **content:** Publish sprint 4 courses (#185) — Shamsia ([`2260fca`](https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops/commit/2260fca6bd67281068f56418fb344f1f28f43590))
 
 
 ## [0.2.0] — 2026-04-03

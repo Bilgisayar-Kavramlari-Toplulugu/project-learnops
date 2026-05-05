@@ -13,6 +13,12 @@ class SectionOut(BaseModel):
     order_index: int
 
 
+class SectionContentOut(SectionOut):
+    """SectionOut extended with MDX body — used by the section detail endpoint."""
+
+    content: Optional[str] = None
+
+
 class CourseListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -27,6 +33,7 @@ class CourseListItem(BaseModel):
 class CourseDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: UUID
     slug: str
     title: str
     description: Optional[str] = None

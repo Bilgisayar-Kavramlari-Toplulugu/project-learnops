@@ -9,7 +9,7 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Kaynak kodu kopyala
-COPY . .
+COPY . ./
 
 # Production build
 RUN npm run build

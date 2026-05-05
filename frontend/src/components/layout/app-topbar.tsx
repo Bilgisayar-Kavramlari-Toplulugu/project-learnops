@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui";
 import type { DashboardProfile } from "@/types";
 import { UserMenu } from "./topbar/user-menu";
 import { ThemeToggle } from "./theme-toggle";
@@ -22,7 +22,7 @@ export function AppTopbar({ user, mobileNav }: AppTopbarProps) {
   return (
     <header className="flex items-center justify-between gap-3 rounded-2xl border border-blue-100/80 bg-white/80 px-3 py-2.5 shadow-sm shadow-blue-100/40 backdrop-blur sm:px-4 dark:border-slate-700/80 dark:bg-slate-900/70 dark:shadow-black/20">
       <div className="flex items-center gap-2">
-        <div className="lg:hidden">{mobileNav}</div>
+        <div className="md:hidden">{mobileNav}</div>
         <div className="hidden items-center gap-2 sm:flex">
           <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             LearnOps Panel

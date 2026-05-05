@@ -3,5 +3,10 @@ export const routes = {
   login: "/login",
   dashboard: "/dashboard",
   courses: "/courses",
+  myCourses: "/my-courses",
   profile: "/profile",
+  team: "/team",
+  courseDetail: (slug: string) => `/courses/${slug}`,
+  section: (slug: string, sectionIdStr: string) => `/courses/${slug}/sections/${sectionIdStr}`,
+  quiz: (slug: string) => `/courses/${slug}/quiz`,
 } as const;

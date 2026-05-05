@@ -85,7 +85,7 @@ Administrator (veya Cloud)    Developer (uygulama ekibi)
 └──────────────────┘         └──────────────────┘
 ```
 
-**PersistentVolume (PV):** Cluster yöneticisi tarafından oluşturulan gerçek storage kaynağı.  
+**PersistentVolume (PV):** Cluster yöneticisi tarafından oluşturulan gerçek storage kaynağı.
 **PersistentVolumeClaim (PVC):** Developer'ın storage talebini ifade ettiği kaynak. PV ile eşleşir.
 
 ---
@@ -200,7 +200,7 @@ spec:
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data   # DB verileri burada saklanır
-      
+
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:

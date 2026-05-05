@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { Menu } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button, Sheet, SheetContent, SheetTrigger } from "@/components/ui";
 import { routes } from "@/lib/routes";
 import type { DashboardProfile, SidebarItem } from "@/types";
 import { AppFooter } from "./app-footer";
@@ -25,7 +24,7 @@ export function DashboardShell({
   return (
     <div className="min-h-dvh">
       <div className="mx-auto flex min-h-dvh w-full max-w-[1600px]">
-        <aside className="hidden w-[286px] shrink-0 px-2 py-3 lg:block">
+        <aside className="hidden w-[286px] shrink-0 px-2 py-3 md:block">
           <div className="sticky top-3">
             <AppSidebar items={sidebarItems} activePath={activePath} />
           </div>
@@ -37,9 +36,9 @@ export function DashboardShell({
               <Sheet>
                 <SheetTrigger asChild>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon-sm"
-                    className="rounded-xl text-slate-600 hover:bg-blue-50 lg:hidden"
+                    className="rounded-xl border-slate-200 bg-white text-slate-600 hover:bg-blue-50 md:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
                   >
                     <Menu className="size-5" />
                   </Button>

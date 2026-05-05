@@ -1,4 +1,4 @@
-import base64  # noqa: test ci skip detection
+import base64
 
 from cryptography.fernet import Fernet
 

@@ -46,8 +46,6 @@ assert any(host in TEST_DATABASE_URL for host in ("localhost", "test", "db:")), 
 
 # ---------------------------------------------------------------------------
 # Function-scoped connection with nested transaction (SAVEPOINT)
-# Rollback after each test — commit() in router becomes RELEASE SAVEPOINT,
-# which does NOT persist. Outer rollback cleans all test data.
 # ---------------------------------------------------------------------------
 
 
@@ -95,7 +93,7 @@ async def client(db_session: AsyncSession) -> AsyncClient:
 
 
 # ---------------------------------------------------------------------------
-# Test data
+# Test data & Auth
 # ---------------------------------------------------------------------------
 
 
@@ -122,6 +120,22 @@ async def test_user(db_session: AsyncSession) -> User:
     await db_session.flush()
 
     return user
+
+
+@pytest_asyncio.fixture
+async def token_cookies(test_user: User) -> dict[str, str]:
+    """
+    Merkezi auth fixture'ı — Cookie bazlı (BE-26).
+
+    Kullanım:
+        resp = await client.get("/v1/endpoint", cookies=token_cookies)
+
+    conftest içinde olduğu için db_session ile aynı transaction'ı paylaşır.
+    """
+    from app.services.jwt_service import create_access_token
+
+    token = create_access_token(sub=str(test_user.id))
+    return {settings.ACCESS_TOKEN_COOKIE_NAME: token}
 
 
 @pytest_asyncio.fixture
