@@ -58,7 +58,7 @@ const mdxComponents = {
   ),
   pre: (props: React.HTMLAttributes<HTMLPreElement>) => (
     <pre
-      className="bg-zinc-900 dark:bg-zinc-950 text-zinc-100 rounded-2xl p-5 overflow-x-auto mb-5 text-sm font-mono border border-zinc-800"
+      className="max-w-full bg-zinc-900 dark:bg-zinc-950 text-zinc-100 rounded-2xl p-5 overflow-x-auto mb-5 text-sm font-mono border border-zinc-800"
       {...props}
     />
   ),
@@ -117,7 +117,7 @@ export default async function SectionPage({ params }: PageProps) {
   };
 
   return (
-    <div className="flex h-full bg-zinc-50 dark:bg-slate-900/40 p-4 lg:p-6 gap-4 rounded-2xl">
+    <div className="flex h-full min-w-0 bg-zinc-50 dark:bg-slate-900/40 p-3 sm:p-4 lg:p-6 gap-4 rounded-2xl">
       <SectionActions
         courseSlug={slug}
         currentSectionId={section_id_str}
@@ -125,8 +125,8 @@ export default async function SectionPage({ params }: PageProps) {
         prevSection={prevSection}
         nextSection={nextSection}
       >
-        <article className="min-w-0 px-6 py-8 lg:px-10 xl:px-16">
-          <div className="max-w-3xl mx-auto">
+        <article className="w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 xl:px-16">
+          <div className="mx-auto w-full max-w-3xl min-w-0">
             <div className="mb-8 pb-6 border-b border-zinc-200 dark:border-zinc-800">
               <p className="text-xs font-bold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-2">
                 Bölüm {allSections.findIndex((s) => s.id === section_id_str) + 1} /{" "}
@@ -136,7 +136,7 @@ export default async function SectionPage({ params }: PageProps) {
                 {frontmatter.title}
               </h1>
             </div>
-            <div className="prose-zinc max-w-none">
+            <div className="prose-zinc max-w-none min-w-0 overflow-hidden">
               {/*
                * XSS notu (AC karşılandı): next-mdx-remote/rsc sunucu tarafında
                * render eder; raw HTML client'a inject edilmez.

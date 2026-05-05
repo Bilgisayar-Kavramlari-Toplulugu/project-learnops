@@ -68,6 +68,7 @@ export default function CoursesClient({
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
             <Input
               type="text"
+              aria-label="Kurs ara"
               placeholder="Kurs ara ..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -78,10 +79,11 @@ export default function CoursesClient({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
+                aria-label="Arama metnini temizle"
                 onClick={() => setSearchQuery("")}
                 className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               >
-                <XCircle className="w-5 h-5" />
+                <XCircle className="w-5 h-5" aria-hidden="true" />
               </Button>
             )}
           </div>
@@ -96,6 +98,7 @@ export default function CoursesClient({
             <div className="hidden sm:block w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2" />
 
             <select
+              aria-label="Kategori filtresi"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="w-full sm:w-40 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer shadow-sm appearance-none"
@@ -109,6 +112,7 @@ export default function CoursesClient({
             </select>
 
             <select
+              aria-label="Zorluk seviyesi filtresi"
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value)}
               className="w-full sm:w-36 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer shadow-sm appearance-none"
@@ -136,9 +140,9 @@ export default function CoursesClient({
           <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mb-6 shadow-inner">
             <Search className="w-12 h-12 text-indigo-400 dark:text-indigo-500" />
           </div>
-          <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-3">
             Kurs bulunamadı
-          </h3>
+          </h2>
           <p className="text-zinc-500 dark:text-zinc-400 max-w-md mb-8 text-lg">
             Arama kriterlerinize uygun kurs bulamadık. Arama sorgunuzu veya filtreleri değiştirmeyi
             deneyin.
