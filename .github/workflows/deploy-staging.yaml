@@ -297,8 +297,7 @@ jobs:
       - name: Build & Push Frontend
         uses: docker/build-push-action@v7
         with:
-          context: .
-          file: frontend/Dockerfile
+          context: ./frontend
           platforms: linux/amd64
           push: true
           tags: |
