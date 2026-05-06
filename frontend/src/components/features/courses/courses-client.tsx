@@ -54,6 +54,7 @@ export default function CoursesClient({
         <div className="flex-1 w-full space-y-6">
           <div className="flex items-center gap-4">
             {headerSlot}
+          </div>
 
           <div className="relative w-full max-w-2xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
