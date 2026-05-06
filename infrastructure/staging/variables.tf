@@ -145,3 +145,10 @@ variable "content_job_image" {
   type        = string
   default     = "europe-west3-docker.pkg.dev/learnops-staging/project-learnops-backend/content-job:latest"
 }
+
+variable "load_test_bypass_secret" {
+  description = "Secret value for X-Load-Test-Secret header to bypass rate limiting during load tests. Set to empty string to disable."
+  type        = string
+  default     = ""
+  sensitive   = true
+}

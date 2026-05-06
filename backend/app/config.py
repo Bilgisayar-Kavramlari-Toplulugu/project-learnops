@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     # Token encryption
     TOKEN_ENCRYPTION_KEY: str = ""
 
+    # Load test bypass — set to a random secret in staging to allow k6
+    # to skip per-IP rate limiting. Leave empty to disable bypass.
+    LOAD_TEST_BYPASS_SECRET: str = ""
+
     # Environment
     ENVIRONMENT: str = "development"
     BACKEND_INTERNAL_URL: str = "http://backend:8080"
