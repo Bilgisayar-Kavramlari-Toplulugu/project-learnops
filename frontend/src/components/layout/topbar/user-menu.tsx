@@ -19,11 +19,17 @@ import type { DashboardProfile } from "@/types";
 import { dropdownItemClass, dropdownPanelClass } from "./topbar-menu-styles";
 
 interface UserMenuProps {
-  user: DashboardProfile;
+  user?: DashboardProfile;
 }
 export function UserMenu({ user }: UserMenuProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { logout } = useAuth();
+
+  if (!user) {
+    return (
+      <div className="h-10 w-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+    );
+  }
 
   async function handleLogout() {
     if (isLoggingOut) return;
@@ -44,8 +50,7 @@ export function UserMenu({ user }: UserMenuProps) {
         >
           <InitialsAvatar
             name={user.display_name}
-            avatarType={user.avatar_type}
-            className="size-7"
+            avatarType={user.avatar_type}            className="size-7"
           />
           <span className="hidden min-w-0 flex-col items-start text-left sm:inline-flex">
             <span className="max-w-[140px] truncate text-sm font-semibold">
@@ -60,8 +65,8 @@ export function UserMenu({ user }: UserMenuProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className={cn(dropdownPanelClass, "w-56")}>
         <DropdownMenuLabel className="space-y-0.5 rounded-xl bg-blue-50/55 px-2.5 py-2 dark:bg-slate-800/60">
-          <p className="font-semibold text-slate-900 dark:text-slate-100">{user.display_name}</p>
-          <p className="text-xs font-normal text-slate-500 dark:text-slate-400">{user.email}</p>
+          <p className="font-semibold text-slate-900 dark:text-slate-100">{user?.display_name}</p>
+          <p className="text-xs font-normal text-slate-500 dark:text-slate-400">{user?.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className={dropdownItemClass}>
