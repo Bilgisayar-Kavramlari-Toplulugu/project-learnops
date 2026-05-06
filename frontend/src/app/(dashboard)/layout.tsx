@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-client";
-import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
 import { fetchProfileServer } from "@/lib/fetchProfile";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
@@ -11,10 +10,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const initialProfile = await fetchProfileServer();
 
   return (
-    <DashboardLayoutClient
-      initialProfile={initialProfile}
-      sidebarItems={dashboardSidebarItems}
-    >
+    <DashboardLayoutClient initialProfile={initialProfile}>
       {children}
     </DashboardLayoutClient>
   );
