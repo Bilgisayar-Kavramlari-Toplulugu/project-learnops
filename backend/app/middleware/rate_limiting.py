@@ -65,7 +65,8 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         # The secret must be set in config (LOAD_TEST_BYPASS_SECRET) and non-empty.
         if (
             settings.LOAD_TEST_BYPASS_SECRET
-            and request.headers.get(LOAD_TEST_HEADER) == settings.LOAD_TEST_BYPASS_SECRET
+            and request.headers.get(LOAD_TEST_HEADER)
+            == settings.LOAD_TEST_BYPASS_SECRET
         ):
             return await call_next(request)
 
