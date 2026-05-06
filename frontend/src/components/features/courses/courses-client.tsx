@@ -1,21 +1,21 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import type { ReactNode } from "react";
 import CourseItem from "@/components/features/courses/course-item";
 import { Course } from "@/types";
-import { Search, SlidersHorizontal, BookOpen, XCircle } from "lucide-react";
+import { Search, SlidersHorizontal, XCircle } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 
 interface CoursesClientProps {
   courses: Course[];
-  title?: string;
-  subtitle?: string;
+  /** Server-rendered header slot (h1 + subtitle) for LCP optimisation */
+  headerSlot: ReactNode;
 }
 
 export default function CoursesClient({
   courses,
-  title = "Tüm Kurslar",
-  subtitle = "Yeni beceriler keşfetmek için eğitimlerimize göz atın.",
+  headerSlot,
 }: CoursesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -48,21 +48,12 @@ export default function CoursesClient({
   };
 
   return (
-    <div className="space-y-10 w-full animate-in fade-in duration-500">
+    <div className="space-y-10 w-full motion-safe:animate-[fadeIn_0.5s_ease-out_both]">
       {/* Header & Search Area */}
       <div className="flex flex-col xl:flex-row gap-6 items-end justify-between w-full bg-white dark:bg-zinc-900/20 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <div className="flex-1 w-full space-y-6">
           <div className="flex items-center gap-4">
-            <div className="p-3.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-inner">
-              <BookOpen className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
-                {title}
-              </h1>
-              <p className="text-zinc-500 dark:text-zinc-400 mt-1 font-medium">{subtitle}</p>
-            </div>
-          </div>
+            {headerSlot}
 
           <div className="relative w-full max-w-2xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
