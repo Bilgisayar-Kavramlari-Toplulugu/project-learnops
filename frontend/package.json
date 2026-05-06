@@ -33,6 +33,12 @@
     "tailwind-merge": "^3.5.0",
     "zustand": "^5.0.11"
   },
+  "browserslist": [
+    "chrome >= 107",
+    "firefox >= 104",
+    "safari >= 16",
+    "edge >= 107"
+  ],
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
