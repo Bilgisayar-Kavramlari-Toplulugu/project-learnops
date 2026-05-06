@@ -427,6 +427,16 @@ resource "google_cloud_run_v2_service" "backend" {
         value = "staging"
       }
 
+      # Load test bypass — allows k6 to skip per-IP rate limiting.
+      # Set to empty string to disable. Never use a predictable value.
+      dynamic "env" {
+        for_each = var.load_test_bypass_secret != "" ? [1] : []
+        content {
+          name  = "LOAD_TEST_BYPASS_SECRET"
+          value = var.load_test_bypass_secret
+        }
+      }
+
       env {
         name  = "BACKEND_INTERNAL_URL"
         value = local.backend_run_url

@@ -90,6 +90,7 @@ jobs:
           github_repo = "${{ github.event.repository.name }}"
           backend_image = "${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-backend/backend:latest"
           frontend_image = "${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ github.event.repository.name }}-frontend/frontend:latest"
+          load_test_bypass_secret = "${{ secrets.LOAD_TEST_BYPASS_SECRET }}"
           EOF
 
       - name: Terraform Init

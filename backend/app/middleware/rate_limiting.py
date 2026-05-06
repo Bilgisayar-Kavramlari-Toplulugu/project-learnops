@@ -7,11 +7,14 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 _instance: "RateLimiterMiddleware | None" = None
 
 AUTH_PATH_PREFIX = "/auth/"
+LOAD_TEST_HEADER = "X-Load-Test-Secret"
 
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
@@ -56,6 +59,14 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
         # Skip health check
         if path in ["/", "/health", "/docs", "/redoc"]:
+            return await call_next(request)
+
+        # Bypass rate limiting for load tests when a valid secret is provided.
+        # The secret must be set in config (LOAD_TEST_BYPASS_SECRET) and non-empty.
+        if (
+            settings.LOAD_TEST_BYPASS_SECRET
+            and request.headers.get(LOAD_TEST_HEADER) == settings.LOAD_TEST_BYPASS_SECRET
+        ):
             return await call_next(request)
 
         max_requests, window_seconds = self.get_rate_limit(path)
