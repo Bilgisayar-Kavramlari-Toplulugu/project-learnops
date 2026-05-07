@@ -104,7 +104,7 @@ export function SectionActions({
                 className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               >
                 <ChevronLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">\u00d6nceki:</span>
+                <span className="hidden sm:inline">Önceki:</span>
                 <span className="hidden max-w-[200px] truncate sm:inline">{prevSection.title}</span>
               </Link>
             ) : (
