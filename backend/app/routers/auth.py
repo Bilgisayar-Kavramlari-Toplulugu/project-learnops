@@ -201,7 +201,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         if not expected_state or received_state != expected_state:
             logger.error("State mismatch in OAuth callback")
             return RedirectResponse(
-                url=f"{frontend_url}/login?error=invalid_state&provider=google", status_code=302
+                url=f"{frontend_url}/login?error=invalid_state&provider=google",
+                status_code=302,
             )
 
         # Code'u al
@@ -211,7 +212,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         if not code:
             logger.error("No code in request")
             return RedirectResponse(
-                url=f"{frontend_url}/login?error=invalid_code&provider=google", status_code=302
+                url=f"{frontend_url}/login?error=invalid_code&provider=google",
+                status_code=302,
             )
 
         # Exchange code for tokens
@@ -236,7 +238,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             if "error" in tokens:
                 logger.error(f"Token error: {tokens.get('error')}")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=google", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=google",
+                    status_code=302,
                 )
 
         # Get user info
@@ -251,13 +254,15 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
                     f"Google userinfo failed with status {user_response.status_code}"
                 )
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=google", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=google",
+                    status_code=302,
                 )
             user_info = user_response.json()
             if "email" not in user_info:
                 logger.error("Google userinfo response missing email")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=google", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=google",
+                    status_code=302,
                 )
             logger.info(f"User email: {user_info.get('email')}")
 
@@ -341,7 +346,8 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
     except Exception as e:
         logger.error(f"Callback error: {str(e)}")
         return RedirectResponse(
-            url=f"{frontend_url}/login?error=server_error&provider=google", status_code=302
+            url=f"{frontend_url}/login?error=server_error&provider=google",
+            status_code=302,
         )
 
 
@@ -406,7 +412,8 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
         if not expected_state or received_state != expected_state:
             logger.error("State mismatch in OAuth callback")
             return RedirectResponse(
-                url=f"{frontend_url}/login?error=invalid_state&provider=linkedin", status_code=302
+                url=f"{frontend_url}/login?error=invalid_state&provider=linkedin",
+                status_code=302,
             )
 
         code = request.query_params.get("code")
@@ -414,7 +421,8 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             error_param = request.query_params.get("error", "unknown")
             logger.error(f"No code in request, LinkedIn error: {error_param}")
             return RedirectResponse(
-                url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin", status_code=302
+                url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin",
+                status_code=302,
             )
 
         # Exchange code for tokens
@@ -437,7 +445,8 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             if "error" in tokens:
                 logger.error(f"Token error: {tokens.get('error')}")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin",
+                    status_code=302,
                 )
 
         # Get user info (LinkedIn OpenID Connect)
@@ -451,13 +460,15 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
                     f"LinkedIn userinfo failed with status {user_response.status_code}"
                 )
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin",
+                    status_code=302,
                 )
             user_info = user_response.json()
             if "email" not in user_info:
                 logger.error("LinkedIn userinfo response missing email")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=linkedin",
+                    status_code=302,
                 )
             logger.info(f"User email: {user_info.get('email')}")
 
@@ -543,7 +554,8 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
         await db.rollback()
         logger.error(f"LinkedIn callback error: {str(e)}")
         return RedirectResponse(
-            url=f"{frontend_url}/login?error=server_error&provider=linkedin", status_code=302
+            url=f"{frontend_url}/login?error=server_error&provider=linkedin",
+            status_code=302,
         )
 
 
@@ -634,7 +646,8 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
         if not expected_state or received_state != expected_state:
             logger.error("State mismatch in GitHub OAuth callback")
             return RedirectResponse(
-                url=f"{frontend_url}/login?error=invalid_state&provider=github", status_code=302
+                url=f"{frontend_url}/login?error=invalid_state&provider=github",
+                status_code=302,
             )
 
         code = request.query_params.get("code")
@@ -642,7 +655,8 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             error_param = request.query_params.get("error", "unknown")
             logger.error(f"No code in GitHub callback, error: {error_param}")
             return RedirectResponse(
-                url=f"{frontend_url}/login?error=oauth_failed&provider=github", status_code=302
+                url=f"{frontend_url}/login?error=oauth_failed&provider=github",
+                status_code=302,
             )
 
         redirect_uri = _github_redirect_uri(request)
@@ -667,14 +681,16 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             if "error" in tokens:
                 logger.error(f"GitHub token error: {tokens.get('error')}")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=github", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=github",
+                    status_code=302,
                 )
 
             gh_access_token = tokens.get("access_token")
             if not gh_access_token:
                 logger.error("GitHub did not return access token")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=github", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=github",
+                    status_code=302,
                 )
 
         # 2) GitHub kullanıcı bilgileri
@@ -689,7 +705,8 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             if user_response.status_code != 200:
                 logger.error(f"GitHub user info failed: {user_response.status_code}")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=github", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=github",
+                    status_code=302,
                 )
             user_info = user_response.json()
             logger.info(f"GitHub user id: {user_info.get('id')}")
@@ -702,7 +719,8 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             if not email:
                 logger.error("GitHub did not return any email for user")
                 return RedirectResponse(
-                    url=f"{frontend_url}/login?error=oauth_failed&provider=github", status_code=302
+                    url=f"{frontend_url}/login?error=oauth_failed&provider=github",
+                    status_code=302,
                 )
 
         # GitHub user ID integer; DB'de string olarak saklanır
@@ -791,7 +809,8 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
         await db.rollback()
         logger.error(f"GitHub callback error: {str(e)}")
         return RedirectResponse(
-            url=f"{frontend_url}/login?error=server_error&provider=github", status_code=302
+            url=f"{frontend_url}/login?error=server_error&provider=github",
+            status_code=302,
         )
 
 
