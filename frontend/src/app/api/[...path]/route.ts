@@ -27,6 +27,28 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
   responseHeaders.delete("content-encoding");
   responseHeaders.delete("transfer-encoding");
 
+  // For OAuth redirect responses (302/303) that carry Set-Cookie headers,
+  // Next.js App Router route handlers silently drop Set-Cookie on redirect
+  // responses. To ensure auth cookies reach the browser, we rewrite the
+  // redirect as a 200 HTML response that immediately meta-refreshes to the
+  // Location URL, while keeping all Set-Cookie headers intact.
+  if (
+    (response.status === 302 || response.status === 303) &&
+    response.headers.has("location") &&
+    response.headers.has("set-cookie")
+  ) {
+    const location = response.headers.get("location")!;
+    const nextResponse = new NextResponse(
+      `<!doctype html><html><head><meta http-equiv="refresh" content="0;url=${location}"></head><body></body></html>`,
+      { status: 200, headers: { "content-type": "text/html; charset=utf-8" } }
+    );
+    // Copy all Set-Cookie headers
+    response.headers.getSetCookie?.().forEach((cookie) => {
+      nextResponse.headers.append("set-cookie", cookie);
+    });
+    return nextResponse;
+  }
+
   return new NextResponse(response.body, {
     status: response.status,
     headers: responseHeaders,

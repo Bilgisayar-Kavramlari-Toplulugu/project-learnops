@@ -47,20 +47,20 @@ export function SectionActions({
 
     markComplete(currentSectionId, {
       onSuccess: () => {
-        toast.success("B\u00f6l\u00fcm tamamland\u0131!", {
-          description: "\u0130lerlemeniz kaydedildi.",
+        toast.success("Bölüm tamamlandı!", {
+          description: "İlerlemeniz kaydedildi.",
         });
       },
       onError: (error: unknown) => {
         const axiosError = error as AxiosError;
 
         if (axiosError?.response?.status === 403) {
-          toast.error("Bu kursa kay\u0131tl\u0131 de\u011filsiniz.", {
+          toast.error("Bu kursa kayıtlı değilsiniz.", {
             description: "Kursa kaydolarak ilerlemenizi takip edebilirsiniz.",
           });
         } else {
-          toast.error("B\u00f6l\u00fcm kaydedilemedi.", {
-            description: "\u0130lerlemeniz bu oturum i\u00e7in korundu.",
+          toast.error("Bölüm kaydedilemedi.", {
+            description: "İlerlemeniz bu oturum için korundu.",
           });
         }
       },
@@ -87,7 +87,7 @@ export function SectionActions({
       ) : (
         <CheckCircle2 className="h-4 w-4" />
       )}
-      {isCurrentCompleted ? "Tamamland\u0131" : "Tamamlad\u0131m"}
+      {isCurrentCompleted ? "Tamamlandı" : "Tamamladım"}
     </Button>
   );
 
