@@ -13,16 +13,22 @@ interface DashboardLayoutClientProps {
   /** Profile pre-fetched server-side; null means access token was expired,
    *  fall back to client-side useProfile() which triggers the refresh flow. */
   initialProfile: DashboardProfile | null;
+  allowAnonymous?: boolean;
   children: ReactNode;
 }
 
-export function DashboardLayoutClient({ initialProfile, children }: DashboardLayoutClientProps) {
+export function DashboardLayoutClient({
+  initialProfile,
+  allowAnonymous = false,
+  children,
+}: DashboardLayoutClientProps) {
   const pathname = usePathname();
   const { data: profile, isLoading } = useProfile({
     initialData: initialProfile ?? undefined,
+    enabled: !allowAnonymous,
   });
 
-  if (!isLoading && !profile) return <DashboardErrorState />;
+  if (!allowAnonymous && !isLoading && !profile) return <DashboardErrorState />;
 
   return (
     <DashboardShell user={profile} sidebarItems={dashboardSidebarItems} activePath={pathname}>

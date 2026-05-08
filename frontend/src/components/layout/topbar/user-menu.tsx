@@ -1,5 +1,5 @@
 "use client";
-import { LogOut, UserRound } from "lucide-react";
+import { LogIn, LogOut, UserRound } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -26,7 +26,18 @@ export function UserMenu({ user }: UserMenuProps) {
   const { logout } = useAuth();
 
   if (!user) {
-    return <div className="h-10 w-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />;
+    return (
+      <Button
+        asChild
+        variant="outline"
+        className="h-10 items-center gap-2 rounded-xl border-blue-100 bg-white/80 px-3 text-slate-700 shadow-xs dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
+      >
+        <Link href={routes.login}>
+          <LogIn className="size-4" />
+          Giriş Yap
+        </Link>
+      </Button>
+    );
   }
 
   async function handleLogout() {
