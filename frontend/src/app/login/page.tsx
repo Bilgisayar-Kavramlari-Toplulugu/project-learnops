@@ -7,19 +7,29 @@ import { routes } from "@/lib/routes";
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_state: "Oturum doğrulaması başarısız. Lütfen tekrar deneyin.",
   invalid_code: "Geçersiz yetkilendirme kodu. Lütfen tekrar deneyin.",
-  oauth_failed: "Google ile giriş başarısız. Lütfen tekrar deneyin.",
+  oauth_failed: "Giriş başarısız. Lütfen tekrar deneyin.",
   server_error: "Sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.",
+};
+
+const PROVIDER_NAMES: Record<string, string> = {
+  google: "Google",
+  linkedin: "LinkedIn",
+  github: "GitHub",
 };
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; provider?: string }>;
 }) {
-  const { error } = await searchParams;
-  const errorMessage = error
+  const { error, provider } = await searchParams;
+  let errorMessage = error
     ? (ERROR_MESSAGES[error] ?? "Bir hata oluştu. Lütfen tekrar deneyin.")
     : null;
+
+  if (errorMessage && error === "oauth_failed" && provider && PROVIDER_NAMES[provider]) {
+    errorMessage = `${PROVIDER_NAMES[provider]} ile giriş başarısız. Lütfen tekrar deneyin.`;
+  }
 
   return (
     <div className="min-h-screen bg-background">

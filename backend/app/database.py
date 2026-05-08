@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.pool import NullPool
 
 from app.config import settings
 
@@ -73,7 +72,10 @@ def _create_cloud_run_engine():
         "postgresql+asyncpg://",
         async_creator=get_connection,
         pool_pre_ping=True,
-        poolclass=NullPool,
+        pool_size=20,
+        max_overflow=30,
+        pool_timeout=30,
+        pool_recycle=1800,
     )
 
 

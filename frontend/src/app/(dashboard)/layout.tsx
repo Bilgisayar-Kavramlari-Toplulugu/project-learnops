@@ -1,23 +1,17 @@
-"use client";
-
 import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
 
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
-import { useProfile } from "@/hooks/profile/use-profile";
-import { DashboardErrorState, DashboardShellSkeleton } from "@/components/ui";
+import { DashboardLayoutClient } from "@/components/layout/dashboard-layout-client";
+import { fetchProfileServer } from "@/lib/fetchProfile";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const { data: profile, isLoading } = useProfile();
-
-  if (isLoading) return <DashboardShellSkeleton />;
-  if (!profile) return <DashboardErrorState />;
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+  // Fetch profile server-side so the avatar is included in the initial HTML.
+  // This eliminates the client-side GET /users/me from the LCP critical path.
+  // Falls back to null (client-side refresh flow) if the access token is expired.
+  const initialProfile = await fetchProfileServer();
 
   return (
-    <DashboardShell user={profile} sidebarItems={dashboardSidebarItems} activePath={pathname}>
+    <DashboardLayoutClient initialProfile={initialProfile}>
       {children}
-    </DashboardShell>
+    </DashboardLayoutClient>
   );
 }

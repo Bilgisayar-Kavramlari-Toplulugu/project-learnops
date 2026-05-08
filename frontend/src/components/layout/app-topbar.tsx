@@ -8,7 +8,7 @@ import { UserMenu } from "./topbar/user-menu";
 import { ThemeToggle } from "./theme-toggle";
 
 interface AppTopbarProps {
-  user: DashboardProfile;
+  user?: DashboardProfile;
   mobileNav?: ReactNode;
 }
 
