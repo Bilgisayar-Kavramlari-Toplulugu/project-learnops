@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { type AxiosError } from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { CourseDetail } from "@/types";
 import { Badge, Button, Card, CardContent, toast } from "@/components/ui";
@@ -20,6 +21,7 @@ import { enrollCourse } from "@/services/enrollment.service";
 import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
+import { queryKeys } from "@/lib/query-keys";
 
 interface CourseDetailClientProps {
   course: CourseDetail;
@@ -28,6 +30,7 @@ interface CourseDetailClientProps {
 
 export default function CourseDetailClient({ course, isAuthenticated }: CourseDetailClientProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments({
     enabled: isAuthenticated,
@@ -43,6 +46,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
     setIsEnrolling(true);
     try {
       await enrollCourse(course.id);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments.all });
       toast.success("Kursa kaydoldunuz!", {
         description: "Kurslarım sayfasına yönlendiriliyorsunuz.",
       });
