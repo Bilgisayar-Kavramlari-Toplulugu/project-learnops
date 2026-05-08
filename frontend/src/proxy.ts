@@ -3,14 +3,16 @@ import { NextResponse, type NextRequest } from "next/server";
 // Authenticated user / veya /login'e gelirse dashboard'a fırlat
 // Aynı zamanda bunlar exact public path'ler
 const AUTH_REDIRECT_PATHS: readonly string[] = ["/", "/login"];
-const PUBLIC_PREFIXES: readonly string[] = ["/courses", "/team"];
+const PUBLIC_PREFIXES: readonly string[] = ["/team"];
 
+const PUBLIC_COURSE_PAGE_PATTERN = /^\/courses(?:\/[^/]+)?$/;
 const PROTECTED_COURSE_SECTION_PATTERN = /^\/courses\/[^/]+\/sections\/[^/]+$/;
 
 function isPublicPath(pathname: string): boolean {
   if (PROTECTED_COURSE_SECTION_PATTERN.test(pathname)) return false;
 
   if (AUTH_REDIRECT_PATHS.includes(pathname)) return true;
+  if (PUBLIC_COURSE_PAGE_PATTERN.test(pathname)) return true;
 
   return PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
