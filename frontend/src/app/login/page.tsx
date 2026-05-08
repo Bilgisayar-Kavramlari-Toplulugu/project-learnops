@@ -48,7 +48,9 @@ export default async function LoginPage({
                 <h2 className="mb-3 text-xl font-medium leading-snug text-white">
                   Öğrenmeyi bir alışkanlığa dönüştür.
                 </h2>
-                <p className="text-sm leading-relaxed text-slate-400">DevOps kavramlarını kendi hızında, kalıcı olarak öğren.</p>
+                <p className="text-sm leading-relaxed text-slate-400">
+                  DevOps kavramlarını kendi hızında, kalıcı olarak öğren.
+                </p>
               </div>
 
               <ul className="flex flex-col gap-3">
