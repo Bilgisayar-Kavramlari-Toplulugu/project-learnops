@@ -59,7 +59,8 @@ export function UserMenu({ user }: UserMenuProps) {
         >
           <InitialsAvatar
             name={user.display_name}
-            avatarType={user.avatar_type}            className="size-7"
+            avatarType={user.avatar_type}
+            className="size-7"
           />
           <span className="hidden min-w-0 flex-col items-start text-left sm:inline-flex">
             <span className="max-w-[140px] truncate text-sm font-semibold">

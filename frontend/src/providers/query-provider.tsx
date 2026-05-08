@@ -8,8 +8,7 @@ import { useState } from "react";
 const ReactQueryDevtools =
   process.env.NODE_ENV === "development"
     ? dynamic(
-        () =>
-          import("@tanstack/react-query-devtools").then((mod) => mod.ReactQueryDevtools),
+        () => import("@tanstack/react-query-devtools").then((mod) => mod.ReactQueryDevtools),
         { ssr: false },
       )
     : null;
