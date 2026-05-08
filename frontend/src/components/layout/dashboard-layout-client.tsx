@@ -16,10 +16,7 @@ interface DashboardLayoutClientProps {
   children: ReactNode;
 }
 
-export function DashboardLayoutClient({
-  initialProfile,
-  children,
-}: DashboardLayoutClientProps) {
+export function DashboardLayoutClient({ initialProfile, children }: DashboardLayoutClientProps) {
   const pathname = usePathname();
   const { data: profile, isLoading } = useProfile({
     initialData: initialProfile ?? undefined,

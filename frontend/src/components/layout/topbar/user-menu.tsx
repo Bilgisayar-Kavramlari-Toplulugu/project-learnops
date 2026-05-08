@@ -26,9 +26,7 @@ export function UserMenu({ user }: UserMenuProps) {
   const { logout } = useAuth();
 
   if (!user) {
-    return (
-      <div className="h-10 w-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
-    );
+    return <div className="h-10 w-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />;
   }
 
   async function handleLogout() {
@@ -50,7 +48,8 @@ export function UserMenu({ user }: UserMenuProps) {
         >
           <InitialsAvatar
             name={user.display_name}
-            avatarType={user.avatar_type}            className="size-7"
+            avatarType={user.avatar_type}
+            className="size-7"
           />
           <span className="hidden min-w-0 flex-col items-start text-left sm:inline-flex">
             <span className="max-w-[140px] truncate text-sm font-semibold">

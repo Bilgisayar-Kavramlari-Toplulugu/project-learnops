@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Signal, Tag, CheckCircle2, ChevronLeft, BookOpen, Loader2, ArrowRight } from "lucide-react";
+import {
+  Clock,
+  Signal,
+  Tag,
+  CheckCircle2,
+  ChevronLeft,
+  BookOpen,
+  Loader2,
+  ArrowRight,
+} from "lucide-react";
 import Link from "next/link";
 import { type AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
@@ -24,31 +33,33 @@ export default function CourseDetailClient({ course }: { course: CourseDetail })
   const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
   const isAlreadyEnrolled = enrollments.some((item) => item.course_id === course.id);
 
-const handleEnroll = async () => {
-  if (!user) {
-    router.replace(routes.login);
-    return;
-  }
-
-  setIsEnrolling(true);
-  try {
-    await enrollCourse(course.id);
-    await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments.all });
-    toast.success("Kursa kaydoldunuz!", { description: "Kurslarım sayfasına yönlendiriliyorsunuz." });
-    router.push(routes.myCourses);
-  } catch (error) {
-    const status = (error as AxiosError)?.response?.status;
-    if (status === 409) {
-      toast.info("Bu kursa zaten kayıtlısınız.", {
-        description: "Kaldığınız yerden devam edebilirsiniz.",
-      });
-    } else {
-      toast.error("Kayıt başarısız.", { description: "Lütfen tekrar deneyin." });
+  const handleEnroll = async () => {
+    if (!user) {
+      router.replace(routes.login);
+      return;
     }
-  } finally {
-    setIsEnrolling(false);
-  }
-};
+
+    setIsEnrolling(true);
+    try {
+      await enrollCourse(course.id);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments.all });
+      toast.success("Kursa kaydoldunuz!", {
+        description: "Kurslarım sayfasına yönlendiriliyorsunuz.",
+      });
+      router.push(routes.myCourses);
+    } catch (error) {
+      const status = (error as AxiosError)?.response?.status;
+      if (status === 409) {
+        toast.info("Bu kursa zaten kayıtlısınız.", {
+          description: "Kaldığınız yerden devam edebilirsiniz.",
+        });
+      } else {
+        toast.error("Kayıt başarısız.", { description: "Lütfen tekrar deneyin." });
+      }
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
 
   const difficultyColors: Record<string, string> = {
     Beginner: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
@@ -167,32 +178,32 @@ const handleEnroll = async () => {
             Bu eğitime katılıp yeteneklerinizi hemen bir üst seviyeye taşıyın.
           </p>
 
-{isAlreadyEnrolled ? (
-  <Button
-    asChild
-    size="lg"
-    className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
-  >
-    <Link href={routes.courseDetail(course.slug)}>
-      <ArrowRight className="w-6 h-6" />
-      Kursa Devam Et
-    </Link>
-  </Button>
-) : (
-  <Button
-    onClick={handleEnroll}
-    disabled={isEnrolling || enrollmentsLoading}
-    size="lg"
-    className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 active:scale-[0.98]"
-  >
-    {isEnrolling ? (
-      <Loader2 className="w-6 h-6 animate-spin" />
-    ) : (
-      <CheckCircle2 className="w-6 h-6" />
-    )}
-    {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
-  </Button>
-)}
+          {isAlreadyEnrolled ? (
+            <Button
+              asChild
+              size="lg"
+              className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
+            >
+              <Link href={routes.courseDetail(course.slug)}>
+                <ArrowRight className="w-6 h-6" />
+                Kursa Devam Et
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              onClick={handleEnroll}
+              disabled={isEnrolling || enrollmentsLoading}
+              size="lg"
+              className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 active:scale-[0.98]"
+            >
+              {isEnrolling ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-6 h-6" />
+              )}
+              {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
+            </Button>
+          )}
           <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
             <h4 className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 mb-5 uppercase tracking-widest">
               Bu Kursun Kazanımları

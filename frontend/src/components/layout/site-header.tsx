@@ -49,7 +49,7 @@ export function SiteHeader() {
       {
         rootMargin: "-20% 0px -60% 0px",
         threshold: [0, 0.25, 0.5, 0.75, 1],
-      }
+      },
     );
 
     sections.forEach((section) => observer.observe(section));

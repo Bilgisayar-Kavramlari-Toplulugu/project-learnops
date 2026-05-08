@@ -9,9 +9,5 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // Falls back to null (client-side refresh flow) if the access token is expired.
   const initialProfile = await fetchProfileServer();
 
-  return (
-    <DashboardLayoutClient initialProfile={initialProfile}>
-      {children}
-    </DashboardLayoutClient>
-  );
+  return <DashboardLayoutClient initialProfile={initialProfile}>{children}</DashboardLayoutClient>;
 }

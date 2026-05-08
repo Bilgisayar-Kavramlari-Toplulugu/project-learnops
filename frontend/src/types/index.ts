@@ -171,9 +171,9 @@ export interface CourseProgress {
 
 // GET /v1/enrollments → { items: EnrolledCourseItem[] }
 export interface EnrolledCourseItem {
-  id: string;               // enrollment UUID
+  id: string; // enrollment UUID
   course_id: string;
-  enrolled_at: string;      // ISO datetime
+  enrolled_at: string; // ISO datetime
   completed_at: string | null;
   progress_percent: number; // DB: NUMERIC(5,2) — parseInt kullanma
   course: {
