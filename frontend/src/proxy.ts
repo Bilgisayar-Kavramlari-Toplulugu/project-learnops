@@ -5,10 +5,10 @@ import { NextResponse, type NextRequest } from "next/server";
 const AUTH_REDIRECT_PATHS: readonly string[] = ["/", "/login"];
 const PUBLIC_PREFIXES: readonly string[] = ["/courses", "/team"];
 
-const PROTECTED_COURSE_PATTERN = /^\/courses\/[^/]+\/[^/]+/;
+const PROTECTED_COURSE_SECTION_PATTERN = /^\/courses\/[^/]+\/sections\/[^/]+$/;
 
 function isPublicPath(pathname: string): boolean {
-  if (PROTECTED_COURSE_PATTERN.test(pathname)) return false;
+  if (PROTECTED_COURSE_SECTION_PATTERN.test(pathname)) return false;
 
   if (AUTH_REDIRECT_PATHS.includes(pathname)) return true;
 
