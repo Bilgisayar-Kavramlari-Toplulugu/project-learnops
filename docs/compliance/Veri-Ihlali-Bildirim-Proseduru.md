@@ -44,7 +44,7 @@ Bu prosedür aşağıdaki sistemleri kapsar:
 | Rol | Kişi / Birim | Sorumluluk |
 |---|---|---|
 | **Veri Sorumlusu** | Proje Lideri (@flovearth) | KVKK Kurumu'na bildirim yapmak, nihai karar mercii |
-| **İhlal Müdahale Sorumlusu** | Güvenlik Lideri (atanacak) | Triaj koordinasyonu, ekip toplama, incident kaydı açma |
+| **İhlal Müdahale Sorumlusu** | Güvenlik Lideri (Sprint 8 veya 9 sonrası belirlenecek) | Triaj koordinasyonu, ekip toplama, incident kaydı açma |
 | **Teknik Müdahale — Backend** | Backend Ekibi | Kök neden analizi, geçici azaltma önlemleri, kanıt koruma |
 | **Teknik Müdahale — Altyapı** | Infra Ekibi | GCP log snapshot'ları, key rotation, erişim iptali |
 | **Hukuk** | Hukuk Danışmanı (dış) | DPA yükümlülüklerinin değerlendirilmesi, bildirim metni onayı |
@@ -56,7 +56,7 @@ Bu prosedür aşağıdaki sistemleri kapsar:
 Bir veri ihlali aşağıdaki kanallardan tespit edilebilir:
 
 - **GitHub Security Advisory** — güvenlik araştırmacısı veya ekip üyesi bildirimi
-- **GCP Cloud Logging alarmları** — anormal erişim pattern'leri, yetkisiz API çağrıları (INF-07 kapsamında yapılandırılacak)
+- **GCP Cloud Logging alarmları** — anormal erişim pattern'leri, yetkisiz API çağrıları (INF-07 kapsamında yapılandırıldı)
 - **BE-27 / BE-23 güvenlik test bulguları** — IDOR, auth bypass, OWASP taramaları
 - **Kullanıcı bildirimi** — hesabında şüpheli aktivite fark eden kullanıcı
 - **OAuth provider bildirimi** — Google, LinkedIn veya GitHub'dan gelen ihlal uyarısı

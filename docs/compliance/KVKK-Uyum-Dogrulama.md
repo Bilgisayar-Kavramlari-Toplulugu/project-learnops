@@ -148,7 +148,7 @@
 | # | Konu | Sorumlu | Durum |
 |---|---|---|---|
 | 1 | TRD §11.4'ün `europe-west3 (Frankfurt)` olarak güncellenmesi | Proje Lideri | Açık (harici doküman) |
-| 2 | GitHub DPA notunun TRD §12.3'e eklenmesi gerekip gerekmediği | Proje Lideri | Açık (harici doküman) |
+| 2 | GitHub DPA notunun TRD §12.3'e eklenmesi gerekip gerekmediği | Proje Lideri | Kapatıldı — TRD §12.3'e not eklendi (2026-05-08) |
 
 ---
 
@@ -158,3 +158,4 @@
 |---|---|
 | 2026-05-07 | İlk versiyon — BE-24 kapsamında `release` branch incelendi, tüm 6 madde doğrulandı |
 | 2026-05-07 | Madde 6 tam yeşile güncellendi — Terraform esas alındı (`europe-west3`); TRD §11.4 güncelleme notu proje liderine iletildi |
+| 2026-05-08 | Açık Madde 2 kapatıldı — GitHub DPA notu TRD §12.3'e eklendi (Proje Lideri) |
