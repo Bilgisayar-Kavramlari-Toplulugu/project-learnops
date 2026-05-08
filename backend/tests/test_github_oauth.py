@@ -338,24 +338,25 @@ async def test_github_callback_uses_emails_endpoint_for_private_email(
 
 @pytest.mark.asyncio
 async def test_github_callback_rejects_invalid_state(client: AsyncClient):
-    """Yanlış state → 400 dönmeli (CSRF koruması)."""
+    """Yanlış state → login?error=invalid_state'e yönlendirmeli (CSRF koruması)."""
     response = await client.get(
         "/v1/auth/github/callback?code=test_code&state=WRONG_STATE",
         cookies={"oauth_state": "CORRECT_STATE"},
         follow_redirects=False,
     )
-    assert response.status_code == 400
-    assert "state" in response.json()["detail"].lower()
+    assert response.status_code == 302
+    assert "invalid_state" in response.headers["location"]
 
 
 @pytest.mark.asyncio
 async def test_github_callback_rejects_missing_state_cookie(client: AsyncClient):
-    """oauth_state cookie yoksa → 400 dönmeli."""
+    """oauth_state cookie yoksa → login?error=invalid_state'e yönlendirmeli."""
     response = await client.get(
         "/v1/auth/github/callback?code=test_code&state=some_state",
         follow_redirects=False,
     )
-    assert response.status_code == 400
+    assert response.status_code == 302
+    assert "invalid_state" in response.headers["location"]
 
 
 # ---------------------------------------------------------------------------
@@ -365,14 +366,14 @@ async def test_github_callback_rejects_missing_state_cookie(client: AsyncClient)
 
 @pytest.mark.asyncio
 async def test_github_callback_rejects_missing_code(client: AsyncClient):
-    """code parametresi yoksa → 400 dönmeli."""
+    """code parametresi yoksa → login?error=oauth_failed'e yönlendirmeli."""
     response = await client.get(
         "/v1/auth/github/callback?state=s4",
         cookies={"oauth_state": "s4"},
         follow_redirects=False,
     )
-    assert response.status_code == 400
-    assert "code" in response.json()["detail"].lower()
+    assert response.status_code == 302
+    assert "oauth_failed" in response.headers["location"]
 
 
 # ---------------------------------------------------------------------------
@@ -398,7 +399,8 @@ async def test_github_callback_handles_token_error(client: AsyncClient):
             follow_redirects=False,
         )
 
-    assert response.status_code == 400
+    assert response.status_code == 302
+    assert "oauth_failed" in response.headers["location"]
 
 
 # ---------------------------------------------------------------------------
