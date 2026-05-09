@@ -109,6 +109,11 @@ async def create_quiz_attempt(
                 .options(selectinload(Quiz.questions))
                 .where(Quiz.id == quiz_id)
             )
+            if not fresh_quiz:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Quiz bulunamadı",
+                )
             return existing_retry, get_or_create_questions, fresh_quiz
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
