@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { type CourseDetail, type CourseProgress } from "@/types";
 import { routes } from "@/lib/routes";
+import { getNextIncompleteSection } from "@/lib/course-progress";
 import { Button, ProgressBar } from "@/components/ui";
 import { CompletionBadge } from "./completion-badge";
 import { cn } from "@/lib/utils";
@@ -30,13 +31,7 @@ export default function CourseProgressCard({
   const progressPercent = courseProgress.progress_percent;
   const isCompleted = courseProgress.completed_at != null;
 
-  const targetSection =
-    sortedSections.find(
-      (section) =>
-        !courseProgress.sections.some(
-          (p) => p.section_id_str === section.section_id_str && p.completed,
-        ),
-    ) || sortedSections[sortedSections.length - 1];
+  const targetSection = getNextIncompleteSection(sortedSections, courseProgress.sections);
 
   const categoryColor =
     "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/50";
