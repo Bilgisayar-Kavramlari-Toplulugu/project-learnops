@@ -5,10 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getEnrolledCourses } from "@/services/enrollment.service";
 import { queryKeys } from "@/lib/query-keys";
 
-export function useEnrollments() {
+interface UseEnrollmentsOptions {
+  enabled?: boolean;
+}
+
+export function useEnrollments({ enabled = true }: UseEnrollmentsOptions = {}) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKeys.enrollments.list(),
     queryFn: getEnrolledCourses,
+    enabled,
     staleTime: 60_000,
     retry: 1,
   });

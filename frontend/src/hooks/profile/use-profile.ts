@@ -4,9 +4,10 @@ import type { DashboardProfile } from "@/types";
 
 interface UseProfileOptions {
   initialData?: DashboardProfile;
+  enabled?: boolean;
 }
 
-export function useProfile({ initialData }: UseProfileOptions = {}) {
+export function useProfile({ initialData, enabled = true }: UseProfileOptions = {}) {
   return useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
@@ -14,5 +15,6 @@ export function useProfile({ initialData }: UseProfileOptions = {}) {
       return res.data;
     },
     initialData,
+    enabled,
   });
 }

@@ -40,7 +40,7 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
     const location = response.headers.get("location")!;
     const nextResponse = new NextResponse(
       `<!doctype html><html><head><meta http-equiv="refresh" content="0;url=${location}"></head><body></body></html>`,
-      { status: 200, headers: { "content-type": "text/html; charset=utf-8" } }
+      { status: 200, headers: { "content-type": "text/html; charset=utf-8" } },
     );
     // Copy all Set-Cookie headers
     response.headers.getSetCookie?.().forEach((cookie) => {

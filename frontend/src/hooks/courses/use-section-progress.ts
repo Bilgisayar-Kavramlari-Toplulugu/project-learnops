@@ -91,6 +91,9 @@ export function useMarkSectionComplete(courseId?: string) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.progress.byCourse(courseId),
       });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.enrollments.all,
+      });
     },
   });
 }

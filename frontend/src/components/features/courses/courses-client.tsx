@@ -13,10 +13,7 @@ interface CoursesClientProps {
   headerSlot: ReactNode;
 }
 
-export default function CoursesClient({
-  courses,
-  headerSlot,
-}: CoursesClientProps) {
+export default function CoursesClient({ courses, headerSlot }: CoursesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
@@ -52,9 +49,7 @@ export default function CoursesClient({
       {/* Header & Search Area */}
       <div className="flex flex-col xl:flex-row gap-6 items-end justify-between w-full bg-white dark:bg-zinc-900/20 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <div className="flex-1 w-full space-y-6">
-          <div className="flex items-center gap-4">
-            {headerSlot}
-          </div>
+          <div className="flex items-center gap-4">{headerSlot}</div>
 
           <div className="relative w-full max-w-2xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
