@@ -108,7 +108,7 @@ async def get_quiz_meta(
     if not quiz:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Quiz not found",
+            detail="Quiz bulunamadı",
         )
     enrollment = await db.scalar(
         select(Enrollment).where(
