@@ -16,21 +16,21 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
+from app.models.courses import Enrollment
+from app.models.user import User
 from app.schemas.courses import (
     CourseDetail,
     CourseListItem,
     CourseListResponse,
     SectionContentOut,
 )
+from app.schemas.quizzes import QuizMetaOut
 from app.services.course_service import (
     get_course_by_slug,
     get_courses,
     get_section_content,
 )
-from app.dependencies.auth import get_current_user
-from app.models.user import User
-from app.models.courses import Enrollment
-from app.schemas.quizzes import QuizMetaOut
 from app.services.quiz_service import get_quiz_by_course_slug
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -96,13 +96,14 @@ async def get_section(
         )
     return SectionContentOut.model_validate(section)
 
+
 @router.get("/{slug}/quiz", response_model=QuizMetaOut)
 async def get_quiz_meta(
     slug: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> QuizMetaOut:
-    """Kurs slug'ına göre quiz meta bilgilerini döndürür (soru sayısı, süre, geçme notu)."""
+    """Kurs slug'ına göre quiz meta bilgilerini döndürür."""
     quiz = await get_quiz_by_course_slug(db, slug)
     if not quiz:
         raise HTTPException(
@@ -127,4 +128,3 @@ async def get_quiz_meta(
         duration_seconds=quiz.duration_seconds,
         pass_threshold=float(quiz.pass_threshold),
     )
- 
