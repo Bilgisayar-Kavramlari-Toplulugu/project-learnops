@@ -2,7 +2,7 @@ import logging
 import random
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Sequence
+from typing import Optional, Sequence
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from app.exceptions.not_found import EntityNotFoundError
 from app.exceptions.validation import ValidationError
-from app.models.courses import Enrollment
+from app.models.courses import Course, Enrollment
 from app.models.quizzes import Question, Quiz, QuizAttempt, QuizAttemptAnswer
 from app.schemas.quizzes import SubmitAnswerItem
 
@@ -60,10 +60,9 @@ async def create_quiz_attempt(
         )
     )
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Zaten aktif bir attempt mevcut",
-        )
+        active_questions = [q for q in quiz.questions if q.is_active]
+        active_questions.sort(key=lambda q: q.id)
+        return existing, active_questions, quiz
 
     # 2. Sadece aktif soruları al — attempt oluşturmadan önce (Bulgu #2, #3)
     active_questions = [q for q in quiz.questions if q.is_active]
@@ -73,6 +72,15 @@ async def create_quiz_attempt(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Bu quizde aktif soru bulunmuyor",
         )
+
+    # get-or-create dönüşü için veriler flush'tan ÖNCE hesaplanır.
+    # rollback() tüm tracked nesneleri expire eder; quiz ve quiz.questions
+    # dahil. IntegrityError bloğunda bu nesnelere erişim MissingGreenlet /
+    # DetachedInstanceError'a yol açar.
+    # Not: get-or-create dönüşünde q.id sırası kullanılır (sabit sıra).
+    # Normal akışta sorular randomize edilir; soru sırasının attempt'e özgü
+    # DB'de saklanmaması mimari bir eksiklik olup v2.0 kapsamına alınmıştır.
+    get_or_create_questions = sorted(active_questions, key=lambda q: q.id)
 
     # 3. Yeni bir Attempt oluştur — total_questions snapshot olarak kaydedilir
     started_at = datetime.now(timezone.utc)
@@ -88,6 +96,25 @@ async def create_quiz_attempt(
         await db.flush()  # attempt.id oluşması + unique index kontrolü için
     except IntegrityError:
         await db.rollback()
+        existing_retry = await db.scalar(
+            select(QuizAttempt).where(
+                QuizAttempt.user_id == user_id,
+                QuizAttempt.quiz_id == quiz_id,
+                QuizAttempt.submitted_at.is_(None),
+            )
+        )
+        if existing_retry:
+            fresh_quiz = await db.scalar(
+                select(Quiz)
+                .options(selectinload(Quiz.questions))
+                .where(Quiz.id == quiz_id)
+            )
+            if not fresh_quiz:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Quiz bulunamadı",
+                )
+            return existing_retry, get_or_create_questions, fresh_quiz
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Zaten aktif bir attempt mevcut",
@@ -341,3 +368,14 @@ async def get_quiz_attempts_by_quiz_id(
     )
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+async def get_quiz_by_course_slug(db: AsyncSession, slug: str) -> Optional[Quiz]:
+    """Kurs slug'ına göre quiz'i sorularıyla birlikte getirir."""
+    query = (
+        select(Quiz)
+        .options(selectinload(Quiz.questions))
+        .join(Course, Quiz.course_id == Course.id)
+        .where(Course.slug == slug, Course.is_published.is_(True))
+    )
+    return await db.scalar(query)

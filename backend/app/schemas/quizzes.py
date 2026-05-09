@@ -142,3 +142,15 @@ class QuizAttemptListItem(BaseModel):
     total_questions: int
     passed: bool
     time_spent_secs: int
+
+
+# ---------------------------------------------------------------------------
+# Quiz Meta Şeması (GET /courses/{slug}/quiz)
+# ---------------------------------------------------------------------------
+
+
+class QuizMetaOut(BaseModel):
+    quiz_id: UUID
+    question_count: int
+    duration_seconds: int
+    pass_threshold: float
