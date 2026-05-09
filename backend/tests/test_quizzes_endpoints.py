@@ -206,29 +206,6 @@ async def test_create_quiz_attempt_success_and_nf05_check(
     assert attempt_in_db.total_questions == 4  # 4 aktif soru, 1 pasif sayılmaz
 
 
-@pytest.mark.asyncio
-async def test_create_quiz_attempt_conflict_returns_409(
-    client: AsyncClient, db_session: AsyncSession, test_user: User, test_quiz: Quiz
-):
-    # 1. Enroll the user
-    enrollment = Enrollment(user_id=test_user.id, course_id=test_quiz.course_id)
-    db_session.add(enrollment)
-    await db_session.commit()
-
-    # 2. Start first attempt
-    resp1 = await client.post(
-        f"/v1/quizzes/{test_quiz.id}/attempts", cookies=_auth_cookies(test_user)
-    )
-    assert resp1.status_code == 201
-
-    # 3. Attempt to start another while first is unfinished
-    resp2 = await client.post(
-        f"/v1/quizzes/{test_quiz.id}/attempts", cookies=_auth_cookies(test_user)
-    )
-    assert resp2.status_code == 409
-    assert resp2.json()["detail"] == "Zaten aktif bir attempt mevcut"
-
-
 # ===========================================================================
 # BE-19: POST /v1/quiz-attempts/{attempt_id}/submit
 # ===========================================================================
@@ -738,3 +715,107 @@ async def test_submit_after_question_deactivation_uses_actual_count(
     # DB'deki total_questions da response ile tutarlı olmalı
     await db_session.refresh(enrolled_attempt)
     assert enrolled_attempt.total_questions == 3
+
+@pytest.mark.asyncio
+async def test_create_quiz_attempt_returns_existing_when_active(
+    client: AsyncClient, db_session: AsyncSession, test_user: User, test_quiz: Quiz
+):
+    """
+    Aktif attempt varken tekrar başlatılırsa 409 değil,
+    mevcut attempt dönmeli (get-or-create davranışı).
+    """
+    enrollment = Enrollment(user_id=test_user.id, course_id=test_quiz.course_id)
+    db_session.add(enrollment)
+    await db_session.commit()
+
+    resp1 = await client.post(
+        f"/v1/quizzes/{test_quiz.id}/attempts", cookies=_auth_cookies(test_user)
+    )
+    assert resp1.status_code == 201
+    first_attempt_id = resp1.json()["id"]
+
+    resp2 = await client.post(
+        f"/v1/quizzes/{test_quiz.id}/attempts", cookies=_auth_cookies(test_user)
+    )
+    assert resp2.status_code == 201
+    assert resp2.json()["id"] == first_attempt_id
+
+
+# ===========================================================================
+# GET /v1/courses/{slug}/quiz — Quiz Meta Endpoint
+# ===========================================================================
+
+
+@pytest.mark.asyncio
+async def test_get_quiz_meta_success(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    test_user: User,
+    test_quiz: Quiz,
+):
+    """Kayıtlı kullanıcı quiz meta bilgisini alabilmeli."""
+    enrollment = Enrollment(user_id=test_user.id, course_id=test_quiz.course_id)
+    db_session.add(enrollment)
+    await db_session.commit()
+
+    resp = await client.get(
+        "/v1/courses/python-temelleri/quiz",
+        cookies=_auth_cookies(test_user),
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["quiz_id"] == str(test_quiz.id)
+    assert data["question_count"] == 4
+    assert data["duration_seconds"] == test_quiz.duration_seconds
+    assert "pass_threshold" in data
+
+
+@pytest.mark.asyncio
+async def test_get_quiz_meta_unauthenticated_returns_401(
+    client: AsyncClient,
+    test_quiz: Quiz,
+):
+    """Token olmadan → 401."""
+    resp = await client.get("/v1/courses/python-temelleri/quiz")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_quiz_meta_not_enrolled_returns_403(
+    client: AsyncClient,
+    test_user: User,
+    test_quiz: Quiz,
+):
+    """Kursa kayıtlı olmayan kullanıcı → 403."""
+    resp = await client.get(
+        "/v1/courses/python-temelleri/quiz",
+        cookies=_auth_cookies(test_user),
+    )
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == "Bu quiz için kursa kayıtlı değilsiniz"
+
+
+@pytest.mark.asyncio
+async def test_get_quiz_meta_unpublished_course_returns_404(
+    client: AsyncClient,
+    test_user: User,
+):
+    """Yayınlanmamış kurs için → 404."""
+    resp = await client.get(
+        "/v1/courses/gizli-kurs/quiz",
+        cookies=_auth_cookies(test_user),
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_quiz_meta_nonexistent_slug_returns_404(
+    client: AsyncClient,
+    test_user: User,
+):
+    """Var olmayan slug → 404."""
+    resp = await client.get(
+        "/v1/courses/bu-kurs-yok/quiz",
+        cookies=_auth_cookies(test_user),
+    )
+    assert resp.status_code == 404
