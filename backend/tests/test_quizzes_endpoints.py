@@ -716,6 +716,7 @@ async def test_submit_after_question_deactivation_uses_actual_count(
     await db_session.refresh(enrolled_attempt)
     assert enrolled_attempt.total_questions == 3
 
+
 @pytest.mark.asyncio
 async def test_create_quiz_attempt_returns_existing_when_active(
     client: AsyncClient, db_session: AsyncSession, test_user: User, test_quiz: Quiz

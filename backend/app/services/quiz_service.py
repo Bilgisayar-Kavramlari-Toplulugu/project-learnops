@@ -352,6 +352,7 @@ async def get_quiz_attempts_by_quiz_id(
     result = await db.execute(stmt)
     return result.scalars().all()
 
+
 async def get_quiz_by_course_slug(db: AsyncSession, slug: str) -> Optional[Quiz]:
     """Kurs slug'ına göre quiz'i sorularıyla birlikte getirir."""
     query = (
