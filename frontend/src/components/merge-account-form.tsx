@@ -37,7 +37,9 @@ export default function MergeAccountForm({ mergeToken }: MergeAccountFormProps) 
   return (
     <div className="flex flex-col gap-5">
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/30">
-        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Hesap çakışması</p>
+        <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+          Bu email zaten kayıtlı
+        </p>
         <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
           <span className="font-medium">{email}</span> adresi zaten başka bir yöntemle kayıtlı.{" "}
           {newProvider && (

@@ -113,7 +113,7 @@ export default async function LoginPage({
                 </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {isAccountConflict
-                    ? "Aynı email adresiyle birden fazla giriş yöntemi kullanmak istiyorsun."
+                    ? "Bu email adresiyle zaten bir hesabınız mevcut."
                     : "Aşağıdaki seçeneklerden biriyle devam et."}
                 </p>
               </div>
