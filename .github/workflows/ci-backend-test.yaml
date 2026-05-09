@@ -80,6 +80,13 @@ jobs:
               working-directory: ./backend
               run: poetry run pytest --tb=short -q --cov=app --cov-report=term-missing
 
+            - name: Security Tests & Report Generation
+              if: steps.filter.outputs.backend == 'true'
+              working-directory: ./backend
+              run: |
+                  poetry run pytest tests/test_security.py --tb=short -v > security_test_report.txt
+                  cat security_test_report.txt
+
             - name: Skip - no backend changes
               if: steps.filter.outputs.backend != 'true'
               run: echo "No backend changes detected, skipping tests"
