@@ -73,9 +73,10 @@ async def create_quiz_attempt(
             detail="Bu quizde aktif soru bulunmuyor",
         )
 
-    # get-or-create dönüşü için sıralı liste flush'tan ÖNCE hesaplanır.
-    # rollback() sonrası quiz.questions expired olacağından IntegrityError
-    # bloğunda erişim MissingGreenlet crash'e yol açar.
+    # get-or-create dönüşü için veriler flush'tan ÖNCE hesaplanır.
+    # rollback() tüm tracked nesneleri expire eder; quiz ve quiz.questions
+    # dahil. IntegrityError bloğunda bu nesnelere erişim MissingGreenlet /
+    # DetachedInstanceError'a yol açar.
     # Not: get-or-create dönüşünde q.id sırası kullanılır (sabit sıra).
     # Normal akışta sorular randomize edilir; soru sırasının attempt'e özgü
     # DB'de saklanmaması mimari bir eksiklik olup v2.0 kapsamına alınmıştır.
@@ -103,7 +104,12 @@ async def create_quiz_attempt(
             )
         )
         if existing_retry:
-            return existing_retry, get_or_create_questions, quiz
+            fresh_quiz = await db.scalar(
+                select(Quiz)
+                .options(selectinload(Quiz.questions))
+                .where(Quiz.id == quiz_id)
+            )
+            return existing_retry, get_or_create_questions, fresh_quiz
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Zaten aktif bir attempt mevcut",
