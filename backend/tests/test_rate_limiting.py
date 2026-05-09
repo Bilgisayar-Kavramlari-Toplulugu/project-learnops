@@ -19,6 +19,20 @@ def client_ip():
 
 
 @pytest.fixture(autouse=True)
+def enable_rate_limiting():
+    """
+    Enable rate limiting by changing ENVIRONMENT
+    to something other than 'testing'.
+    """
+    from app.config import settings
+
+    old_env = settings.ENVIRONMENT
+    settings.ENVIRONMENT = "production"
+    yield
+    settings.ENVIRONMENT = old_env
+
+
+@pytest.fixture(autouse=True)
 def reset_rate_limiter():
     """Reset rate limiter before each test."""
 
