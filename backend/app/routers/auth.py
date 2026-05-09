@@ -281,7 +281,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             return RedirectResponse(
                 url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
-                f"&merge_token={conflict_data.merge_token}&email={user_info['email']}",
+                f"&merge_token={conflict_data.merge_token}",
                 status_code=302,
             )
 
@@ -744,7 +744,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             return RedirectResponse(
                 url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
-                f"&merge_token={conflict_data.merge_token}&email={email}",
+                f"&merge_token={conflict_data.merge_token}",
                 status_code=302,
             )
 

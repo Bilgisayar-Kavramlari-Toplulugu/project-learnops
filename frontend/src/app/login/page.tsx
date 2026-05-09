@@ -25,12 +25,11 @@ export default async function LoginPage({
     error?: string;
     provider?: string;
     merge_token?: string;
-    email?: string;
   }>;
 }) {
-  const { error, provider, merge_token, email } = await searchParams;
+  const { error, provider, merge_token } = await searchParams;
 
-  const isAccountConflict = error === "account_conflict" && !!merge_token && !!email;
+  const isAccountConflict = error === "account_conflict" && !!merge_token;
 
   let errorMessage =
     !isAccountConflict && error
@@ -126,7 +125,7 @@ export default async function LoginPage({
               )}
 
               {isAccountConflict ? (
-                <MergeAccountForm mergeToken={merge_token} email={email} />
+                <MergeAccountForm mergeToken={merge_token} />
               ) : (
                 <>
                   <OAuthButtonContainer />

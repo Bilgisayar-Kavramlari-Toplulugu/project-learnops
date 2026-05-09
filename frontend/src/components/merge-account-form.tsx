@@ -8,8 +8,6 @@ const PROVIDER_LABELS: Record<string, string> = {
   linkedin: "LinkedIn",
 };
 
-const ALL_PROVIDERS: OAuthProvider[] = ["google", "github", "linkedin"];
-
 /** JWT payload'ının base64 kısmını decode eder (imza doğrulaması yapılmaz — sadece görüntü amaçlı). */
 function decodeJwtPayload(token: string): Record<string, unknown> {
   try {
@@ -22,15 +20,13 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
 
 interface MergeAccountFormProps {
   mergeToken: string;
-  email: string;
 }
 
-export default function MergeAccountForm({ mergeToken, email }: MergeAccountFormProps) {
+export default function MergeAccountForm({ mergeToken }: MergeAccountFormProps) {
   const payload = decodeJwtPayload(mergeToken);
   const newProvider = typeof payload.new_provider === "string" ? payload.new_provider : null;
-
-  // Mevcut hesapta kullanılabilecek provider'lar = yeni denenenden farklı olanlar
-  const existingProviders = ALL_PROVIDERS.filter((p) => p !== newProvider);
+  const email = typeof payload.provider_email === "string" ? payload.provider_email : "";
+  const existingProviders = (payload.existing_providers as OAuthProvider[] | undefined) ?? [];
 
   function handleMerge(provider: OAuthProvider) {
     // Merge token'ı login sonrası kullanmak üzere sakla
