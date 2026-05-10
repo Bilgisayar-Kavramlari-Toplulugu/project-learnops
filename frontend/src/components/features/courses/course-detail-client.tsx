@@ -22,6 +22,8 @@ import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
 import { queryKeys } from "@/lib/query-keys";
+import { getNextIncompleteSection } from "@/lib/course-progress";
+import { useSectionProgress } from "@/hooks/courses/use-section-progress";
 
 interface CourseDetailClientProps {
   course: CourseDetail;
@@ -36,6 +38,9 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
     enabled: isAuthenticated,
   });
   const isAlreadyEnrolled = enrollments.some((item) => item.course_id === course.id);
+  const { data: progressSections = [], isFetching: progressFetching } = useSectionProgress(
+    isAlreadyEnrolled ? course.id : undefined,
+  );
 
   const handleEnroll = async () => {
     if (!isAuthenticated) {
@@ -77,10 +82,11 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
     "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
 
   const sortedSections = [...(course.sections || [])].sort((a, b) => a.order_index - b.order_index);
-  const firstSection = sortedSections[0];
-  const continueHref = firstSection
-    ? routes.section(course.slug, firstSection.section_id_str)
+  const targetSection = getNextIncompleteSection(sortedSections, progressSections);
+  const continueHref = targetSection
+    ? routes.section(course.slug, targetSection.section_id_str)
     : routes.courseDetail(course.slug);
+  const isContinueLoading = enrollmentsLoading || progressFetching;
 
   return (
     <div className="w-full max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500 pb-20">
@@ -189,16 +195,27 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
           </p>
 
           {isAlreadyEnrolled ? (
-            <Button
-              asChild
-              size="lg"
-              className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
-            >
-              <Link href={continueHref}>
-                <ArrowRight className="w-6 h-6" />
-                Kursa Devam Et
-              </Link>
-            </Button>
+            isContinueLoading ? (
+              <Button
+                disabled
+                size="lg"
+                className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Loader2 className="w-6 h-6 animate-spin" />
+                Hazırlanıyor...
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="lg"
+                className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
+              >
+                <Link href={continueHref}>
+                  <ArrowRight className="w-6 h-6" />
+                  Kursa Devam Et
+                </Link>
+              </Button>
+            )
           ) : (
             <Button
               onClick={handleEnroll}

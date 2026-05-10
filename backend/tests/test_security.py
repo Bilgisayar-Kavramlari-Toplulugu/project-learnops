@@ -446,10 +446,10 @@ async def test_quiz_attempt_requires_enrollment(user_a: AsyncClient, quiz_b):
 async def test_cannot_start_second_active_attempt(
     user_b: AsyncClient, quiz_b, attempt_b_open
 ):
-    """Aktif attempt varken yeni attempt → 409"""
+    """Aktif attempt varken yeni attempt → mevcut attempt dönmeli (get-or-create)."""
     response = await user_b.post(f"/v1/quizzes/{quiz_b.id}/attempts")
-    assert response.status_code == 409
-    assert "aktif bir attempt mevcut" in response.json()["detail"]
+    assert response.status_code == 201
+    assert str(attempt_b_open.id) == response.json()["id"]
 
 
 @pytest.mark.asyncio
