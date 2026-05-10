@@ -87,6 +87,12 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
     ? routes.section(course.slug, targetSection.section_id_str)
     : routes.courseDetail(course.slug);
   const isContinueLoading = enrollmentsLoading || progressFetching;
+  const completedSectionIds = new Set(
+    progressSections.filter((p) => p.completed).map((p) => p.section_id_str),
+  );
+  const allSectionsCompleted =
+    sortedSections.length > 0 &&
+    sortedSections.every((s) => completedSectionIds.has(s.section_id_str));
 
   return (
     <div className="w-full max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500 pb-20">
@@ -230,6 +236,15 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               )}
               {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
             </Button>
+          )}
+          {isAlreadyEnrolled && allSectionsCompleted && (
+            <Link
+              href={routes.quiz(course.slug)}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-200 px-4 py-3 text-sm font-bold text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/20 dark:text-indigo-400 transition-colors"
+            >
+              Quiz&apos;e Git
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           )}
           <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
             <h4 className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 mb-5 uppercase tracking-widest">

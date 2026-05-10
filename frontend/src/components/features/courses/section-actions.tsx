@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type AxiosError } from "axios";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 import { useCourseDetail } from "@/hooks/courses/use-course-detail";
 import { useMarkSectionComplete, useSectionProgress } from "@/hooks/courses/use-section-progress";
@@ -40,6 +40,7 @@ export function SectionActions({
       .map((item) => item.section_id_str),
   );
   const isCurrentCompleted = completedIds.has(currentSectionId);
+  const allSectionsCompleted = sections.length > 0 && sections.every((s) => completedIds.has(s.id));
   const isButtonDisabled = !courseId || isCurrentCompleted || isPending;
 
   function handleMarkComplete() {
@@ -122,8 +123,16 @@ export function SectionActions({
                 <span className="hidden max-w-[200px] truncate sm:inline">{nextSection.title}</span>
                 <ChevronRight className="h-4 w-4" />
               </Link>
+            ) : allSectionsCompleted ? (
+              <Link
+                href={routes.quiz(courseSlug)}
+                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"
+              >
+                Quiz&apos;e Git
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             ) : (
-              <span />
+              <span className="text-xs text-zinc-400">Tüm bölümleri tamamlayın</span>
             )}
           </div>
         </div>
