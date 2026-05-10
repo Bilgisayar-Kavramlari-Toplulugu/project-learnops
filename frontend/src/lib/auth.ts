@@ -35,7 +35,7 @@ export function useAuth() {
 
   const logoutAndRedirect = useCallback(async () => {
     await logout();
-    window.location.href = routes.login;
+    window.location.href = "/";
   }, []);
 
   return {
