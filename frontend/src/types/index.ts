@@ -103,10 +103,20 @@ export interface CourseListResponse {
   total: number;
 }
 
-// ─── Quiz Types ───────────────────────────────────────────────────────────────
+// ─── Quiz Types ──────────────────────────────────────────────────────────────
+// Backend contract: GET /courses/{slug}/quiz → QuizMeta
+//                  POST /quizzes/{quizId}/attempts → QuizSession
+//                  POST /quiz-attempts/{attemptId}/submit → QuizResultRaw
+
+export interface QuizMeta {
+  quiz_id: string;
+  question_count: number;
+  duration_seconds: number;
+  pass_threshold: number;
+}
 
 export interface QuizOption {
-  id: string;
+  index: number; // "id" field'ı YOK — seçim ve karşılaştırma index ile yapılır
   text: string;
 }
 
@@ -116,31 +126,60 @@ export interface QuizQuestion {
   options: QuizOption[];
 }
 
-// GET /courses/{courseId}/quiz response
 export interface QuizSession {
-  session_id: string;
-  course_id: string;
-  started_at: string; // ISO 8601 — timer her mount'ta buradan hesaplanır
-  duration_seconds: number; // Toplam sınav süresi (backend'den gelir)
+  id: string; // attempt_id — "session_id" değil
+  quiz_id: string;
+  started_at: string; // ISO 8601 — timer buradan hesaplanır
+  duration_seconds: number;
   questions: QuizQuestion[];
 }
 
 export interface QuizAnswer {
   question_id: string;
-  selected_option_id: string; // Cevaplanmamış sorular payload'a dahil edilmez (quiz-client.tsx filter)
+  selected_index: number | null; // null = cevaplanmadı; tüm sorular payload'a dahil edilir
 }
 
-// POST /courses/{courseId}/quiz/submit payload
+// POST /quiz-attempts/{attemptId}/submit payload
 export interface QuizSubmitPayload {
-  session_id: string;
-  answers: QuizAnswer[];
+  answers: QuizAnswer[]; // session_id YOK
 }
 
-// POST /courses/{courseId}/quiz/submit response
-export interface QuizResult {
+// Submit response ham hali (correct_index dahil — submit sonrası açıklanır)
+export interface QuizAnswerResultRaw {
+  question_id: string;
+  selected_index: number | null;
+  correct_index: number;
+  is_correct: boolean;
+  explanation?: string;
+}
+
+export interface QuizResultRaw {
+  attempt_id: string;
   score: number;
-  total: number;
+  total_questions: number; // "total" değil
   passed: boolean;
+  time_spent_secs: number; // "time_spent_seconds" değil
+  answers: QuizAnswerResultRaw[];
+}
+
+// Frontend'de zenginleştirilmiş hali (soru metni + seçenekler eklenir)
+export interface QuizAnswerResult extends QuizAnswerResultRaw {
+  question_text: string;
+  options: QuizOption[];
+}
+
+export interface QuizResult extends QuizResultRaw {
+  quiz_id: string;
+  answers: QuizAnswerResult[];
+}
+
+// GET /quiz-attempts?quiz_id={id} → dizi
+export interface QuizAttemptHistoryItem {
+  id: string;
+  score: number;
+  total_questions: number;
+  passed: boolean;
+  submitted_at: string;
 }
 
 // ─── Section Progress Types ───────────────────────────────────────────────────

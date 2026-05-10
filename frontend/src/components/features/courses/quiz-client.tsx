@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { Clock, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import type { AxiosError } from "axios";
 
 import { useCourseDetail } from "@/hooks/courses/use-course-detail";
-import { useQuiz } from "@/hooks/courses/use-quiz";
+import { useQuizMeta, useStartAttempt } from "@/hooks/courses/use-quiz";
+import { useQuizHistory } from "@/hooks/courses/use-quiz-history";
+import { QuizResultScreen } from "@/components/quiz/quiz-result-screen";
 import { api } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import {
@@ -26,13 +29,18 @@ import {
   Progress,
   toast,
 } from "@/components/ui";
-import type { QuizAnswer, QuizResult, QuizSubmitPayload } from "@/types";
+import type {
+  QuizAnswer,
+  QuizResult,
+  QuizResultRaw,
+  QuizSubmitPayload,
+} from "@/types";
 
 interface QuizClientProps {
   slug: string;
 }
 
-// ─── Timer Yardımcısı ─────────────────────────────────────────────────────────
+// ─── Timer Yardımcısı ──────────────────────────────────────────────────────────
 
 function calcRemaining(startedAt: string, durationSeconds: number): number {
   const elapsedMs = Date.now() - new Date(startedAt).getTime();
@@ -48,62 +56,87 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`;
 }
 
-// ─── Sonuç Ekranı ─────────────────────────────────────────────────────────────
-
-function QuizResultScreen({ result, onBack }: { result: QuizResult; onBack: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
-      <CheckCircle className={result.passed ? "text-emerald-500" : "text-red-500"} size={64} />
-      <h2 className="text-2xl font-bold">{result.passed ? "Tebrikler!" : "Bir Dahaki Sefere!"}</h2>
-      <p className="text-muted-foreground text-lg">
-        {result.score} / {result.total} doğru cevap
-      </p>
-      <p className="text-muted-foreground">
-        {result.passed
-          ? "Sınavı başarıyla tamamladın."
-          : "Sınav puanın geçme sınırının altında kaldı."}
-      </p>
-      <Button onClick={onBack} variant="outline">
-        Kursa Dön
-      </Button>
-    </div>
-  );
-}
-
-// ─── Ana Bileşen ──────────────────────────────────────────────────────────────
+// ─── Ana Bileşen ───────────────────────────────────────────────────────────────
 
 export default function QuizClient({ slug }: QuizClientProps) {
   const router = useRouter();
 
-  // FE-22 bağımlılığı: useCourseDetail slug'dan courseId'yi verir.
-  // Aynı slug için cache devredeyse network isteği yapılmaz — beklenen davranış.
-  const { data: course, isLoading: courseLoading, isError: courseError } = useCourseDetail(slug);
-  const courseId = course?.id;
+  // useCourseDetail: yalnızca loading/error state yönetimi için
+  const { isLoading: courseLoading, isError: courseError } = useCourseDetail(slug);
 
-  const { data: session, isLoading: sessionLoading, isError: sessionError } = useQuiz(courseId);
+  const { data: quizMeta, isLoading: metaLoading, isError: metaError } =
+    useQuizMeta(slug);
 
-  // ─── Local State ──────────────────────────────────────────────────────────
+  const {
+    mutate: startAttempt,
+    data: session,
+    isPending: sessionLoading,
+    isError: sessionError,
+    error: sessionErrorRaw,
+  } = useStartAttempt();
+
+  // ─── Attempt Başlatma ──────────────────────────────────────────────────────
+  const attemptStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (quizMeta?.quiz_id && !attemptStartedRef.current) {
+      attemptStartedRef.current = true;
+      startAttempt(quizMeta.quiz_id);
+    }
+    // startAttempt: useMutation tarafından sağlanan fonksiyon render'lar arası stabil
+  }, [quizMeta?.quiz_id, startAttempt]);
+
+  // 403 → kursa kayıtsız kullanıcıyı kurs detay sayfasına yönlendir
+  useEffect(() => {
+    if (sessionError) {
+      const httpStatus = (sessionErrorRaw as AxiosError)?.response?.status;
+      if (httpStatus === 403) {
+        toast.error("Bu kursa kayıtlı değilsiniz.");
+        router.push(routes.courseDetail(slug));
+      }
+    }
+  }, [sessionError, sessionErrorRaw, router, slug]);
+
+  // ─── Local State ───────────────────────────────────────────────────────────
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({}); // questionId → optionId
+  const [answers, setAnswers] = useState<Record<string, number>>({});
   const [remaining, setRemaining] = useState<number | null>(null);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const hasSubmittedRef = useRef(false); // Çift submit önleyici
+  const hasSubmittedRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ─── Submit Mutation ──────────────────────────────────────────────────────
+  // ─── Geçmiş (TC-QUIZ-12) ───────────────────────────────────────────────────
+  const { data: attemptHistory = [] } = useQuizHistory(quizResult?.quiz_id);
+
+  // ─── Submit Mutation ───────────────────────────────────────────────────────
   const { mutate: submitQuiz, isPending: isSubmitting } = useMutation({
     mutationFn: async (payload: QuizSubmitPayload) => {
-      const { data } = await api.post<QuizResult>(`/courses/${courseId}/quiz/submit`, payload);
+      const { data } = await api.post<QuizResultRaw>(
+        `/quiz-attempts/${session!.id}/submit`,
+        payload,
+      );
       return data;
     },
-    onSuccess: (data) => {
-      if (intervalRef.current) clearInterval(intervalRef.current); // Sonuç gelince timer'ı durdur
-      hasSubmittedRef.current = true; // Başarılı gönderimde kilitle
-      setQuizResult(data);
+    onSuccess: (raw) => {
+      if (!session) return;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      hasSubmittedRef.current = true;
+      const enriched: QuizResult = {
+        ...raw,
+        quiz_id: session.quiz_id,
+        answers: raw.answers.map((a) => {
+          const q = session.questions.find((q) => q.id === a.question_id);
+          if (!q) {
+            console.error(`[quiz] question_id ${a.question_id} session'da bulunamadı`);
+          }
+          return { ...a, question_text: q?.text ?? "", options: q?.options ?? [] };
+        }),
+      };
+      setQuizResult(enriched);
     },
     onError: () => {
-      hasSubmittedRef.current = false; // Hata durumunda retry'a izin ver
+      hasSubmittedRef.current = false;
       toast.error("Sınav gönderilemedi", {
         description: "Lütfen tekrar deneyin.",
       });
@@ -113,7 +146,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   const handleSubmit = useCallback(
     (isAutoSubmit = false) => {
       if (hasSubmittedRef.current || !session) return;
-      hasSubmittedRef.current = true; // Mutation süresince çift submit önlenir
+      hasSubmittedRef.current = true;
 
       if (isAutoSubmit) {
         toast.info("Süre doldu", {
@@ -121,21 +154,31 @@ export default function QuizClient({ slug }: QuizClientProps) {
         });
       }
 
-      const answerPayload: QuizAnswer[] = session.questions
-        .filter((q) => answers[q.id] !== undefined)
-        .map((q) => ({
-          question_id: q.id,
-          selected_option_id: answers[q.id],
-        }));
+      const answerPayload: QuizAnswer[] = session.questions.map((q) => ({
+        question_id: q.id,
+        selected_index: answers[q.id] !== undefined ? answers[q.id] : null,
+      }));
 
-      submitQuiz({ session_id: session.session_id, answers: answerPayload });
+      submitQuiz({ answers: answerPayload });
     },
     [session, answers, submitQuiz],
   );
 
-  // ─── Timer ────────────────────────────────────────────────────────────────
-  // handleSubmit'in güncel referansını ref'te tut; timer effect'i sadece
-  // session'a bağlı kalır — her cevap seçiminde interval yeniden başlamaz.
+  // ─── Tekrar Dene ───────────────────────────────────────────────────────────
+  function handleRetry() {
+    setQuizResult(null);
+    setAnswers({});
+    setCurrentIndex(0);
+    setRemaining(null);
+    hasSubmittedRef.current = false;
+    attemptStartedRef.current = false;
+    if (quizMeta?.quiz_id) {
+      attemptStartedRef.current = true;
+      startAttempt(quizMeta.quiz_id);
+    }
+  }
+
+  // ─── Timer ─────────────────────────────────────────────────────────────────
   const handleSubmitRef = useRef(handleSubmit);
   useEffect(() => {
     handleSubmitRef.current = handleSubmit;
@@ -144,8 +187,6 @@ export default function QuizClient({ slug }: QuizClientProps) {
   useEffect(() => {
     if (!session) return;
 
-    // setState yalnızca callback içinde çağrılır — effect body'de doğrudan çağrılmaz
-    // submitted: interval temizlendikten sonra tekrar submit tetiklenmesini önler
     let submitted = false;
 
     const tick = () => {
@@ -153,11 +194,10 @@ export default function QuizClient({ slug }: QuizClientProps) {
       setRemaining(r);
       if (r <= 0 && !submitted) {
         submitted = true;
-        handleSubmitRef.current(true); // otomatik submit
+        handleSubmitRef.current(true);
       }
     };
 
-    // setTimeout(0): ilk değeri bir sonraki event loop tick'te hesapla
     const initTimer = setTimeout(tick, 0);
     intervalRef.current = setInterval(tick, 1000);
 
@@ -165,10 +205,15 @@ export default function QuizClient({ slug }: QuizClientProps) {
       clearTimeout(initTimer);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [session]); // answers değişiminde interval yeniden başlamaz
+  }, [session]);
 
-  // ─── Loading / Error States ───────────────────────────────────────────────
-  if (courseLoading || sessionLoading) {
+  // ─── Loading / Error States ────────────────────────────────────────────────
+  if (
+    courseLoading ||
+    metaLoading ||
+    sessionLoading ||
+    (!session && !sessionError && !metaError)
+  ) {
     return (
       <div className="flex items-center justify-center py-24">
         <p className="text-muted-foreground animate-pulse">Sınav yükleniyor…</p>
@@ -176,10 +221,10 @@ export default function QuizClient({ slug }: QuizClientProps) {
     );
   }
 
-  if (courseError) {
+  if (courseError || metaError) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-        <p className="text-muted-foreground">Kurs bilgisi yüklenirken bir hata oluştu.</p>
+        <p className="text-muted-foreground">Sınav bilgisi yüklenirken bir hata oluştu.</p>
         <Button variant="outline" onClick={() => router.push(routes.courseDetail(slug))}>
           Kursa Dön
         </Button>
@@ -187,10 +232,13 @@ export default function QuizClient({ slug }: QuizClientProps) {
     );
   }
 
-  if (sessionError || !session) {
+  // B-01: 403 dışındaki session hataları (500, ağ kesilmesi vb.)
+  if (sessionError && (sessionErrorRaw as AxiosError)?.response?.status !== 403) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-        <p className="text-muted-foreground">Sınav yüklenirken bir hata oluştu.</p>
+        <p className="text-muted-foreground">
+          Sınav başlatılırken bir hata oluştu. Lütfen sayfayı yenileyiniz.
+        </p>
         <Button variant="outline" onClick={() => router.push(routes.courseDetail(slug))}>
           Kursa Dön
         </Button>
@@ -198,29 +246,79 @@ export default function QuizClient({ slug }: QuizClientProps) {
     );
   }
 
-  // ─── Sonuç Ekranı ─────────────────────────────────────────────────────────
+  if (!session) {
+    const is403 = (sessionErrorRaw as AxiosError)?.response?.status === 403;
+    return (
+      <div className="flex items-center justify-center py-24">
+        <p className="text-muted-foreground animate-pulse">
+          {is403 ? "Yönlendiriliyor…" : "Sınav yüklenirken bir hata oluştu."}
+        </p>
+      </div>
+    );
+  }
+
+  // ─── Sonuç Ekranı ──────────────────────────────────────────────────────────
   if (quizResult) {
+    const mappedAnswers = quizResult.answers.map((a) => ({
+      ...a,
+      explanation: a.explanation ?? null,
+      options: a.options.map((o) => o.text),
+    }));
+
     return (
-      <QuizResultScreen result={quizResult} onBack={() => router.push(routes.courseDetail(slug))} />
+      <div className="flex flex-col">
+        <QuizResultScreen
+          score={quizResult.score}
+          totalQuestions={quizResult.total_questions}
+          passed={quizResult.passed}
+          timeSpentSecs={quizResult.time_spent_secs}
+          answers={mappedAnswers}
+          onRetry={handleRetry}
+          onBackToCourse={() => router.push(routes.courseDetail(slug))}
+        />
+        {attemptHistory.length > 1 && (
+          <div className="mx-auto w-full max-w-2xl px-4 pb-8">
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-zinc-500">
+              Geçmiş Denemeler
+            </h3>
+            <div className="flex flex-col gap-2">
+              {attemptHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between rounded-lg border border-zinc-100 px-4 py-2 text-sm dark:border-zinc-800"
+                >
+                  <span className="text-zinc-500">
+                    {new Date(item.submitted_at).toLocaleDateString("tr-TR")}
+                  </span>
+                  <span className="font-medium">
+                    {item.score}/{item.total_questions}
+                  </span>
+                  <span className={item.passed ? "text-emerald-600" : "text-red-500"}>
+                    {item.passed ? "Geçti ✓" : "Kaldı ✗"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 
+  // ─── Quiz Render ───────────────────────────────────────────────────────────
   const questions = session.questions;
   const currentQuestion = questions[currentIndex];
   const totalQuestions = questions.length;
   const isLast = currentIndex === totalQuestions - 1;
   const isTimeCritical = remaining !== null && remaining < 60;
+  const answeredCount = Object.keys(answers).length;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-8">
-      {/* Üst Bar: İlerleme + Timer */}
       <div className="flex items-center justify-between">
         <span className="text-muted-foreground text-sm">
           Soru {currentIndex + 1} / {totalQuestions}
         </span>
-
-        {/* Geri Sayım */}
         <div
           role="timer"
           aria-label={`Kalan süre: ${remaining !== null ? formatTime(remaining) : "yükleniyor"}`}
@@ -236,10 +334,8 @@ export default function QuizClient({ slug }: QuizClientProps) {
         </div>
       </div>
 
-      {/* İlerleme Çubuğu — cevaplanan soru sayısını gösterir */}
-      <Progress value={(Object.keys(answers).length / totalQuestions) * 100} className="h-1.5" />
+      <Progress value={(answeredCount / totalQuestions) * 100} className="h-1.5" />
 
-      {/* Soru Kartı */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-medium leading-relaxed">
@@ -248,16 +344,16 @@ export default function QuizClient({ slug }: QuizClientProps) {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {currentQuestion.options.map((option) => {
-            const isSelected = answers[currentQuestion.id] === option.id;
+            const isSelected = answers[currentQuestion.id] === option.index;
             return (
               <Button
-                key={option.id}
+                key={option.index.toString()}
                 type="button"
                 variant="outline"
                 onClick={() =>
                   setAnswers((prev) => ({
                     ...prev,
-                    [currentQuestion.id]: option.id,
+                    [currentQuestion.id]: option.index,
                   }))
                 }
                 className={`h-auto justify-start rounded-lg px-4 py-3 text-left text-sm whitespace-normal ${
@@ -274,7 +370,6 @@ export default function QuizClient({ slug }: QuizClientProps) {
         </CardContent>
       </Card>
 
-      {/* Alt Navigasyon */}
       <div className="flex items-center justify-between">
         <Button
           variant="outline"
@@ -291,16 +386,15 @@ export default function QuizClient({ slug }: QuizClientProps) {
             <Button onClick={() => setConfirmOpen(true)} disabled={isSubmitting} size="sm">
               {isSubmitting ? "Gönderiliyor…" : "Sınavı Bitir"}
             </Button>
-
             <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Sınavı bitirmek istiyor musun?</AlertDialogTitle>
                   <AlertDialogDescription>
                     Gönderilen sınav bir daha düzenlenemez.{" "}
-                    {Object.keys(answers).length < session.questions.length && (
+                    {answeredCount < session.questions.length && (
                       <span className="font-medium text-orange-500">
-                        {session.questions.length - Object.keys(answers).length} soru cevaplanmadı.
+                        {session.questions.length - answeredCount} soru cevaplanmadı.
                       </span>
                     )}
                   </AlertDialogDescription>
@@ -332,7 +426,6 @@ export default function QuizClient({ slug }: QuizClientProps) {
         )}
       </div>
 
-      {/* Soru Genel Bakışı */}
       <div className="flex flex-wrap justify-center gap-2 pt-2">
         {questions.map((q, i) => (
           <Button
@@ -342,11 +435,11 @@ export default function QuizClient({ slug }: QuizClientProps) {
             size="icon-sm"
             onClick={() => setCurrentIndex(i)}
             disabled={isSubmitting}
-            aria-label={`Soru ${i + 1}'e git${answers[q.id] ? " (cevaplandı)" : ""}`}
+            aria-label={`Soru ${i + 1}'e git${answers[q.id] !== undefined ? " (cevaplandı)" : ""}`}
             className={`h-8 w-8 rounded-full text-xs font-semibold transition-colors ${
               i === currentIndex
                 ? "bg-primary text-primary-foreground"
-                : answers[q.id]
+                : answers[q.id] !== undefined
                   ? "bg-emerald-500 text-white"
                   : "bg-secondary text-secondary-foreground hover:bg-accent"
             }`}
