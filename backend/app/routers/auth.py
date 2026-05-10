@@ -172,7 +172,7 @@ async def google_login(request: Request):
             value=state,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="none",
+            samesite="lax",
             max_age=600,
         )
         return response
@@ -281,7 +281,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             return RedirectResponse(
                 url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
-                f"&merge_token={conflict_data.merge_token}&email={user_info['email']}",
+                f"&merge_token={conflict_data.merge_token}",
                 status_code=302,
             )
 
@@ -324,7 +324,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
@@ -333,7 +333,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -533,7 +533,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
         response.set_cookie(
@@ -541,7 +541,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -744,7 +744,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             return RedirectResponse(
                 url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
-                f"&merge_token={conflict_data.merge_token}&email={email}",
+                f"&merge_token={conflict_data.merge_token}",
                 status_code=302,
             )
 
@@ -788,7 +788,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
         response.set_cookie(
@@ -796,7 +796,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -875,7 +875,7 @@ async def refresh(request: Request):
         value=new_access_token,
         httponly=True,
         secure=settings.ENVIRONMENT not in ("development", "testing"),
-        samesite="strict",
+        samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
     response.set_cookie(
@@ -883,7 +883,7 @@ async def refresh(request: Request):
         value=new_refresh_token,
         httponly=True,
         secure=settings.ENVIRONMENT not in ("development", "testing"),
-        samesite="strict",
+        samesite="lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
     return response
@@ -907,13 +907,13 @@ async def logout(request: Request):
     response.delete_cookie(
         settings.ACCESS_TOKEN_COOKIE_NAME,
         httponly=True,
-        samesite="strict",
+        samesite="lax",
         secure=is_secure,
     )
     response.delete_cookie(
         settings.REFRESH_TOKEN_COOKIE_NAME,
         httponly=True,
-        samesite="strict",
+        samesite="lax",
         secure=is_secure,
     )
     return response

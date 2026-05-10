@@ -71,14 +71,15 @@ def build_conflict_response(
     Email çakışması tespit edildiğinde conflict response oluşturur.
     Stateless JWT merge_token üretir.
     """
+    existing_providers = [acc.provider for acc in existing_accounts]
+
     merge_token = create_merge_token(
         user_id=str(existing_user.id),
         new_provider=new_provider.value,
         provider_user_id=provider_user_id,
         provider_email=provider_email,
+        existing_providers=existing_providers,
     )
-
-    existing_providers = [acc.provider for acc in existing_accounts]
     providers_str = (
         ", ".join(existing_providers) if existing_providers else "başka bir hesap"
     )

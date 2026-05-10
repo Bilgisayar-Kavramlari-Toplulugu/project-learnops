@@ -1,12 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
 import { useProfile } from "@/hooks/profile/use-profile";
 import { DashboardErrorState } from "@/components/ui";
+import { mergeAccounts } from "@/lib/auth";
 import type { DashboardProfile } from "@/types";
 
 interface DashboardLayoutClientProps {
@@ -27,6 +29,23 @@ export function DashboardLayoutClient({
     initialData: initialProfile ?? undefined,
     enabled: !allowAnonymous,
   });
+  const mergeAttempted = useRef(false);
+
+  useEffect(() => {
+    if (mergeAttempted.current) return;
+
+    const pendingToken = sessionStorage.getItem("pending_merge_token");
+    if (!pendingToken) return;
+
+    mergeAttempted.current = true;
+    sessionStorage.removeItem("pending_merge_token");
+
+    mergeAccounts(pendingToken).catch((err) => {
+      // Merge başarısız olursa sessizce geç — kullanıcı zaten giriş yapmış durumda.
+      // Token süresi dolmuş ya da daha önce kullanılmış olabilir.
+      console.warn("[merge] Hesap birleştirme başarısız:", err?.response?.data?.detail ?? err);
+    });
+  }, []);
 
   if (!allowAnonymous && !isLoading && !profile) return <DashboardErrorState />;
 
