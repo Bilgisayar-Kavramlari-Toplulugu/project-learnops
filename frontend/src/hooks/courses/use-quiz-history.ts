@@ -16,9 +16,7 @@ export function useQuizHistory(quizId: string | undefined) {
   return useQuery({
     queryKey: queryKeys.quiz.history(quizId ?? ""),
     queryFn: async () => {
-      const { data } = await api.get<QuizAttemptHistoryItem[]>(
-        `/quiz-attempts?quiz_id=${quizId}`,
-      );
+      const { data } = await api.get<QuizAttemptHistoryItem[]>(`/quiz-attempts?quiz_id=${quizId}`);
       return data;
     },
     enabled: Boolean(quizId),

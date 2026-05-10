@@ -63,9 +63,7 @@ export default function ResultsPage() {
 
     async function fetchResults() {
       try {
-        const response = await api.get<QuizAttemptDetailResponse>(
-          `/quiz-attempts/${attemptId}`,
-        );
+        const response = await api.get<QuizAttemptDetailResponse>(`/quiz-attempts/${attemptId}`);
         const data = response.data;
 
         // Guard: total_questions 0 veya eksikse hata olarak işle
@@ -123,9 +121,7 @@ export default function ResultsPage() {
 
   const handleBackToCourse = () => {
     router.push(
-      resultData?.courseSlug
-        ? routes.courseDetail(resultData.courseSlug)
-        : routes.courses
+      resultData?.courseSlug ? routes.courseDetail(resultData.courseSlug) : routes.courses,
     );
   };
 

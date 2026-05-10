@@ -1,9 +1,20 @@
-import { ExternalLink, Github, Linkedin, Youtube } from "lucide-react";
+import {
+  Compass,
+  ExternalLink,
+  Github,
+  Terminal,
+  Code2,
+  BookOpen,
+  FileText,
+  Hash,
+  Globe,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { routes } from "@/lib/routes";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/layout/logo";
 
 const currentYear = new Date().getFullYear();
 
@@ -26,25 +37,50 @@ const footerColumns: FooterColumn[] = [
       { label: "Ana Sayfa", href: routes.dashboard },
       { label: "Tüm Kurslar", href: routes.courses },
       { label: "Kurslarım", href: routes.myCourses },
+      { label: "Profilim", href: routes.profile },
+      { label: "Ekibimiz", href: routes.team },
     ],
   },
   {
-    title: "Topluluk",
+    title: "Öğrenme Kaynakları",
     links: [
-      { label: "Acik Kaynak", href: "#" },
-      { label: "Cloud-DevOps", href: "#" },
-      { label: "Gelistiriciler", href: "#" },
-    ],
-  },
-  {
-    title: "Bizi Takip Et",
-    links: [
-      { label: "GitHub", href: "https://github.com", icon: Github, external: true },
-      { label: "YouTube", href: "https://youtube.com", icon: Youtube, external: true },
+      { label: "DevOps Roadmap", href: "https://roadmap.sh/devops", icon: Compass, external: true },
+      { label: "Linux Journey", href: "https://linuxjourney.com", icon: Terminal, external: true },
       {
-        label: "LinkedIn",
-        href: "https://www.linkedin.com",
-        icon: Linkedin,
+        label: "Git Rehberi (TR)",
+        href: "https://git-scm.com/book/tr/v2",
+        icon: BookOpen,
+        external: true,
+      },
+      { label: "Docker Docs", href: "https://docs.docker.com", icon: Code2, external: true },
+    ],
+  },
+  {
+    title: "Araçlar & Faydalı",
+    links: [
+      {
+        label: "Git Cheat Sheet",
+        href: "https://training.github.com/downloads/github-git-cheat-sheet.pdf",
+        icon: FileText,
+        external: true,
+      },
+      { label: "Regex101", href: "https://regex101.com", icon: Hash, external: true },
+      {
+        label: "Awesome DevOps",
+        href: "https://github.com/Lucas007/awesome-devops",
+        icon: Github,
+        external: true,
+      },
+      {
+        label: "Topluluk Website",
+        href: "https://bilgisayarkavramlari.com",
+        icon: Globe,
+        external: true,
+      },
+      {
+        label: "Topluluk Github",
+        href: "https://github.com/Bilgisayar-Kavramlari-Toplulugu/project-learnops",
+        icon: Github,
         external: true,
       },
     ],
@@ -55,60 +91,66 @@ function FooterLinkItem({ link }: { link: FooterLink }) {
   const Icon = link.icon;
 
   const className = cn(
-    "group inline-flex items-center justify-between rounded-xl px-2.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-sky-300",
-    link.external && "text-slate-700 dark:text-slate-200",
+    "group flex items-center justify-between rounded-lg px-2 py-1.5 text-[13px] font-medium text-slate-600 transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sky-300",
+    link.external && "text-slate-700 dark:text-slate-300",
+  );
+
+  const content = (
+    <>
+      <span className="flex items-center gap-2">
+        {Icon ? <Icon className="size-4" /> : null}
+        {link.label}
+      </span>
+      {link.external && (
+        <ExternalLink className="size-3 opacity-0 transition-opacity group-hover:opacity-60" />
+      )}
+    </>
   );
 
   if (link.external) {
     return (
       <a href={link.href} target="_blank" rel="noreferrer noopener" className={className}>
-        <span className="inline-flex items-center gap-2">
-          {Icon ? <Icon className="size-4" /> : null}
-          {link.label}
-        </span>
-        <ExternalLink className="size-3.5 opacity-60 transition group-hover:opacity-90" />
+        {content}
       </a>
     );
   }
 
   return (
     <Link href={link.href} className={className}>
-      <span className="inline-flex items-center gap-2">
-        {Icon ? <Icon className="size-4" /> : null}
-        {link.label}
-      </span>
+      {content}
     </Link>
   );
 }
 
 export function AppFooter() {
   return (
-    <footer className="mt-2 rounded-2xl border border-blue-100/80 bg-white/80 px-4 py-4 text-xs text-slate-500 shadow-sm shadow-blue-100/30 sm:px-5 dark:border-slate-700/80 dark:bg-slate-900/72 dark:text-slate-400 dark:shadow-black/20">
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
-        <section className="rounded-2xl border border-blue-100/70 bg-white/85 p-3.5 dark:border-slate-700 dark:bg-slate-900/65">
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">LearnOps</p>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            Gercek projeler icin modern ogrenme ve operasyon paneli.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            <span className="rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-900/30 dark:text-emerald-300">
-              Open Source
-            </span>
-            <span className="rounded-lg border border-sky-100 bg-sky-50 px-2 py-1 text-[11px] font-semibold text-sky-700 dark:border-sky-900/70 dark:bg-sky-900/30 dark:text-sky-300">
-              Cloud-DevOps
-            </span>
+    <footer className="mt-4 rounded-2xl border border-slate-200/60 bg-white/50 px-4 py-4 text-xs text-slate-500 shadow-sm backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/50 dark:text-slate-400">
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <section className="flex flex-col justify-between">
+          <div>
+            <Logo className="h-8 w-auto" />
+            <p className="mt-3 text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
+              Modern öğrenme ve operasyon paneli. Kendini geliştir, topluluğa katıl.
+            </p>
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+                Open Source
+              </span>
+              <span className="rounded-md bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-950/30 dark:text-sky-400">
+                Community Driven
+              </span>
+            </div>
           </div>
         </section>
 
         {footerColumns.map((column) => (
-          <section
-            key={column.title}
-            className="rounded-2xl border border-blue-100/70 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60"
-          >
-            <p className="text-[11px] font-semibold tracking-[0.12em] text-slate-400 uppercase dark:text-slate-500">
+          <section key={column.title}>
+            <p className="px-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase dark:text-slate-500">
               {column.title}
             </p>
-            <div className="mt-2 flex flex-col gap-1">
+            <div className="mt-2 flex flex-col gap-0.5">
               {column.links.map((link) => (
                 <FooterLinkItem key={link.label} link={link} />
               ))}
@@ -117,18 +159,21 @@ export function AppFooter() {
         ))}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-blue-100/80 pt-3 dark:border-slate-700/80">
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          © {currentYear} LearnOps. Tum haklari saklidir.
+      <div className="mt-3 flex items-center justify-center gap-2 border-t border-slate-200/50 pt-3 dark:border-slate-800/50">
+        <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          © {currentYear} LearnOps
         </p>
-        <div className="flex items-center gap-1.5">
-          <span className="rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-900/30 dark:text-emerald-300">
-            UI Ready
-          </span>
-          <span className="rounded-lg border border-amber-100 bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 dark:border-amber-900/70 dark:bg-amber-900/30 dark:text-amber-300">
-            API Waiting
-          </span>
-        </div>
+        <span className="text-slate-300 dark:text-slate-700">·</span>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+          <a
+            href="https://bilgisayarkavramlari.com"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+          >
+            Bilgisayar Kavramları Topluluğu
+          </a>
+        </p>
       </div>
     </footer>
   );
