@@ -40,6 +40,7 @@ interface QuizResultData {
   passed: boolean;
   timeSpentSecs: number;
   answers: AnswerResult[];
+  courseSlug?: string;
 }
 
 type LoadingState = "loading" | "success" | "error" | "not-found";
@@ -88,6 +89,7 @@ export default function ResultsPage() {
           passed: data.passed,
           timeSpentSecs: timeSpent,
           answers,
+          courseSlug: data.course_slug,
         });
         setLoadingState("success");
       } catch (err) {
@@ -120,7 +122,11 @@ export default function ResultsPage() {
   const handleRetry = () => router.push(`/quiz/${quizId}`);
 
   const handleBackToCourse = () => {
-    router.push("/courses");
+    router.push(
+      resultData?.courseSlug
+        ? routes.courseDetail(resultData.courseSlug)
+        : routes.courses
+    );
   };
 
   // Loading UI
