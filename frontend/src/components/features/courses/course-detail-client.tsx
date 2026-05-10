@@ -87,6 +87,12 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
     ? routes.section(course.slug, targetSection.section_id_str)
     : routes.courseDetail(course.slug);
   const isContinueLoading = enrollmentsLoading || progressFetching;
+  const completedSectionIds = new Set(
+    progressSections.filter((p) => p.completed).map((p) => p.section_id_str),
+  );
+  const allSectionsCompleted =
+    sortedSections.length > 0 &&
+    sortedSections.every((s) => completedSectionIds.has(s.section_id_str));
 
   return (
     <div className="w-full max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500 pb-20">
@@ -203,6 +209,17 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               >
                 <Loader2 className="w-6 h-6 animate-spin" />
                 Hazırlanıyor...
+              </Button>
+            ) : allSectionsCompleted ? (
+              <Button
+                asChild
+                size="lg"
+                className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98]"
+              >
+                <Link href={routes.quiz(course.slug)}>
+                  Quiz&apos;e Git
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
               </Button>
             ) : (
               <Button
