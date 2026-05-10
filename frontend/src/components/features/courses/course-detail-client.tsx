@@ -217,8 +217,8 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                 className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98]"
               >
                 <Link href={routes.quiz(course.slug)}>
-                  <ArrowRight className="w-6 h-6" />
                   Quiz&apos;e Git
+                  <ArrowRight className="w-6 h-6" />
                 </Link>
               </Button>
             ) : (
