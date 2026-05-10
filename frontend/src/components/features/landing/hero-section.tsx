@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type { MouseEvent } from "react";
 import { ArrowRight, Github, Star, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -7,6 +11,25 @@ import { routes } from "@/lib/routes";
 const stack = ["Linux", "Docker", "Git", "Terraform", "Kubernetes", "CI/CD"] as const;
 
 export function HeroSection() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleCoursesClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+
+    const href = "/?section=kurslara-goz-at";
+    if (pathname !== "/") {
+      router.push(href);
+      return;
+    }
+
+    window.history.replaceState(null, "", href);
+    document.getElementById("kurslara-goz-at")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
     <section className="pb-12 pt-16 sm:pt-20">
       <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-center">
@@ -50,7 +73,9 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-11 rounded-full px-6">
-              <Link href={routes.courses}>Kurslara göz at</Link>
+              <Link href="/?section=kurslara-goz-at" onClick={handleCoursesClick}>
+                Kurslara göz at
+              </Link>
             </Button>
           </div>
 

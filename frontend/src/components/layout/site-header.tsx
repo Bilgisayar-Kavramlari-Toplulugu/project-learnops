@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import type { MouseEvent } from "react";
 import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
 
@@ -11,60 +12,66 @@ import { routes } from "@/lib/routes";
 import { Logo } from "./logo";
 
 const navItems = [
-  { href: "/#neden", label: "Neden LearnOps", id: "neden" },
-  { href: "/#kimler-icin", label: "Kimler için", id: "kimler-icin" },
-  { href: "/#nasil-calisir", label: "Nasıl çalışır", id: "nasil-calisir" },
-  { href: "/team", label: "Ekip" },
+  { href: "/?section=neden", label: "Neden LearnOps", id: "neden" },
+  { href: "/?section=kimler-icin", label: "Kimler için", id: "kimler-icin" },
+  { href: "/?section=nasil-calisir", label: "Nasıl çalışır", id: "nasil-calisir" },
+  { href: "/?section=kurslara-goz-at", label: "Kurslara Göz At", id: "kurslara-goz-at" },
+  { href: "/?section=ekip", label: "Ekip", id: "ekip" },
 ] as const;
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  initialSection?: string;
+}
+
+export function SiteHeader({ initialSection }: SiteHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
   const [activeSection, setActiveSection] = useState<string>("");
 
+  const scrollToSection = (id: string) => {
+    const section = document.getElementById(id);
+    if (!section) return;
+
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(id);
+  };
+
+  const replaceSectionUrl = (id: string) => {
+    window.history.replaceState(null, "", `/?section=${id}`);
+  };
+
   useEffect(() => {
-    // Anasayfa değilsek observer'ı hiç kurma — setState de yapma
     if (!isHome) return;
 
-    const sectionIds = navItems
-      .filter((i): i is typeof i & { id: string } => "id" in i)
-      .map((i) => i.id);
+    if (!initialSection) return;
 
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null);
-
-    if (sections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visible[0]) {
-          setActiveSection(visible[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-20% 0px -60% 0px",
-        threshold: [0, 0.25, 0.5, 0.75, 1],
-      },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-
-    return () => observer.disconnect();
-  }, [isHome]);
+    requestAnimationFrame(() => scrollToSection(initialSection));
+  }, [initialSection, isHome]);
 
   const isActive = (href: string) => {
-    if (href.startsWith("/#")) {
-      // Anasayfada değilsek hash linkler aktif olamaz — state'e bakmaya gerek yok
+    const id = new URL(href, "https://learnops.local").searchParams.get("section");
+    if (id) {
+      // Anasayfada değilsek bölüm linkleri aktif olamaz — state'e bakmaya gerek yok
       if (!isHome) return false;
-      const id = href.replace("/#", "");
       return activeSection === id;
     }
     return pathname === href;
+  };
+
+  const handleNavClick = (event: MouseEvent<HTMLAnchorElement>, id?: string) => {
+    if (!id) return;
+
+    event.preventDefault();
+    const href = `/?section=${id}`;
+
+    if (!isHome) {
+      router.push(href);
+      return;
+    }
+
+    replaceSectionUrl(id);
+    scrollToSection(id);
   };
 
   return (
@@ -85,6 +92,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={(event) => handleNavClick(event, "id" in item ? item.id : undefined)}
                 className={`relative px-3 py-1 text-[13px] transition-colors ${
                   active
                     ? "text-foreground font-medium"
