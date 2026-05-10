@@ -1,4 +1,5 @@
 import { SiteHeader } from "@/components/layout/site-header";
+import { AppFooter } from "@/components/layout/app-footer";
 import { HeroSection } from "@/components/features/landing/hero-section";
 import { AudienceSection } from "@/components/features/landing/audience-section";
 import { BentoGrid } from "@/components/features/landing/bento-grid";
@@ -27,6 +28,7 @@ export default function LandingPage({ courses, initialSection }: LandingPageProp
         <CoursesSection courses={courses} />
         <CtaSection />
         <TeamPreviewSection />
+        <AppFooter />
       </div>
     </main>
   );
