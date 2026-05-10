@@ -255,12 +255,12 @@ export default function QuizClient({ slug }: QuizClientProps) {
   }
 
   if (!session) {
+    const is403 = (sessionErrorRaw as AxiosError)?.response?.status === 403;
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
-        <p className="text-muted-foreground">Sınav yüklenirken bir hata oluştu.</p>
-        <Button variant="outline" onClick={() => router.push(routes.courseDetail(slug))}>
-          Kursa Dön
-        </Button>
+      <div className="flex items-center justify-center py-24">
+        <p className="text-muted-foreground animate-pulse">
+          {is403 ? "Yönlendiriliyor…" : "Sınav yüklenirken bir hata oluştu."}
+        </p>
       </div>
     );
   }

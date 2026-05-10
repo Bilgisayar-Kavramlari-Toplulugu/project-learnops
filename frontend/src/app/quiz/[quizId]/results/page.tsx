@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui";
 import { api } from "@/lib/api";
+import { routes } from "@/lib/routes";
 
 interface AnswerResultItem {
   question_id: string;
@@ -93,7 +94,7 @@ export default function ResultsPage() {
         if (isAxiosError(err)) {
           const status = err.response?.status;
           if (status === 401) {
-            router.push("/login");
+            router.push(routes.login);
             return;
           }
           if (status === 403) {
