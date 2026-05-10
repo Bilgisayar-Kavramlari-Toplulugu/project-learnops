@@ -13,7 +13,8 @@ export const queryKeys = {
   },
   quiz: {
     all: ["quiz"] as const,
-    session: (courseId: string) => [...queryKeys.quiz.all, "session", courseId] as const,
+    meta: (slug: string) => ["quiz", "meta", slug] as const,
+    history: (quizId: string) => ["quiz", "history", quizId] as const,
   },
   enrollments: {
     all: ["enrollments"] as const,
