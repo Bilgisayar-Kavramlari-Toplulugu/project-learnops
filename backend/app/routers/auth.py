@@ -7,7 +7,6 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from jwt.exceptions import PyJWTError as JWTError
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -472,33 +471,29 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
                 )
             logger.info(f"User email: {user_info.get('email')}")
 
-        # Get or create user
-        result = await db.execute(select(User).where(User.email == user_info["email"]))
-        user = result.scalar_one_or_none()
+        # Get or create user (with conflict detection)
+        result = await resolve_oauth_user(
+            db,
+            email=user_info["email"],
+            provider=OAuthProvider.linkedin,
+            provider_user_id=user_info["sub"],
+            provider_email=user_info["email"],
+            display_name=user_info.get("name", user_info["email"].split("@")[0]),
+        )
 
-        if not user:
-            user = User(
-                email=user_info["email"],
-                display_name=user_info.get("name", user_info["email"].split("@")[0]),
-                avatar_type="initials",
-                last_login_at=datetime.now(timezone.utc),
+        if "conflict" in result:
+            conflict_data = result["conflict"]
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
+                f"&merge_token={conflict_data.merge_token}",
+                status_code=302,
             )
-            db.add(user)
-            await db.flush()
-            await db.refresh(user)
-            logger.info(f"New user created: {user.email}")
-        else:
-            user.last_login_at = datetime.now(timezone.utc)
-            logger.info(f"Existing user logged in: {user.email}")
+
+        user = result["user"]
+        provider_user_id = str(user_info["sub"])
 
         # OAuth account kaydet/güncelle
-        oauth_result = await db.execute(
-            select(OAuthAccount).where(
-                OAuthAccount.provider == "linkedin",
-                OAuthAccount.provider_user_id == user_info["sub"],
-            )
-        )
-        oauth_account = oauth_result.scalar_one_or_none()
+        oauth_account = await get_oauth_account(db, "linkedin", provider_user_id)
         refresh_token_encrypted = None
         if "refresh_token" in tokens:
             refresh_token_encrypted = encrypt_token(tokens["refresh_token"])
@@ -512,7 +507,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             oauth_account = OAuthAccount(
                 user_id=user.id,
                 provider="linkedin",
-                provider_user_id=user_info["sub"],
+                provider_user_id=provider_user_id,
                 provider_email=user_info["email"],
                 refresh_token_encrypted=refresh_token_encrypted,
             )
