@@ -7,8 +7,10 @@ import type { QuizAttemptHistoryItem } from "@/types";
  * GET /quiz-attempts?quiz_id={quizId}
  *
  * Kullanıcının belirli bir quiz için tüm geçmiş attemptlarını döndürür.
- * Sonuç ekranında geçmiş denemeler bölümünde kullanılır (TC-QUIZ-12).
+ * Sonuç ekranında geçmiş denemeler butonu için kullanılır (TC-QUIZ-12).
  * staleTime: 0 → her submit sonrası güncel liste gösterilir.
+ * retry: false → geçici hata durumunda üç deneme yerine hata hemen işlenir;
+ *   history ikincil özellik olduğundan sessiz hata yeterlidir.
  */
 export function useQuizHistory(quizId: string | undefined) {
   return useQuery({
@@ -21,5 +23,6 @@ export function useQuizHistory(quizId: string | undefined) {
     },
     enabled: Boolean(quizId),
     staleTime: 0,
+    retry: false,
   });
 }

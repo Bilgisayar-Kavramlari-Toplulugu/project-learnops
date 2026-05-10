@@ -4,7 +4,9 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { QuizResultScreen } from "@/components/quiz/quiz-result-screen";
 import { useEffect, useState } from "react";
+import { isAxiosError } from "axios";
 import { Button } from "@/components/ui";
+import { api } from "@/lib/api";
 
 interface AnswerResultItem {
   question_id: string;
@@ -16,12 +18,13 @@ interface AnswerResultItem {
   explanation: string | null;
 }
 
+// Backend field names — FIX BE-1 ile hizalandı (total_questions, time_spent_secs)
 interface QuizAttemptDetailResponse {
   attempt_id: string;
   score: number;
-  total: number;
+  total_questions: number;
   passed: boolean;
-  time_spent_seconds?: number;
+  time_spent_secs?: number;
   course_slug?: string;
   answers: AnswerResultItem[];
 }
@@ -57,35 +60,21 @@ export default function ResultsPage() {
     if (!attemptId) return;
 
     async function fetchResults() {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
       try {
-        const response = await fetch(`${API_URL}/quiz-attempts/${attemptId}`, {
-          cache: "no-store",
-          credentials: "include",
-        });
+        const response = await api.get<QuizAttemptDetailResponse>(
+          `/quiz-attempts/${attemptId}`,
+        );
+        const data = response.data;
 
-        if (!response.ok) {
-          if (response.status === 401) return router.push("/login");
-          if (response.status === 403) {
-            setError("Bu sonuçlara erişim yetkiniz yok.");
-            return setLoadingState("error");
-          }
-          if (response.status === 404) return setLoadingState("not-found");
-          throw new Error("Fetch error");
-        }
-
-        const data: QuizAttemptDetailResponse = await response.json();
-
-        // Guard: total 0 veya eksikse hata olarak işle
-        const totalQs = data.total;
+        // Guard: total_questions 0 veya eksikse hata olarak işle
+        const totalQs = data.total_questions;
         if (!totalQs || totalQs <= 0) {
           setError("Geçersiz quiz verisi alındı.");
           setLoadingState("error");
           return;
         }
 
-        const timeSpent = data.time_spent_seconds ?? 0;
+        const timeSpent = data.time_spent_secs ?? 0;
 
         const answers: AnswerResult[] = data.answers.map((answer) => ({
           ...answer,
@@ -101,6 +90,22 @@ export default function ResultsPage() {
         });
         setLoadingState("success");
       } catch (err) {
+        if (isAxiosError(err)) {
+          const status = err.response?.status;
+          if (status === 401) {
+            router.push("/login");
+            return;
+          }
+          if (status === 403) {
+            setError("Bu sonuçlara erişim yetkiniz yok.");
+            setLoadingState("error");
+            return;
+          }
+          if (status === 404) {
+            setLoadingState("not-found");
+            return;
+          }
+        }
         console.error("Error fetching quiz results:", err);
         setError("Sonuçlar yüklenirken bir hata oluştu.");
         setLoadingState("error");
