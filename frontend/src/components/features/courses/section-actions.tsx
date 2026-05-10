@@ -123,7 +123,7 @@ export function SectionActions({
                 <span className="hidden max-w-[200px] truncate sm:inline">{nextSection.title}</span>
                 <ChevronRight className="h-4 w-4" />
               </Link>
-            ) : allSectionsCompleted ? (
+            ) : allSectionsCompleted && !progressLoading ? (
               <Link
                 href={routes.quiz(courseSlug)}
                 className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"

@@ -210,6 +210,17 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                 <Loader2 className="w-6 h-6 animate-spin" />
                 Hazırlanıyor...
               </Button>
+            ) : allSectionsCompleted ? (
+              <Button
+                asChild
+                size="lg"
+                className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98]"
+              >
+                <Link href={routes.quiz(course.slug)}>
+                  <ArrowRight className="w-6 h-6" />
+                  Quiz&apos;e Git
+                </Link>
+              </Button>
             ) : (
               <Button
                 asChild
@@ -236,15 +247,6 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               )}
               {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
             </Button>
-          )}
-          {isAlreadyEnrolled && allSectionsCompleted && (
-            <Link
-              href={routes.quiz(course.slug)}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-200 px-4 py-3 text-sm font-bold text-indigo-600 hover:bg-indigo-50 dark:border-indigo-500/20 dark:text-indigo-400 transition-colors"
-            >
-              Quiz&apos;e Git
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           )}
           <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
             <h4 className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 mb-5 uppercase tracking-widest">
