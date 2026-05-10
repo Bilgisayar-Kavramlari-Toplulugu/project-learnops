@@ -4,7 +4,7 @@ import { TeamSection } from "@/components/features/team/team-section";
 
 export function TeamPreviewSection() {
   return (
-    <section className="pb-12">
+    <section id="ekip" className="scroll-mt-20 pb-12">
       <div className="pb-8 pt-4 text-center">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary shadow-sm backdrop-blur">
           <Sparkles className="size-3" />
@@ -27,12 +27,7 @@ export function TeamPreviewSection() {
         </div>
       </div>
 
-      <div
-        id="ekip"
-        className="relative left-1/2 w-screen max-w-6xl -translate-x-1/2 scroll-mt-20 px-5"
-      >
-        <TeamSection className="gap-4 min-[900px]:grid-cols-4" />
-      </div>
+      <TeamSection />
     </section>
   );
 }

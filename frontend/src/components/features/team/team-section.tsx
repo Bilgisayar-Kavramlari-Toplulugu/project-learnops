@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Github, Linkedin, Globe, ArrowUpRight } from "lucide-react";
 
 import { teamMembers, type TeamMember } from "@/data/team";
-import { cn } from "@/lib/utils";
 
 const gradients = [
   "from-rose-500/50 via-fuchsia-500/30 to-indigo-500/50",
@@ -183,18 +182,9 @@ function MemberCard({
   );
 }
 
-interface TeamSectionProps {
-  className?: string;
-}
-
-export function TeamSection({ className }: TeamSectionProps) {
+export function TeamSection() {
   return (
-    <div
-      className={cn(
-        "grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
-        className,
-      )}
-    >
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {teamMembers.map((m, i) => (
         <MemberCard key={m.slug} member={m} index={i} isPriority={i < ABOVE_THE_FOLD_COUNT} />
       ))}
