@@ -1,5 +1,6 @@
 import { ShieldCheck } from "lucide-react";
 import OAuthButtonContainer from "@/components/oauth-button-container";
+import MergeAccountForm from "@/components/merge-account-form";
 import { Logo } from "@/components/layout/logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { routes } from "@/lib/routes";
@@ -20,12 +21,20 @@ const PROVIDER_NAMES: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; provider?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    provider?: string;
+    merge_token?: string;
+  }>;
 }) {
-  const { error, provider } = await searchParams;
-  let errorMessage = error
-    ? (ERROR_MESSAGES[error] ?? "Bir hata oluştu. Lütfen tekrar deneyin.")
-    : null;
+  const { error, provider, merge_token } = await searchParams;
+
+  const isAccountConflict = error === "account_conflict" && !!merge_token;
+
+  let errorMessage =
+    !isAccountConflict && error
+      ? (ERROR_MESSAGES[error] ?? "Bir hata oluştu. Lütfen tekrar deneyin.")
+      : null;
 
   if (errorMessage && error === "oauth_failed" && provider && PROVIDER_NAMES[provider]) {
     errorMessage = `${PROVIDER_NAMES[provider]} ile giriş başarısız. Lütfen tekrar deneyin.`;
@@ -99,9 +108,13 @@ export default async function LoginPage({
                   <ShieldCheck className="size-3" />
                   Güvenli giriş
                 </p>
-                <h1 className="text-xl font-medium text-foreground">Giriş yap</h1>
+                <h1 className="text-xl font-medium text-foreground">
+                  {isAccountConflict ? "Hesap birleştirme" : "Giriş yap"}
+                </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Aşağıdaki seçeneklerden biriyle devam et.
+                  {isAccountConflict
+                    ? "Bu email adresiyle zaten bir hesabınız mevcut."
+                    : "Aşağıdaki seçeneklerden biriyle devam et."}
                 </p>
               </div>
 
@@ -111,13 +124,18 @@ export default async function LoginPage({
                 </p>
               )}
 
-              {/* OAuthButtonContainer'ında Google/GitHub/LinkedIn butonları olmalı */}
-              <OAuthButtonContainer />
-
-              <p className="text-center text-[11px] text-muted-foreground">
-                Giriş yaparak <span className="cursor-pointer underline">kullanım koşullarını</span>{" "}
-                kabul etmiş olursun.
-              </p>
+              {isAccountConflict ? (
+                <MergeAccountForm mergeToken={merge_token} />
+              ) : (
+                <>
+                  <OAuthButtonContainer />
+                  <p className="text-center text-[11px] text-muted-foreground">
+                    Giriş yaparak{" "}
+                    <span className="cursor-pointer underline">kullanım koşullarını</span> kabul
+                    etmiş olursun.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </main>

@@ -78,7 +78,11 @@ def decode_token(token: str) -> dict:
 
 # ---------- Merge Token  ----------
 def create_merge_token(
-    user_id: str, new_provider: str, provider_user_id: str, provider_email: str
+    user_id: str,
+    new_provider: str,
+    provider_user_id: str,
+    provider_email: str,
+    existing_providers: list[str] | None = None,
 ) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     payload = {
@@ -86,6 +90,7 @@ def create_merge_token(
         "new_provider": new_provider,
         "provider_user_id": provider_user_id,
         "provider_email": provider_email,
+        "existing_providers": existing_providers or [],
         "type": "merge",
         "exp": expire,
         "jti": str(uuid.uuid4()),

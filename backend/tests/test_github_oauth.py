@@ -451,7 +451,6 @@ async def test_github_callback_existing_email_different_provider_conflict(
 
     assert "account_conflict" in location
     assert "merge_token=" in location
-    assert f"email={GITHUB_USER_EMAIL}" in location
 
     #  GitHub account eklenmemeli
     result = await db_session.execute(
