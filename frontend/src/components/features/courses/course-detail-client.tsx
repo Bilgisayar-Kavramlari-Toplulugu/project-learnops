@@ -10,6 +10,7 @@ import {
   BookOpen,
   Loader2,
   ArrowRight,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { type AxiosError } from "axios";
@@ -160,29 +161,57 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
 
             <div className="space-y-4">
               {sortedSections.length > 0 ? (
-                sortedSections.map((section, index) => (
-                  <Link
-                    href={`/courses/${course.slug}/sections/${section.section_id_str}`}
-                    key={section.id}
-                    className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
-                  >
-                    <div className="flex w-full gap-5">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shadow-sm">
-                        {index + 1}
+                sortedSections.map((section, index) =>
+                  isAlreadyEnrolled ? (
+                    <Link
+                      href={`/courses/${course.slug}/sections/${section.section_id_str}`}
+                      key={section.id}
+                      className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
+                    >
+                      <div className="flex w-full gap-5">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shadow-sm">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1 pt-1.5 overflow-hidden">
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
+                            {section.title}
+                          </h3>
+                          {section.description && (
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                              {section.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1 pt-1.5 overflow-hidden">
-                        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
-                          {section.title}
-                        </h3>
-                        {section.description && (
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                            {section.description}
-                          </p>
-                        )}
+                    </Link>
+                  ) : (
+                    <div
+                      key={section.id}
+                      onClick={() =>
+                        toast.error("Bu kursa kayıtlı değilsiniz.", {
+                          description: "İçeriği görüntülemek için önce kursa kaydolun.",
+                        })
+                      }
+                      className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
+                    >
+                      <div className="flex w-full gap-5">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800 transition-all shadow-sm">
+                          {enrollmentsLoading ? index + 1 : <Lock className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1 pt-1.5 overflow-hidden">
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
+                            {section.title}
+                          </h3>
+                          {section.description && (
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                              {section.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </Link>
-                ))
+                  ),
+                )
               ) : (
                 <div className="p-10 text-center text-zinc-500 dark:text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl font-medium bg-zinc-50/50 dark:bg-zinc-900/30">
                   Bu kursa henüz bölüm (section) eklenmemiş.
@@ -194,10 +223,18 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
 
         <div className="col-span-1 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 rounded-3xl p-6 lg:p-8 shadow-xl shadow-zinc-200/40 dark:shadow-none lg:sticky lg:top-24 h-fit backdrop-blur-xl">
           <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 mb-3">
-            Kursa Katıl
+            {!isAlreadyEnrolled
+              ? "Kursa Katıl"
+              : allSectionsCompleted
+                ? "Quize Hazırsın!"
+                : "Kaldığın Yerden Devam Et"}
           </h3>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium leading-relaxed">
-            Bu eğitime katılıp yeteneklerinizi hemen bir üst seviyeye taşıyın.
+            {!isAlreadyEnrolled
+              ? "Bu eğitime katılıp yeteneklerinizi hemen bir üst seviyeye taşıyın."
+              : allSectionsCompleted
+                ? "Tüm bölümleri tamamladın. Bilgilerini test etme zamanı."
+                : `${completedSectionIds.size}/${sortedSections.length} bölümü tamamladın, devam et!`}
           </p>
 
           {isAlreadyEnrolled ? (
