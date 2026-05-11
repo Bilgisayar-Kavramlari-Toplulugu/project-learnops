@@ -15,9 +15,13 @@ const navItems = [
   { href: "/?section=neden", label: "Neden LearnOps", id: "neden" },
   { href: "/?section=kimler-icin", label: "Kimler için", id: "kimler-icin" },
   { href: "/?section=nasil-calisir", label: "Nasıl çalışır", id: "nasil-calisir" },
-  { href: "/?section=kurslara-goz-at", label: "Kurslara Göz At", id: "kurslara-goz-at" },
-  { href: "/?section=ekip", label: "Ekip", id: "ekip" },
+  { href: routes.courses, label: "Kurslara Göz At" },
+  { href: routes.team, label: "Ekip" },
 ] as const;
+
+const sectionNavItems = navItems.filter(
+  (item): item is Extract<(typeof navItems)[number], { id: string }> => "id" in item,
+);
 
 interface SiteHeaderProps {
   initialSection?: string;
@@ -48,6 +52,36 @@ export function SiteHeader({ initialSection }: SiteHeaderProps) {
 
     requestAnimationFrame(() => scrollToSection(initialSection));
   }, [initialSection, isHome]);
+
+  useEffect(() => {
+    if (!isHome) {
+      setActiveSection("");
+      return;
+    }
+
+    const sections = sectionNavItems
+      .map((item) => document.getElementById(item.id))
+      .filter((section): section is HTMLElement => Boolean(section));
+
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visible[0]) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, [isHome]);
 
   const isActive = (href: string) => {
     const id = new URL(href, "https://learnops.local").searchParams.get("section");

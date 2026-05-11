@@ -1,7 +1,6 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 import LandingPage from "@/components/features/landing/landing-page";
-import { getCourses } from "@/lib/fetchCourses";
 
 export default async function Home({
   searchParams,
@@ -11,7 +10,6 @@ export default async function Home({
   }>;
 }) {
   const { section } = await searchParams;
-  const courses = await getCourses();
 
-  return <LandingPage courses={courses} initialSection={section} />;
+  return <LandingPage initialSection={section} />;
 }
