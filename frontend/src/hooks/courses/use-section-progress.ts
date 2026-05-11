@@ -80,10 +80,16 @@ export function useMarkSectionComplete(courseId?: string) {
       return { previous };
     },
 
-    // Backend henüz yoksa rollback yapma — UI tepkisi korunsun.
-    // TODO(BE-16 stabilize olunca): hata durumunda cache rollback ekle;
-    // aksi hâlde sidebar yanlış completed state göstermeye devam edebilir.
-    onError: () => {},
+    onError: (_error, _sectionIdStr, context) => {
+      if (context?.previous !== undefined) {
+        // courseId burada tanımlıdır: context.previous !== undefined ise
+        // onMutate'in courseId'li dalına girilmiş demektir.
+        queryClient.setQueryData<SectionProgressItem[]>(
+          queryKeys.progress.byCourse(courseId!),
+          context.previous,
+        );
+      }
+    },
 
     onSettled: () => {
       if (!courseId) return;

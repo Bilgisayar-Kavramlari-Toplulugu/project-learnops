@@ -54,22 +54,47 @@ export function CourseProgressCard({ course }: CourseProgressCardProps) {
       </CardContent>
 
       <CardFooter className="border-t border-blue-100/80 px-5 py-4 dark:border-slate-800">
-        <Button
-          asChild
-          variant="outline"
-          className="h-10 rounded-xl border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-300 dark:hover:bg-slate-800"
-        >
-          <Link
-            href={
-              course.last_section_id_str
-                ? `/courses/${course.slug}/sections/${course.last_section_id_str}` // kaldığı yerden devam
-                : `/courses/${course.slug}`
-            }
+        {course.progress_percent === 100 ? (
+          <div className="flex items-center gap-3">
+            <Button
+              asChild
+              variant="outline"
+              className="h-10 rounded-xl border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-300 dark:hover:bg-slate-800"
+            >
+              <Link href={`/courses/${course.slug}`}>
+                Kursa Git
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-10 rounded-xl border-indigo-200 bg-indigo-50 px-4 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+            >
+              <Link href={`/courses/${course.slug}/quiz`}>
+                Quiz&apos;e Git
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <Button
+            asChild
+            variant="outline"
+            className="h-10 rounded-xl border-blue-200 bg-white px-4 text-sm font-semibold text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-sky-300 dark:hover:bg-slate-800"
           >
-            Devam Et
-            <ArrowRight className="size-4" />
-          </Link>
-        </Button>
+            <Link
+              href={
+                course.last_section_id_str
+                  ? `/courses/${course.slug}/sections/${course.last_section_id_str}`
+                  : `/courses/${course.slug}`
+              }
+            >
+              Devam Et
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

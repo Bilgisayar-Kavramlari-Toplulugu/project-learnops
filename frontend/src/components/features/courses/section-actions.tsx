@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type AxiosError } from "axios";
 import { ArrowRight, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 import { useCourseDetail } from "@/hooks/courses/use-course-detail";
 import { useMarkSectionComplete, useSectionProgress } from "@/hooks/courses/use-section-progress";
+import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 import type { SectionItem } from "@/lib/content";
 import { routes } from "@/lib/routes";
 import { Button, Skeleton, toast } from "@/components/ui";
@@ -28,11 +30,19 @@ export function SectionActions({
   nextSection,
   children,
 }: SectionActionsProps) {
-  const { data: course } = useCourseDetail(courseSlug);
+  const router = useRouter();
+
+  const { data: course, isLoading: courseLoading } = useCourseDetail(courseSlug);
   const courseId = course?.id;
+
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const isEnrolled = courseId ? enrollments.some((e) => e.course_id === courseId) : false;
 
   const { data: progressItems = [], isLoading: progressLoading } = useSectionProgress(courseId);
   const { mutate: markComplete, isPending } = useMarkSectionComplete(courseId);
+
+  // Direkt URL ile girişe karşı güvenlik ağı
+  if (!courseLoading && !enrollmentsLoading && !isEnrolled) return null;
 
   const completedIds = new Set(
     progressItems
@@ -41,7 +51,34 @@ export function SectionActions({
   );
   const isCurrentCompleted = completedIds.has(currentSectionId);
   const allSectionsCompleted = sections.length > 0 && sections.every((s) => completedIds.has(s.id));
-  const isButtonDisabled = !courseId || isCurrentCompleted || isPending;
+  const firstIncompleteSection = sections.find((s) => !completedIds.has(s.id));
+  const isButtonDisabled = !courseId || isPending;
+
+  function handleMarkCompleteAndNavigate(navigateTo: string) {
+    if (!courseId) return;
+
+    markComplete(currentSectionId, {
+      onSuccess: () => {
+        toast.success("Bölüm tamamlandı!", {
+          description: "İlerlemeniz kaydedildi.",
+        });
+        router.push(navigateTo);
+      },
+      onError: (error: unknown) => {
+        const axiosError = error as AxiosError;
+
+        if (axiosError?.response?.status === 403) {
+          toast.error("Bu kursa kayıtlı değilsiniz.", {
+            description: "Kursa kaydolarak ilerlemenizi takip edebilirsiniz.",
+          });
+        } else {
+          toast.error("Bölüm kaydedilemedi.", {
+            description: "İlerlemeniz bu oturum için korundu.",
+          });
+        }
+      },
+    });
+  }
 
   function handleMarkComplete() {
     if (!courseId) return;
@@ -68,30 +105,6 @@ export function SectionActions({
     });
   }
 
-  const completeButton = progressLoading ? (
-    <Skeleton className="h-10 w-full rounded-xl" />
-  ) : (
-    <Button
-      onClick={handleMarkComplete}
-      disabled={isButtonDisabled}
-      variant={isCurrentCompleted ? "outline" : "default"}
-      className={`w-full gap-2 rounded-xl text-sm font-bold ${
-        isCurrentCompleted
-          ? "cursor-default border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-          : isButtonDisabled
-            ? "cursor-not-allowed bg-indigo-300 text-white shadow-none dark:bg-indigo-400/40"
-            : "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.97]"
-      }`}
-    >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <CheckCircle2 className="h-4 w-4" />
-      )}
-      {isCurrentCompleted ? "Tamamlandı" : "Tamamladım"}
-    </Button>
-  );
-
   return (
     <div className="flex min-h-0 min-w-0 flex-1 gap-4">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-slate-700 dark:bg-slate-900">
@@ -102,11 +115,10 @@ export function SectionActions({
             {prevSection ? (
               <Link
                 href={routes.section(courseSlug, prevSection.id)}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-200 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
               >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">Önceki:</span>
-                <span className="hidden max-w-[200px] truncate sm:inline">{prevSection.title}</span>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Önceki</span>
               </Link>
             ) : (
               <span />
@@ -114,16 +126,46 @@ export function SectionActions({
           </div>
 
           <div className="flex flex-1 justify-end">
-            {nextSection ? (
+            {enrollmentsLoading || progressLoading ? (
+              <Skeleton className="h-9 w-40 rounded-xl" />
+            ) : isEnrolled && !isCurrentCompleted && nextSection ? (
+              <Button
+                onClick={() =>
+                  handleMarkCompleteAndNavigate(routes.section(courseSlug, nextSection.id))
+                }
+                disabled={isButtonDisabled}
+                className="gap-2 rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.97]"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Tamamla ve Devam Et
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : isEnrolled && !isCurrentCompleted && !nextSection ? (
+              <Button
+                onClick={handleMarkComplete}
+                disabled={isButtonDisabled}
+                className="gap-2 rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.97]"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Bölümü Tamamla
+              </Button>
+            ) : nextSection ? (
               <Link
                 href={routes.section(courseSlug, nextSection.id)}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-200 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
               >
-                <span className="hidden sm:inline">Sonraki:</span>
-                <span className="hidden max-w-[200px] truncate sm:inline">{nextSection.title}</span>
-                <ChevronRight className="h-4 w-4" />
+                Sonraki
+                <ChevronRight className="h-3.5 w-3.5" />
               </Link>
-            ) : allSectionsCompleted && !progressLoading ? (
+            ) : allSectionsCompleted ? (
               <Link
                 href={routes.quiz(courseSlug)}
                 className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"
@@ -132,7 +174,17 @@ export function SectionActions({
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
-              <span className="text-xs text-zinc-400">Tüm bölümleri tamamlayın</span>
+              <Link
+                href={
+                  firstIncompleteSection
+                    ? routes.section(courseSlug, firstIncompleteSection.id)
+                    : routes.courseDetail(courseSlug)
+                }
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800 transition-colors hover:bg-amber-200 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+              >
+                {sections.length - completedIds.size} bölüm kaldı
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             )}
           </div>
         </div>
@@ -144,9 +196,6 @@ export function SectionActions({
           {sections.map((section) => (
             <Skeleton key={section.id} className="h-9 w-full rounded-xl" />
           ))}
-          <div className="mt-auto pt-4">
-            <Skeleton className="h-10 w-full rounded-xl" />
-          </div>
         </aside>
       ) : (
         <SectionSidebar
@@ -154,7 +203,6 @@ export function SectionActions({
           currentSectionId={currentSectionId}
           slug={courseSlug}
           completedIds={completedIds}
-          footerSlot={completeButton}
         />
       )}
     </div>
