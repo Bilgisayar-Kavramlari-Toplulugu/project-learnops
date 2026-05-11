@@ -66,12 +66,6 @@ const footerColumns: FooterColumn[] = [
       },
       { label: "Regex101", href: "https://regex101.com", icon: Hash, external: true },
       {
-        label: "Awesome DevOps",
-        href: "https://github.com/Lucas007/awesome-devops",
-        icon: Github,
-        external: true,
-      },
-      {
         label: "Topluluk Website",
         href: "https://bilgisayarkavramlari.com",
         icon: Globe,
