@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogIn } from "lucide-react";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -32,13 +32,24 @@ export function SiteHeader({ initialSection }: SiteHeaderProps) {
   const router = useRouter();
   const isHome = pathname === "/";
   const [activeSection, setActiveSection] = useState<string>("");
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scrollToSection = (id: string) => {
     const section = document.getElementById(id);
     if (!section) return;
 
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    isProgrammaticScrollRef.current = true;
     section.scrollIntoView({ behavior: "smooth", block: "start" });
     setActiveSection(id);
+    scrollTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+      scrollTimeoutRef.current = null;
+    }, 800);
   };
 
   const replaceSectionUrl = (id: string) => {
@@ -56,17 +67,19 @@ export function SiteHeader({ initialSection }: SiteHeaderProps) {
   useEffect(() => {
     if (!isHome) {
       setActiveSection("");
-      return;
+      return () => {};
     }
 
     const sections = sectionNavItems
       .map((item) => document.getElementById(item.id))
       .filter((section): section is HTMLElement => Boolean(section));
 
-    if (sections.length === 0) return;
+    if (sections.length === 0) return () => {};
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isProgrammaticScrollRef.current) return;
+
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
@@ -82,6 +95,14 @@ export function SiteHeader({ initialSection }: SiteHeaderProps) {
 
     return () => observer.disconnect();
   }, [isHome]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const isActive = (href: string) => {
     const id = new URL(href, "https://learnops.local").searchParams.get("section");
