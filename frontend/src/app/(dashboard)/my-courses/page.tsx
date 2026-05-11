@@ -87,7 +87,7 @@ export default function MyCoursesPage() {
             <div className="space-y-4">
               {completed.map((item) => (
                 <div key={item.id} className="relative">
-                  <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1">
+                  <div className="absolute top-27 right-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                       Tamamlandı
