@@ -10,7 +10,8 @@ import { WelcomeHeader } from "@/components/features/dashboard/welcome-header";
 import { LastQuizResult } from "@/components/features/dashboard/last-quiz-result";
 import { Button } from "@/components/ui";
 import { useDashboard } from "@/hooks/dashboard/use-dashboard";
-
+import { CompletedCoursesSection } from "@/components/features/dashboard/completed-courses-section";
+import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 export default function DashboardPage() {
   const {
     userName,
@@ -19,27 +20,30 @@ export default function DashboardPage() {
     isLoading,
     lastQuizResult,
     isError,
-    isEmpty,
     errorMessage,
     avatarType,
     refetch,
   } = useDashboard();
-
+  const { enrollments, isLoading: isEnrollmentsLoading } = useEnrollments();
   const [showSkeleton, setShowSkeleton] = useState(false);
-
+  const pageLoading = isLoading || isEnrollmentsLoading;
+  const completedCourses = enrollments.filter(
+    (item) => item.completed_at || item.progress_percent >= 100,
+  );
+  const hasAnyDashboardData = courses.length > 0 || completedCourses.length > 0 || Boolean(lastQuizResult);
   useEffect(() => {
     const timer = setTimeout(
       () => {
-        setShowSkeleton(isLoading);
+        setShowSkeleton(pageLoading);
       },
-      isLoading ? 300 : 0,
+      pageLoading ? 300 : 0,
     );
 
     return () => clearTimeout(timer);
-  }, [isLoading]);
+  }, [pageLoading]);
 
-  if (isLoading && showSkeleton) return <DashboardSkeleton />;
-  if (isLoading && !showSkeleton) return null;
+  if (pageLoading && showSkeleton) return <DashboardSkeleton />;
+  if (pageLoading && !showSkeleton) return null;
 
   if (isError) {
     return (
@@ -61,23 +65,28 @@ export default function DashboardPage() {
     <section className="mx-auto w-full max-w-6xl space-y-6">
       <WelcomeHeader userName={userName} courseCount={courses.length} avatarType={avatarType} />
 
-      {isEmpty ? (
+      {!hasAnyDashboardData ? (
         <EmptyCoursesState />
       ) : (
         <>
           <StatsSummary items={stats} />
+
           {lastQuizResult && <LastQuizResult result={lastQuizResult} />}
 
-          <div className="space-y-4">
-            <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              Devam Eden Kurslar
-            </h3>
-            <div className="grid gap-5 xl:grid-cols-2">
-              {courses.map((course) => (
-                <CourseProgressCard key={course.course_id} course={course} />
-              ))}
+          {courses.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                Devam Eden Kurslar
+              </h3>
+              <div className="grid gap-5 xl:grid-cols-2">
+                {courses.map((course) => (
+                  <CourseProgressCard key={course.course_id} course={course} />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          <CompletedCoursesSection courses={completedCourses} />
         </>
       )}
     </section>
