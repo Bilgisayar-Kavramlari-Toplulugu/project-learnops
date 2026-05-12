@@ -62,7 +62,24 @@ async def create_quiz_attempt(
     if existing:
         active_questions = [q for q in quiz.questions if q.is_active]
         active_questions.sort(key=lambda q: q.id)
-        return existing, active_questions, quiz
+
+        elapsed = (datetime.now(timezone.utc) - existing.started_at).total_seconds()
+        if elapsed <= quiz.duration_seconds:
+            # Süresi dolmamış → kullanıcı kaldığı yerden devam edebilir
+            return existing, active_questions, quiz
+
+        # Süresi dolmuş → null cevaplarla otomatik kapat, yeni attempt açılacak
+        logger.info(
+            "Süresi dolmuş attempt otomatik kapatıldı: attempt_id=%s elapsed=%.0fs",
+            existing.id,
+            elapsed,
+        )
+        existing.submitted_at = datetime.now(timezone.utc)
+        existing.score = 0
+        existing.total_questions = len(active_questions)
+        existing.passed = False
+        existing.time_spent_secs = int(elapsed)
+        await db.flush()
 
     # 2. Sadece aktif soruları al — attempt oluşturmadan önce (Bulgu #2, #3)
     active_questions = [q for q in quiz.questions if q.is_active]

@@ -70,15 +70,14 @@ export default function QuizClient({ slug }: QuizClientProps) {
   } = useStartAttempt();
 
   // ─── Attempt Başlatma ──────────────────────────────────────────────────────
-  const attemptStartedRef = useRef(false);
-
+  // Ref yerine mutation state kullanılır: session yoksa ve istek devam etmiyorsa
+  // attempt başlat. Next.js freeze/thaw senaryosunda ref sıfırlanmaz ama
+  // mutation data temizlenir; bu yaklaşım her iki durumu da doğru ele alır.
   useEffect(() => {
-    if (quizMeta?.quiz_id && !attemptStartedRef.current) {
-      attemptStartedRef.current = true;
+    if (quizMeta?.quiz_id && !session && !sessionLoading && !sessionError) {
       startAttempt(quizMeta.quiz_id);
     }
-    // startAttempt: useMutation tarafından sağlanan fonksiyon render'lar arası stabil
-  }, [quizMeta?.quiz_id, startAttempt]);
+  }, [quizMeta?.quiz_id, session, sessionLoading, sessionError, startAttempt]);
 
   // 403 → kursa kayıtsız kullanıcıyı kurs detay sayfasına yönlendir
   useEffect(() => {
@@ -165,9 +164,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
     setCurrentIndex(0);
     setRemaining(null);
     hasSubmittedRef.current = false;
-    attemptStartedRef.current = false;
     if (quizMeta?.quiz_id) {
-      attemptStartedRef.current = true;
       startAttempt(quizMeta.quiz_id);
     }
   }
@@ -340,14 +337,18 @@ export default function QuizClient({ slug }: QuizClientProps) {
                 type="button"
                 variant="outline"
                 onClick={() =>
-                  setAnswers((prev) => ({
-                    ...prev,
-                    [currentQuestion.id]: option.index,
-                  }))
+                  setAnswers((prev) => {
+                    if (prev[currentQuestion.id] === option.index) {
+                      const next = { ...prev };
+                      delete next[currentQuestion.id];
+                      return next;
+                    }
+                    return { ...prev, [currentQuestion.id]: option.index };
+                  })
                 }
                 className={`h-auto justify-start rounded-lg px-4 py-3 text-left text-sm whitespace-normal ${
                   isSelected
-                    ? "border-primary bg-primary/10 text-primary font-medium"
+                    ? "!border-2 !border-primary !bg-transparent !text-primary font-medium"
                     : "border-border hover:bg-accent hover:text-accent-foreground"
                 }`}
                 disabled={isSubmitting}
