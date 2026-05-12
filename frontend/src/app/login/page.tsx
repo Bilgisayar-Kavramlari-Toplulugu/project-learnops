@@ -4,6 +4,7 @@ import MergeAccountForm from "@/components/merge-account-form";
 import { Logo } from "@/components/layout/logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { routes } from "@/lib/routes";
+import Link from "next/link";
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_state: "Oturum doğrulaması başarısız. Lütfen tekrar deneyin.",
@@ -130,9 +131,21 @@ export default async function LoginPage({
                 <>
                   <OAuthButtonContainer />
                   <p className="text-center text-[11px] text-muted-foreground">
-                    Giriş yaparak{" "}
-                    <span className="cursor-pointer underline">kullanım koşullarını</span> kabul
-                    etmiş olursun.
+                   Giriş yaparak{" "}
+                      <Link
+                        href="/legal#terms"
+                        className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
+                      >
+                        Kullanım Koşulları
+                      </Link>{" "}
+                      ve{" "}
+                      <Link
+                        href="/legal#privacy"
+                        className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
+                      >
+                        Gizlilik / KVKK Metni
+                      </Link>
+                      ’ni kabul etmiş olursun.
                   </p>
                 </>
               )}
