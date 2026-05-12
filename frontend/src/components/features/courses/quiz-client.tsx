@@ -29,12 +29,7 @@ import {
   Progress,
   toast,
 } from "@/components/ui";
-import type {
-  QuizAnswer,
-  QuizResult,
-  QuizResultRaw,
-  QuizSubmitPayload,
-} from "@/types";
+import type { QuizAnswer, QuizResult, QuizResultRaw, QuizSubmitPayload } from "@/types";
 
 interface QuizClientProps {
   slug: string;
@@ -64,8 +59,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   // useCourseDetail: yalnızca loading/error state yönetimi için
   const { isLoading: courseLoading, isError: courseError } = useCourseDetail(slug);
 
-  const { data: quizMeta, isLoading: metaLoading, isError: metaError } =
-    useQuizMeta(slug);
+  const { data: quizMeta, isLoading: metaLoading, isError: metaError } = useQuizMeta(slug);
 
   const {
     mutate: startAttempt,
@@ -208,12 +202,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   }, [session]);
 
   // ─── Loading / Error States ────────────────────────────────────────────────
-  if (
-    courseLoading ||
-    metaLoading ||
-    sessionLoading ||
-    (!session && !sessionError && !metaError)
-  ) {
+  if (courseLoading || metaLoading || sessionLoading || (!session && !sessionError && !metaError)) {
     return (
       <div className="flex items-center justify-center py-24">
         <p className="text-muted-foreground animate-pulse">Sınav yükleniyor…</p>
