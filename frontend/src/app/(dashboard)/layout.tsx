@@ -12,10 +12,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const isAuthenticated = Boolean(cookieStore.get("access_token"));
   const allowAnonymous = !isAuthenticated && PUBLIC_COURSE_PAGE_PATTERN.test(pathname);
 
-  // Fetch profile server-side so the avatar is included in the initial HTML.
+  // Fetch profile server-side for authenticated dashboard routes so the avatar is included in the initial HTML.
   // This eliminates the client-side GET /users/me from the LCP critical path.
   // Falls back to null (client-side refresh flow) if the access token is expired.
-  const initialProfile = await fetchProfileServer();
+  const initialProfile = allowAnonymous ? null : await fetchProfileServer();
 
   return (
     <DashboardLayoutClient initialProfile={initialProfile} allowAnonymous={allowAnonymous}>

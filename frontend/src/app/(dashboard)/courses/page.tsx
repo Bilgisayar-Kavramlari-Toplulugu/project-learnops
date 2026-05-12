@@ -25,7 +25,7 @@ export default async function CoursesPage() {
   );
 
   return (
-    <WrapperContainer>
+    <WrapperContainer wide>
       <CoursesClient courses={courses} headerSlot={headerSlot} />
     </WrapperContainer>
   );

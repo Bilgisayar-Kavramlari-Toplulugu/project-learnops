@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import type { MouseEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogIn } from "lucide-react";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -11,45 +12,83 @@ import { routes } from "@/lib/routes";
 import { Logo } from "./logo";
 
 const navItems = [
-  { href: "/#neden", label: "Neden LearnOps", id: "neden" },
-  { href: "/#kimler-icin", label: "Kimler için", id: "kimler-icin" },
-  { href: "/#nasil-calisir", label: "Nasıl çalışır", id: "nasil-calisir" },
-  { href: "/team", label: "Ekip" },
+  { href: "/?section=neden", label: "Neden LearnOps", id: "neden" },
+  { href: "/?section=kimler-icin", label: "Kimler için", id: "kimler-icin" },
+  { href: "/?section=nasil-calisir", label: "Nasıl çalışır", id: "nasil-calisir" },
+  { href: routes.courses, label: "Kurslara Göz At" },
+  { href: routes.team, label: "Ekip" },
 ] as const;
 
-export function SiteHeader() {
+const sectionNavItems = navItems.filter(
+  (item): item is Extract<(typeof navItems)[number], { id: string }> => "id" in item,
+);
+
+interface SiteHeaderProps {
+  initialSection?: string;
+}
+
+export function SiteHeader({ initialSection }: SiteHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
   const [activeSection, setActiveSection] = useState<string>("");
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scrollToSection = (id: string) => {
+    const section = document.getElementById(id);
+    if (!section) return;
+
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    isProgrammaticScrollRef.current = true;
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(id);
+    scrollTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+      scrollTimeoutRef.current = null;
+    }, 800);
+  };
+
+  const replaceSectionUrl = (id: string) => {
+    window.history.replaceState(null, "", `/?section=${id}`);
+  };
 
   useEffect(() => {
-    // Anasayfa değilsek observer'ı hiç kurma — setState de yapma
     if (!isHome) return;
 
-    const sectionIds = navItems
-      .filter((i): i is typeof i & { id: string } => "id" in i)
-      .map((i) => i.id);
+    if (!initialSection) return;
 
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null);
+    requestAnimationFrame(() => scrollToSection(initialSection));
+  }, [initialSection, isHome]);
 
-    if (sections.length === 0) return;
+  useEffect(() => {
+    if (!isHome) {
+      setActiveSection("");
+      return () => {};
+    }
+
+    const sections = sectionNavItems
+      .map((item) => document.getElementById(item.id))
+      .filter((section): section is HTMLElement => Boolean(section));
+
+    if (sections.length === 0) return () => {};
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isProgrammaticScrollRef.current) return;
+
         const visible = entries
-          .filter((e) => e.isIntersecting)
+          .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
         if (visible[0]) {
           setActiveSection(visible[0].target.id);
         }
       },
-      {
-        rootMargin: "-20% 0px -60% 0px",
-        threshold: [0, 0.25, 0.5, 0.75, 1],
-      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
 
     sections.forEach((section) => observer.observe(section));
@@ -57,14 +96,37 @@ export function SiteHeader() {
     return () => observer.disconnect();
   }, [isHome]);
 
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const isActive = (href: string) => {
-    if (href.startsWith("/#")) {
-      // Anasayfada değilsek hash linkler aktif olamaz — state'e bakmaya gerek yok
+    const id = new URL(href, "https://learnops.local").searchParams.get("section");
+    if (id) {
+      // Anasayfada değilsek bölüm linkleri aktif olamaz — state'e bakmaya gerek yok
       if (!isHome) return false;
-      const id = href.replace("/#", "");
       return activeSection === id;
     }
     return pathname === href;
+  };
+
+  const handleNavClick = (event: MouseEvent<HTMLAnchorElement>, id?: string) => {
+    if (!id) return;
+
+    event.preventDefault();
+    const href = `/?section=${id}`;
+
+    if (!isHome) {
+      router.push(href);
+      return;
+    }
+
+    replaceSectionUrl(id);
+    scrollToSection(id);
   };
 
   return (
@@ -85,6 +147,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={(event) => handleNavClick(event, "id" in item ? item.id : undefined)}
                 className={`relative px-3 py-1 text-[13px] transition-colors ${
                   active
                     ? "text-foreground font-medium"
