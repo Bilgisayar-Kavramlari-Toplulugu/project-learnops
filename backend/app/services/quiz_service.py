@@ -187,7 +187,7 @@ async def submit_quiz_attempt(
     time_elapsed = (now - attempt.started_at).total_seconds()
     if time_elapsed > attempt.quiz.duration_seconds + 30:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Süre aşıldı. Submission reddedildi.",
         )
 
