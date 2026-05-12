@@ -42,102 +42,120 @@ export default async function LoginPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-5">
-        {/* Header — landing ile aynı container */}
-        <header className="flex items-center justify-between py-4 border-b border-border/60">
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 sm:px-6">
+        <header className="flex items-center justify-between border-b border-border/60 py-4">
           <Logo
             href={routes.root}
             width={180}
             height={100}
             priority
-            className="h-10 w-auto md:h-12"
+            className="h-9 w-auto sm:h-10 md:h-12"
           />
           <ThemeToggle />
         </header>
 
-        {/* Main */}
-        <main className="flex flex-1 items-center justify-center py-12">
-          <div className="grid w-full max-w-3xl grid-cols-2 overflow-hidden rounded-2xl border border-border bg-card">
-            {/* Sol — branding */}
-            <div className="flex flex-col justify-between gap-8 bg-slate-900 p-10 dark:bg-slate-950">
-              <div>
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-sky-400">
-                  DevOps Yolculuğu
-                </p>
-                <h2 className="mb-3 text-xl font-medium leading-snug text-white">
-                  Öğrenmeyi bir alışkanlığa dönüştür.
-                </h2>
-                <p className="text-sm leading-relaxed text-slate-400">
-                  DevOps kavramlarını kendi hızında, kalıcı olarak öğren.
-                </p>
-              </div>
+        <main className="flex flex-1 items-center justify-center py-8 sm:py-10 md:py-14">
+          <section className="grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm md:grid-cols-[0.95fr_1.05fr]">
+            <div className="relative overflow-hidden bg-slate-950 p-6 text-white sm:p-8 md:p-10">
+              <div className="pointer-events-none absolute -left-24 -top-24 h-56 w-56 rounded-full bg-sky-500/20 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-28 right-0 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl" />
 
-              <ul className="flex flex-col gap-3">
-                {[
-                  {
-                    icon: "🗺️",
-                    title: "Net öğrenme yolu",
-                    desc: "Karmaşık konuları adım adım öğren.",
-                  },
-                  { icon: "📈", title: "İlerleme takibi", desc: "Nerede kaldığını takip et" },
-                  {
-                    icon: "👥",
-                    title: "Etkileşimli quizler",
-                    desc: "Bilgini test ederek eksiklerini keşfet.",
-                  },
-                ].map((item) => (
-                  <li key={item.title} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/10 text-xs">
-                      {item.icon}
-                    </span>
-                    <div>
-                      <p className="text-xs font-medium text-white">{item.title}</p>
-                      <p className="mt-0.5 text-[11px] leading-relaxed text-slate-400">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <div className="relative flex h-full flex-col justify-between gap-8">
+                <div>
+                  <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-sky-300">
+                    DevOps Yolculuğu
+                  </p>
+
+                  <h2 className="max-w-sm text-2xl font-semibold leading-tight text-white sm:text-3xl md:text-2xl">
+                    Öğrenmeyi daha düzenli, takip edilebilir ve sürdürülebilir hale getir.
+                  </h2>
+
+                  <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">
+                    DevOps kavramlarını kendi hızında öğren, kaldığın yeri takip et ve quizlerle
+                    ilerlemeni ölç.
+                  </p>
+                </div>
+
+                <ul className="grid gap-3 sm:grid-cols-3 md:grid-cols-1">
+                  {[
+                    {
+                      icon: "🗺️",
+                      title: "Net öğrenme yolu",
+                      desc: "Konuları adım adım takip et.",
+                    },
+                    {
+                      icon: "📈",
+                      title: "İlerleme takibi",
+                      desc: "Nerede kaldığını kolayca gör.",
+                    },
+                    {
+                      icon: "👥",
+                      title: "Etkileşimli quizler",
+                      desc: "Eksiklerini test ederek fark et.",
+                    },
+                  ].map((item) => (
+                    <li
+                      key={item.title}
+                      className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sm">
+                        {item.icon}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold text-white">{item.title}</p>
+                        <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
-            {/* Sağ — form */}
-            <div className="flex flex-col justify-center gap-6 p-10">
-              <div>
-                <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  <ShieldCheck className="size-3" />
+            <div className="flex flex-col justify-center p-6 sm:p-8 md:p-10">
+              <div className="mx-auto w-full max-w-sm">
+                <p className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  <ShieldCheck className="size-3.5" />
                   Güvenli giriş
                 </p>
-                <h1 className="text-xl font-medium text-foreground">
+
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                   {isAccountConflict ? "Hesap birleştirme" : "Giriş yap"}
                 </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
+
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {isAccountConflict
                     ? "Bu email adresiyle zaten bir hesabınız mevcut."
-                    : "Aşağıdaki seçeneklerden biriyle devam et."}
+                    : "Devam etmek için aşağıdaki giriş seçeneklerinden birini kullan."}
                 </p>
-              </div>
 
-              {errorMessage && (
-                <p className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                  {errorMessage}
-                </p>
-              )}
-
-              {isAccountConflict ? (
-                <MergeAccountForm mergeToken={merge_token} />
-              ) : (
-                <>
-                  <OAuthButtonContainer />
-                  <p className="text-center text-[11px] text-muted-foreground">
-                    Giriş yaparak{" "}
-                    <span className="cursor-pointer underline">kullanım koşullarını</span> kabul
-                    etmiş olursun.
+                {errorMessage && (
+                  <p className="mt-5 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm leading-5 text-destructive">
+                    {errorMessage}
                   </p>
-                </>
-              )}
+                )}
+
+                <div className="mt-6">
+                  {isAccountConflict ? (
+                    <MergeAccountForm mergeToken={merge_token} />
+                  ) : (
+                    <>
+                      <OAuthButtonContainer />
+
+                      <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">
+                        Giriş yaparak{" "}
+                        <span className="cursor-pointer underline underline-offset-4">
+                          kullanım koşullarını
+                        </span>{" "}
+                        kabul etmiş olursun.
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
         </main>
       </div>
     </div>
