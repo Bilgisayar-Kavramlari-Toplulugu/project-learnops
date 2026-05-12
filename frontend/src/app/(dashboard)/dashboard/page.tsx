@@ -30,7 +30,8 @@ export default function DashboardPage() {
   const completedCourses = enrollments.filter(
     (item) => item.completed_at || item.progress_percent >= 100,
   );
-  const hasAnyDashboardData = courses.length > 0 || completedCourses.length > 0 || Boolean(lastQuizResult);
+  const hasAnyDashboardData =
+    courses.length > 0 || completedCourses.length > 0 || Boolean(lastQuizResult);
   useEffect(() => {
     const timer = setTimeout(
       () => {

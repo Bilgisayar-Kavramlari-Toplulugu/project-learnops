@@ -52,9 +52,7 @@ export function HeroSection() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-11 rounded-full px-6">
-              <Link href={routes.courses}>
-                Kurslara göz at
-              </Link>
+              <Link href={routes.courses}>Kurslara göz at</Link>
             </Button>
           </div>
 
