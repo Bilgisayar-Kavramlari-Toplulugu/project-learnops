@@ -238,7 +238,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                   "aspect-square h-auto rounded-full border-2 p-0 text-xs font-medium",
                   initialsColor,
                   selectedAvatar === "initials"
-                    ? "border-primary ring-2 ring-primary/20 scale-105"
+                    ? "scale-105 border-primary ring-4 ring-primary/35 shadow-lg shadow-primary/20"
                     : "border-border hover:border-muted-foreground",
                 )}
               >
@@ -253,7 +253,7 @@ function ProfileForm({ profile, onCancel }: { profile: DashboardProfile; onCance
                   className={cn(
                     "relative aspect-square h-auto overflow-hidden rounded-full border-2 p-0",
                     selectedAvatar === id
-                      ? "border-primary ring-2 ring-primary/20 scale-105"
+                      ? "scale-105 border-primary ring-4 ring-primary/35 shadow-lg shadow-primary/20"
                       : "border-border hover:border-muted-foreground",
                   )}
                 >
