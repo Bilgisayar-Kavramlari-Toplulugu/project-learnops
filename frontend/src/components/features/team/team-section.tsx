@@ -46,12 +46,34 @@ function SocialButton({
   kind,
   href,
   memberName,
+  asButton = false,
 }: {
   kind: LinkKey;
   href: string;
   memberName: string;
+  asButton?: boolean;
 }) {
   const { icon: Icon, label } = linkConfig[kind];
+  const className =
+    "flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+
+  if (asButton) {
+    return (
+      <button
+        type="button"
+        aria-label={`${memberName} - ${label}`}
+        className={className}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          window.open(href, "_blank", "noopener,noreferrer");
+        }}
+      >
+        <Icon className="size-4" />
+      </button>
+    );
+  }
+
   return (
     <Link
       href={href}
@@ -59,7 +81,7 @@ function SocialButton({
       rel="noopener noreferrer"
       aria-label={`${memberName} - ${label}`}
       onClick={(e) => e.stopPropagation()}
-      className="flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      className={className}
     >
       <Icon className="size-4" />
     </Link>
@@ -137,11 +159,14 @@ function MemberCard({
           {member.tagline && (
             <p className="mt-0.5 text-xs text-white/85 drop-shadow sm:text-sm">{member.tagline}</p>
           )}
+          {member.contributions && (
+            <p className="mt-0.5 text-xs text-white/55 drop-shadow">{member.contributions}</p>
+          )}
 
           {orderedLinks.length > 0 && (
             <div className="mt-3 flex gap-2">
               {orderedLinks.map(([kind, href]) => (
-                <SocialButton key={kind} kind={kind} href={href} memberName={member.name} />
+                <SocialButton key={kind} kind={kind} href={href} memberName={member.name} asButton={Boolean(primaryHref)} />
               ))}
             </div>
           )}

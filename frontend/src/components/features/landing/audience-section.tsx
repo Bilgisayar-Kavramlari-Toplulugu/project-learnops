@@ -25,9 +25,7 @@ export function AudienceSection() {
   return (
     <section id="kimler-icin" className="scroll-mt-20 pb-16">
       <div className="mb-8 max-w-2xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-          Kimler için
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Kimler için</p>
         <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
           Pratik DevOps öğrenmek isteyen herkes için.
         </h2>
