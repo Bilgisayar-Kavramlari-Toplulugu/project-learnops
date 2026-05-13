@@ -4,6 +4,7 @@ export type TeamMember = {
   slug: string;
   name: string;
   tagline?: string;
+  contributions?: string;
   links?: {
     website?: string;
     github?: string;
@@ -19,7 +20,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "flovearth",
     name: "Feyz Sarı",
-    tagline: "Cloud/DevOps Engineer",
+    tagline: "Senior DevOps / Cloud Engineer",
+    contributions: "(PO, DevOps, Cloud)",
     links: {
       github: gh("flovearth"),
       linkedin: li("feyzsari"),
@@ -29,6 +31,7 @@ export const teamMembers: TeamMember[] = [
     slug: "lerkush",
     name: "Lütfiye Erkuş",
     tagline: "Fullstack Dev",
+    contributions: "(Project Lead)",
     links: {
       github: gh("lerkush"),
       linkedin: li("lerkush"),
@@ -37,7 +40,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "karalarmehmet",
     name: "Mehmet Karalar",
-    tagline: "Fullstack Dev",
+    tagline: "Computer Engineer",
+    contributions: "(Backend, DevOps)",
     links: {
       github: gh("karalarmehmet"),
       linkedin: li("karalar-mehmet"),
@@ -47,6 +51,7 @@ export const teamMembers: TeamMember[] = [
     slug: "slymanmrcan",
     name: "Süleyman Mercan",
     tagline: "DevOps & Fullstack Dev",
+    contributions: "(Frontend)",
     links: {
       github: gh("slymanmrcan"),
       linkedin: li("slymanmrcan"),
@@ -56,7 +61,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "shamsiaa",
     name: "Shamsiaa Rahimi",
-    tagline: "DevOps & Fullstack Dev",
+    tagline: "Data & Backend Engineer",
+    contributions: "(Backend, DevOps, Content)",
     links: {
       github: gh("shamsiaa"),
       linkedin: li("shamsia-r-5b6919240"),
@@ -65,7 +71,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "belmuh",
     name: "Belma Ünsal",
-    tagline: "Fullstack Dev",
+    tagline: "Software Developer",
+    contributions: "(Backend, Frontend, Content)",
     links: {
       github: gh("belmuh"),
       linkedin: li("belmaunsal"),
@@ -75,6 +82,7 @@ export const teamMembers: TeamMember[] = [
     slug: "muhammedcagrikurt",
     name: "Muhammed Çağrı Kurt",
     tagline: "Fullstack Dev",
+    contributions: "(Frontend)",
     links: {
       github: gh("muhammedcagrikurt"),
       linkedin: li("muhammedcagrikurt"),
@@ -83,7 +91,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "replakcan",
     name: "Alper Mutlu Akcan",
-    tagline: "Fullstack Dev",
+    tagline: "Software Engineer",
+    contributions: "(Frontend)",
     links: {
       github: gh("replakcan"),
       linkedin: li("alpermutluakcan"),
@@ -92,7 +101,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "ismailaricioglu",
     name: "İsmail Arıcıoğlu",
-    tagline: "Fullstack Dev",
+    tagline: "Software Technician",
+    contributions: "(Backend, Infra, Cloud, Content)",
     links: {
       github: gh("ismailaricioglu"),
       linkedin: li("ismailaricioglu"),
@@ -101,7 +111,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "svenes25",
     name: "Enes Eren Seven",
-    tagline: "Fullstack Dev",
+    tagline: "Full Stack Developer",
+    contributions: "(Frontend)",
     links: {
       github: gh("svenes25"),
       linkedin: li("enes-eren-seven"),
@@ -110,7 +121,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "anenthusiastic",
     name: "Fatih Gürkan",
-    tagline: "Fullstack Dev",
+    tagline: "Software Engineer",
+    contributions: "(Backend)",
     links: {
       github: gh("anenthusiastic"),
       linkedin: li("fatihgurkan"),
@@ -119,7 +131,8 @@ export const teamMembers: TeamMember[] = [
   {
     slug: "maliuyanik",
     name: "Muhammed Ali Uyanık",
-    tagline: "Fullstack Dev",
+    tagline: "Software Engineer",
+    contributions: "(Cloud, Backend)",
     links: {
       github: gh("maliuyanik"),
       linkedin: li("maliuyanik"),
