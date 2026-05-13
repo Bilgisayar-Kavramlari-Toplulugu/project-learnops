@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { type ReactNode, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 import { Button, Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui";
@@ -21,6 +23,8 @@ export function DashboardShell({
   activePath = routes.dashboard,
   children,
 }: DashboardShellProps) {
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
   return (
     <div className="min-h-dvh">
       <div className="mx-auto flex min-h-dvh w-full max-w-[1600px]">
@@ -33,7 +37,7 @@ export function DashboardShell({
           <AppTopbar
             user={user}
             mobileNav={
-              <Sheet>
+              <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="outline"
@@ -61,6 +65,7 @@ export function DashboardShell({
                   <AppSidebar
                     items={sidebarItems}
                     activePath={activePath}
+                    onNavigate={() => setIsMobileNavOpen(false)}
                     className="h-full rounded-none border-0 bg-transparent shadow-none"
                   />
                 </SheetContent>
