@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
-import { Button, Sheet, SheetContent, SheetTrigger } from "@/components/ui";
+import { Button, Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui";
 import { routes } from "@/lib/routes";
 import type { DashboardProfile, SidebarItem } from "@/types";
 import { AppFooter } from "./app-footer";
@@ -45,8 +45,19 @@ export function DashboardShell({
                 </SheetTrigger>
                 <SheetContent
                   side="left"
+                  showCloseButton={false}
                   className="w-[286px] border-r border-slate-200 bg-white p-0 sm:max-w-none dark:border-slate-700 dark:bg-slate-900"
                 >
+                  <SheetClose asChild>
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      className="absolute top-5 right-5 z-10 rounded-xl border-blue-100 bg-white/90 text-slate-500 shadow-sm shadow-blue-100/40 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-300 dark:shadow-black/20 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                      aria-label="Menüyü kapat"
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </SheetClose>
                   <AppSidebar
                     items={sidebarItems}
                     activePath={activePath}
