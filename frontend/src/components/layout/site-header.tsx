@@ -4,10 +4,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import { LogIn } from "lucide-react";
+import { LogIn, Menu } from "lucide-react";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui";
 import { routes } from "@/lib/routes";
 import { Logo } from "./logo";
 
@@ -32,6 +40,7 @@ export function SiteHeader({ initialSection }: SiteHeaderProps) {
   const router = useRouter();
   const isHome = pathname === "/";
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isProgrammaticScrollRef = useRef(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -171,9 +180,80 @@ export function SiteHeader({ initialSection }: SiteHeaderProps) {
               Giriş
             </Link>
           </Button>
-          <Button asChild size="sm" className="hidden h-8 rounded-full text-xs sm:flex">
+          <Button asChild size="sm" className="hidden h-8 rounded-full text-xs md:flex">
             <Link href={routes.login}>Başla</Link>
           </Button>
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-full md:hidden"
+                aria-label="Menüyü aç"
+              >
+                <Menu className="size-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[min(86vw,340px)] gap-0 px-0 pb-0 pt-3">
+              <SheetHeader className="border-b px-5 pb-4">
+                <Logo href={routes.root} className="h-10 w-auto" />
+                <SheetTitle className="sr-only">Mobil menü</SheetTitle>
+              </SheetHeader>
+
+              <nav className="flex flex-col gap-1 px-3 py-4">
+                {navItems.map((item) => {
+                  const active = isActive(item.href);
+                  const className = `rounded-xl px-3 py-2 text-sm transition-colors ${
+                    active
+                      ? "bg-primary/10 text-foreground font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`;
+
+                  if ("id" in item) {
+                    return (
+                      <SheetClose asChild key={item.href}>
+                        <Link
+                          href={item.href}
+                          onClick={(event) => handleNavClick(event, item.id)}
+                          className={className}
+                        >
+                          {item.label}
+                        </Link>
+                      </SheetClose>
+                    );
+                  }
+
+                  return (
+                    <SheetClose asChild key={item.href}>
+                      <Link href={item.href} className={className}>
+                        {item.label}
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
+              </nav>
+
+              <div className="mt-auto flex flex-col gap-3 border-t px-5 py-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Tema</span>
+                  <ThemeToggle />
+                </div>
+                <SheetClose asChild>
+                  <Button asChild variant="outline" className="w-full rounded-full">
+                    <Link href={routes.login}>
+                      <LogIn className="size-4" />
+                      Giriş
+                    </Link>
+                  </Button>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Button asChild className="w-full rounded-full">
+                    <Link href={routes.login}>Başla</Link>
+                  </Button>
+                </SheetClose>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
