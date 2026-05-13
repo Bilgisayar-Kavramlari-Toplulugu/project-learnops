@@ -1,5 +1,5 @@
 "use client";
-import { LogOut, UserRound } from "lucide-react";
+import { LogIn, LogOut, UserRound } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -27,7 +27,16 @@ export function UserMenu({ user }: UserMenuProps) {
 
   if (!user) {
     return (
-      <div className="h-10 w-28 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+      <Button
+        asChild
+        variant="outline"
+        className="h-10 items-center gap-2 rounded-xl border-blue-100 bg-white/80 px-3 text-slate-700 shadow-xs dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
+      >
+        <Link href={routes.login}>
+          <LogIn className="size-4" />
+          Giriş Yap
+        </Link>
+      </Button>
     );
   }
 
@@ -50,7 +59,8 @@ export function UserMenu({ user }: UserMenuProps) {
         >
           <InitialsAvatar
             name={user.display_name}
-            avatarType={user.avatar_type}            className="size-7"
+            avatarType={user.avatar_type}
+            className="size-7"
           />
           <span className="hidden min-w-0 flex-col items-start text-left sm:inline-flex">
             <span className="max-w-[140px] truncate text-sm font-semibold">

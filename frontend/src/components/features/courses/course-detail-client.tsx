@@ -1,54 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, Signal, Tag, CheckCircle2, ChevronLeft, BookOpen, Loader2, ArrowRight } from "lucide-react";
+import {
+  Clock,
+  Signal,
+  Tag,
+  CheckCircle2,
+  ChevronLeft,
+  BookOpen,
+  Loader2,
+  ArrowRight,
+  Lock,
+} from "lucide-react";
 import Link from "next/link";
 import { type AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { CourseDetail } from "@/types";
 import { Badge, Button, Card, CardContent, toast } from "@/components/ui";
-import { useProfile } from "@/hooks/profile/use-profile";
-import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 import { enrollCourse } from "@/services/enrollment.service";
+import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 import { useRouter } from "next/navigation";
 import { routes } from "@/lib/routes";
 import { queryKeys } from "@/lib/query-keys";
+import { getNextIncompleteSection } from "@/lib/course-progress";
+import { useSectionProgress } from "@/hooks/courses/use-section-progress";
 
-export default function CourseDetailClient({ course }: { course: CourseDetail }) {
+interface CourseDetailClientProps {
+  course: CourseDetail;
+  isAuthenticated: boolean;
+}
+
+export default function CourseDetailClient({ course, isAuthenticated }: CourseDetailClientProps) {
   const router = useRouter();
-  const [isEnrolling, setIsEnrolling] = useState(false);
-
-  const { data: user } = useProfile();
   const queryClient = useQueryClient();
-  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments({
+    enabled: isAuthenticated,
+  });
   const isAlreadyEnrolled = enrollments.some((item) => item.course_id === course.id);
+  const { data: progressSections = [], isFetching: progressFetching } = useSectionProgress(
+    isAlreadyEnrolled ? course.id : undefined,
+  );
 
-const handleEnroll = async () => {
-  if (!user) {
-    router.replace(routes.login);
-    return;
-  }
-
-  setIsEnrolling(true);
-  try {
-    await enrollCourse(course.id);
-    await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments.all });
-    toast.success("Kursa kaydoldunuz!", { description: "Kurslarım sayfasına yönlendiriliyorsunuz." });
-    router.push(routes.myCourses);
-  } catch (error) {
-    const status = (error as AxiosError)?.response?.status;
-    if (status === 409) {
-      toast.info("Bu kursa zaten kayıtlısınız.", {
-        description: "Kaldığınız yerden devam edebilirsiniz.",
-      });
-    } else {
-      toast.error("Kayıt başarısız.", { description: "Lütfen tekrar deneyin." });
+  const handleEnroll = async () => {
+    if (!isAuthenticated) {
+      router.replace(routes.login);
+      return;
     }
-  } finally {
-    setIsEnrolling(false);
-  }
-};
+
+    setIsEnrolling(true);
+    try {
+      await enrollCourse(course.id);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments.all });
+      toast.success("Kursa kaydoldunuz!", {
+        description: "Kurslarım sayfasına yönlendiriliyorsunuz.",
+      });
+      router.push(routes.myCourses);
+    } catch (error) {
+      const status = (error as AxiosError)?.response?.status;
+      if (status === 401) {
+        router.replace(routes.login);
+      } else if (status === 409) {
+        toast.info("Bu kursa zaten kayıtlısınız.", {
+          description: "Kaldığınız yerden devam edebilirsiniz.",
+        });
+      } else {
+        toast.error("Kayıt başarısız.", { description: "Lütfen tekrar deneyin." });
+      }
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
 
   const difficultyColors: Record<string, string> = {
     Beginner: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
@@ -60,6 +83,17 @@ const handleEnroll = async () => {
     "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
 
   const sortedSections = [...(course.sections || [])].sort((a, b) => a.order_index - b.order_index);
+  const targetSection = getNextIncompleteSection(sortedSections, progressSections);
+  const continueHref = targetSection
+    ? routes.section(course.slug, targetSection.section_id_str)
+    : routes.courseDetail(course.slug);
+  const isContinueLoading = enrollmentsLoading || progressFetching;
+  const completedSectionIds = new Set(
+    progressSections.filter((p) => p.completed).map((p) => p.section_id_str),
+  );
+  const allSectionsCompleted =
+    sortedSections.length > 0 &&
+    sortedSections.every((s) => completedSectionIds.has(s.section_id_str));
 
   return (
     <div className="w-full max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500 pb-20">
@@ -72,7 +106,7 @@ const handleEnroll = async () => {
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-1 lg:col-span-2 space-y-8">
+        <div className="col-span-1 lg:col-span-2">
           <Card className="relative overflow-hidden rounded-3xl border-zinc-200 p-0 shadow-sm backdrop-blur-xl dark:border-zinc-800">
             <CardContent className="p-8">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
@@ -109,8 +143,9 @@ const handleEnroll = async () => {
               </p>
             </CardContent>
           </Card>
+        </div>
 
-          <div className="bg-white dark:bg-zinc-900/50 rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm backdrop-blur-xl">
+        <div className="order-3 bg-white dark:bg-zinc-900/50 rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm backdrop-blur-xl lg:order-none lg:col-span-2">
             <div className="flex items-center gap-4 mb-8 pb-6 border-b border-zinc-100 dark:border-zinc-800">
               <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl shadow-inner">
                 <BookOpen className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
@@ -127,72 +162,129 @@ const handleEnroll = async () => {
 
             <div className="space-y-4">
               {sortedSections.length > 0 ? (
-                sortedSections.map((section, index) => (
-                  <Link
-                    href={`/courses/${course.slug}/sections/${section.section_id_str}`}
-                    key={section.id}
-                    className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
-                  >
-                    <div className="flex w-full gap-5">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shadow-sm">
-                        {index + 1}
+                sortedSections.map((section, index) =>
+                  isAlreadyEnrolled ? (
+                    <Link
+                      href={`/courses/${course.slug}/sections/${section.section_id_str}`}
+                      key={section.id}
+                      className="group block rounded-2xl border border-zinc-300/75 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200/55 transition-all hover:border-indigo-500/55 hover:shadow-xl hover:shadow-indigo-500/10 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900/80 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900 dark:hover:ring-indigo-400/35"
+                    >
+                      <div className="flex w-full gap-5">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shadow-sm">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1 pt-1.5 overflow-hidden">
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
+                            {section.title}
+                          </h3>
+                          {section.description && (
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                              {section.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex-1 pt-1.5 overflow-hidden">
-                        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
-                          {section.title}
-                        </h3>
-                        {section.description && (
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                            {section.description}
-                          </p>
-                        )}
+                    </Link>
+                  ) : (
+                    <div
+                      key={section.id}
+                      onClick={() =>
+                        toast.error("Bu kursa kayıtlı değilsiniz.", {
+                          description: "İçeriği görüntülemek için önce kursa kaydolun.",
+                        })
+                      }
+                      className="group block cursor-pointer rounded-2xl border border-zinc-300/75 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200/55 transition-all hover:border-indigo-500/55 hover:shadow-xl hover:shadow-indigo-500/10 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900/80 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900 dark:hover:ring-indigo-400/35"
+                    >
+                      <div className="flex w-full gap-5">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800 transition-all shadow-sm">
+                          {enrollmentsLoading ? index + 1 : <Lock className="w-4 h-4" />}
+                        </div>
+                        <div className="flex-1 pt-1.5 overflow-hidden">
+                          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
+                            {section.title}
+                          </h3>
+                          {section.description && (
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                              {section.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </Link>
-                ))
+                  ),
+                )
               ) : (
                 <div className="p-10 text-center text-zinc-500 dark:text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl font-medium bg-zinc-50/50 dark:bg-zinc-900/30">
                   Bu kursa henüz bölüm (section) eklenmemiş.
                 </div>
               )}
             </div>
-          </div>
         </div>
 
-        <div className="col-span-1 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 rounded-3xl p-6 lg:p-8 shadow-xl shadow-zinc-200/40 dark:shadow-none lg:sticky lg:top-24 h-fit backdrop-blur-xl">
+        <div className="order-2 col-span-1 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 rounded-3xl p-6 lg:p-8 shadow-xl shadow-zinc-200/40 dark:shadow-none lg:order-none lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24 h-fit backdrop-blur-xl">
           <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 mb-3">
-            Kursa Katıl
+            {!isAlreadyEnrolled
+              ? "Kursa Katıl"
+              : allSectionsCompleted
+                ? "Quize Hazırsın!"
+                : "Kaldığın Yerden Devam Et"}
           </h3>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium leading-relaxed">
-            Bu eğitime katılıp yeteneklerinizi hemen bir üst seviyeye taşıyın.
+            {!isAlreadyEnrolled
+              ? "Bu eğitime katılıp yeteneklerinizi hemen bir üst seviyeye taşıyın."
+              : allSectionsCompleted
+                ? "Tüm bölümleri tamamladın. Bilgilerini test etme zamanı."
+                : `${completedSectionIds.size}/${sortedSections.length} bölümü tamamladın, devam et!`}
           </p>
 
-{isAlreadyEnrolled ? (
-  <Button
-    asChild
-    size="lg"
-    className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
-  >
-    <Link href={routes.courseDetail(course.slug)}>
-      <ArrowRight className="w-6 h-6" />
-      Kursa Devam Et
-    </Link>
-  </Button>
-) : (
-  <Button
-    onClick={handleEnroll}
-    disabled={isEnrolling || enrollmentsLoading}
-    size="lg"
-    className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 active:scale-[0.98]"
-  >
-    {isEnrolling ? (
-      <Loader2 className="w-6 h-6 animate-spin" />
-    ) : (
-      <CheckCircle2 className="w-6 h-6" />
-    )}
-    {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
-  </Button>
-)}
+          {isAlreadyEnrolled ? (
+            isContinueLoading ? (
+              <Button
+                disabled
+                size="lg"
+                className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-emerald-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl hover:bg-emerald-700 active:scale-[0.98] xl:text-lg"
+              >
+                <Loader2 className="w-6 h-6 animate-spin" />
+                Hazırlanıyor...
+              </Button>
+            ) : allSectionsCompleted ? (
+              <Button
+                asChild
+                size="lg"
+                className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-indigo-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98] xl:text-lg"
+              >
+                <Link href={routes.quiz(course.slug)}>
+                  Quiz&apos;e Git
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                size="lg"
+                className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-emerald-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl hover:bg-emerald-700 active:scale-[0.98] xl:text-lg"
+              >
+                <Link href={continueHref}>
+                  <ArrowRight className="w-6 h-6" />
+                  Kursa Devam Et
+                </Link>
+              </Button>
+            )
+          ) : (
+            <Button
+              onClick={handleEnroll}
+              disabled={isEnrolling || enrollmentsLoading}
+              size="lg"
+              className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-indigo-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 active:scale-[0.98] xl:text-lg"
+            >
+              {isEnrolling ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-6 h-6" />
+              )}
+              {isEnrolling ? "Kaydediliyor..." : "Hemen Kaydol"}
+            </Button>
+          )}
           <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
             <h4 className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 mb-5 uppercase tracking-widest">
               Bu Kursun Kazanımları

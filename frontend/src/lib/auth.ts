@@ -24,6 +24,10 @@ export async function logout() {
   } catch {}
 }
 
+export async function mergeAccounts(mergeToken: string): Promise<void> {
+  await authClient.post("/merge", { merge_token: mergeToken });
+}
+
 export function useAuth() {
   const loginWithOAuth = useCallback((provider: OAuthProvider) => {
     startOAuth(provider);
@@ -31,7 +35,7 @@ export function useAuth() {
 
   const logoutAndRedirect = useCallback(async () => {
     await logout();
-    window.location.href = routes.login;
+    window.location.href = routes.root;
   }, []);
 
   return {

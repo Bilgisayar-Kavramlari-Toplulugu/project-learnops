@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import type { AxiosError } from "axios";
 
 import { Button, toast } from "@/components/ui";
 import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 
 interface CompletionButtonProps {
   sectionIdStr: string;
@@ -40,6 +42,7 @@ export function CompletionButton({
   fullWidth = true,
   className = "",
 }: CompletionButtonProps) {
+  const queryClient = useQueryClient();
   const [isCompleting, setIsCompleting] = useState(false);
   const [completed, setCompleted] = useState(isCompleted);
 
@@ -71,6 +74,7 @@ export function CompletionButton({
       const response = await api.post(`/progress/sections/${sectionIdStr}/complete`);
 
       setCompleted(true);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.enrollments.all });
 
       if (onSuccess) {
         onSuccess(

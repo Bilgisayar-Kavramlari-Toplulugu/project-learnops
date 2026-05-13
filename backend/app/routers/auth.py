@@ -7,7 +7,6 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, RedirectResponse
 from jwt.exceptions import PyJWTError as JWTError
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -172,7 +171,7 @@ async def google_login(request: Request):
             value=state,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="none",
+            samesite="lax",
             max_age=600,
         )
         return response
@@ -281,7 +280,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             return RedirectResponse(
                 url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
-                f"&merge_token={conflict_data.merge_token}&email={user_info['email']}",
+                f"&merge_token={conflict_data.merge_token}",
                 status_code=302,
             )
 
@@ -324,7 +323,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
 
@@ -333,7 +332,7 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -472,33 +471,29 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
                 )
             logger.info(f"User email: {user_info.get('email')}")
 
-        # Get or create user
-        result = await db.execute(select(User).where(User.email == user_info["email"]))
-        user = result.scalar_one_or_none()
+        # Get or create user (with conflict detection)
+        result = await resolve_oauth_user(
+            db,
+            email=user_info["email"],
+            provider=OAuthProvider.linkedin,
+            provider_user_id=user_info["sub"],
+            provider_email=user_info["email"],
+            display_name=user_info.get("name", user_info["email"].split("@")[0]),
+        )
 
-        if not user:
-            user = User(
-                email=user_info["email"],
-                display_name=user_info.get("name", user_info["email"].split("@")[0]),
-                avatar_type="initials",
-                last_login_at=datetime.now(timezone.utc),
+        if "conflict" in result:
+            conflict_data = result["conflict"]
+            return RedirectResponse(
+                url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
+                f"&merge_token={conflict_data.merge_token}",
+                status_code=302,
             )
-            db.add(user)
-            await db.flush()
-            await db.refresh(user)
-            logger.info(f"New user created: {user.email}")
-        else:
-            user.last_login_at = datetime.now(timezone.utc)
-            logger.info(f"Existing user logged in: {user.email}")
+
+        user = result["user"]
+        provider_user_id = str(user_info["sub"])
 
         # OAuth account kaydet/güncelle
-        oauth_result = await db.execute(
-            select(OAuthAccount).where(
-                OAuthAccount.provider == "linkedin",
-                OAuthAccount.provider_user_id == user_info["sub"],
-            )
-        )
-        oauth_account = oauth_result.scalar_one_or_none()
+        oauth_account = await get_oauth_account(db, "linkedin", provider_user_id)
         refresh_token_encrypted = None
         if "refresh_token" in tokens:
             refresh_token_encrypted = encrypt_token(tokens["refresh_token"])
@@ -512,7 +507,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             oauth_account = OAuthAccount(
                 user_id=user.id,
                 provider="linkedin",
-                provider_user_id=user_info["sub"],
+                provider_user_id=provider_user_id,
                 provider_email=user_info["email"],
                 refresh_token_encrypted=refresh_token_encrypted,
             )
@@ -533,7 +528,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
         response.set_cookie(
@@ -541,7 +536,7 @@ async def linkedin_callback(request: Request, db: AsyncSession = Depends(get_db)
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -744,7 +739,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
 
             return RedirectResponse(
                 url=f"{settings.FRONTEND_PUBLIC_URL.rstrip('/')}/login?error=account_conflict"
-                f"&merge_token={conflict_data.merge_token}&email={email}",
+                f"&merge_token={conflict_data.merge_token}",
                 status_code=302,
             )
 
@@ -788,7 +783,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=access_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
         response.set_cookie(
@@ -796,7 +791,7 @@ async def github_callback(request: Request, db: AsyncSession = Depends(get_db)):
             value=refresh_token,
             httponly=True,
             secure=settings.ENVIRONMENT not in ("development", "testing"),
-            samesite="strict",
+            samesite="lax",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -875,7 +870,7 @@ async def refresh(request: Request):
         value=new_access_token,
         httponly=True,
         secure=settings.ENVIRONMENT not in ("development", "testing"),
-        samesite="strict",
+        samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
     response.set_cookie(
@@ -883,7 +878,7 @@ async def refresh(request: Request):
         value=new_refresh_token,
         httponly=True,
         secure=settings.ENVIRONMENT not in ("development", "testing"),
-        samesite="strict",
+        samesite="lax",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
     return response
@@ -907,13 +902,13 @@ async def logout(request: Request):
     response.delete_cookie(
         settings.ACCESS_TOKEN_COOKIE_NAME,
         httponly=True,
-        samesite="strict",
+        samesite="lax",
         secure=is_secure,
     )
     response.delete_cookie(
         settings.REFRESH_TOKEN_COOKIE_NAME,
         httponly=True,
-        samesite="strict",
+        samesite="lax",
         secure=is_secure,
     )
     return response

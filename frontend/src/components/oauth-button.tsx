@@ -5,9 +5,11 @@ import { Button } from "./ui/button";
 
 export default function OAuthButton({
   provider,
+  icon,
   comingSoon = false,
 }: {
   provider: string;
+  icon: React.ReactNode;
   comingSoon?: boolean;
 }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,11 +30,16 @@ export default function OAuthButton({
       variant="outline"
       className="w-full rounded-xl"
     >
-      {isLoading
-        ? "Yönlendiriliyor..."
-        : comingSoon
-          ? `${provider} ile Giriş Yap — Yakında`
-          : `${provider} ile Giriş Yap`}
+      {!isLoading && (
+        <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>
+      )}
+      <span>
+        {isLoading
+          ? "Yönlendiriliyor..."
+          : comingSoon
+            ? `${provider} ile Giriş Yap — Yakında`
+            : `${provider} ile Giriş Yap`}
+      </span>
     </Button>
   );
 }

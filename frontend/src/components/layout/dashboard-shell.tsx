@@ -1,7 +1,9 @@
-import type { ReactNode } from "react";
-import { Menu } from "lucide-react";
+"use client";
 
-import { Button, Sheet, SheetContent, SheetTrigger } from "@/components/ui";
+import { type ReactNode, useState } from "react";
+import { Menu, X } from "lucide-react";
+
+import { Button, Sheet, SheetClose, SheetContent, SheetTrigger } from "@/components/ui";
 import { routes } from "@/lib/routes";
 import type { DashboardProfile, SidebarItem } from "@/types";
 import { AppFooter } from "./app-footer";
@@ -21,6 +23,8 @@ export function DashboardShell({
   activePath = routes.dashboard,
   children,
 }: DashboardShellProps) {
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
   return (
     <div className="min-h-dvh">
       <div className="mx-auto flex min-h-dvh w-full max-w-[1600px]">
@@ -33,7 +37,7 @@ export function DashboardShell({
           <AppTopbar
             user={user}
             mobileNav={
-              <Sheet>
+              <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="outline"
@@ -45,11 +49,23 @@ export function DashboardShell({
                 </SheetTrigger>
                 <SheetContent
                   side="left"
+                  showCloseButton={false}
                   className="w-[286px] border-r border-slate-200 bg-white p-0 sm:max-w-none dark:border-slate-700 dark:bg-slate-900"
                 >
+                  <SheetClose asChild>
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      className="absolute top-5 right-5 z-10 rounded-xl border-blue-100 bg-white/90 text-slate-500 shadow-sm shadow-blue-100/40 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-300 dark:shadow-black/20 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                      aria-label="Menüyü kapat"
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </SheetClose>
                   <AppSidebar
                     items={sidebarItems}
                     activePath={activePath}
+                    onNavigate={() => setIsMobileNavOpen(false)}
                     className="h-full rounded-none border-0 bg-transparent shadow-none"
                   />
                 </SheetContent>

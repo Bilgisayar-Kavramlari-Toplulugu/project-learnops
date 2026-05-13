@@ -1,14 +1,33 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type AxiosError } from "axios";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 
 import { useCourseDetail } from "@/hooks/courses/use-course-detail";
 import { useMarkSectionComplete, useSectionProgress } from "@/hooks/courses/use-section-progress";
+import { useEnrollments } from "@/hooks/enrollments/use-enrollments";
 import type { SectionItem } from "@/lib/content";
 import { routes } from "@/lib/routes";
-import { Button, Skeleton, toast } from "@/components/ui";
+import {
+  Button,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  Skeleton,
+  toast,
+} from "@/components/ui";
 import { SectionSidebar } from "./section-sidebar";
 
 interface SectionActionsProps {
@@ -28,11 +47,19 @@ export function SectionActions({
   nextSection,
   children,
 }: SectionActionsProps) {
-  const { data: course } = useCourseDetail(courseSlug);
+  const router = useRouter();
+
+  const { data: course, isLoading: courseLoading } = useCourseDetail(courseSlug);
   const courseId = course?.id;
+
+  const { enrollments, isLoading: enrollmentsLoading } = useEnrollments();
+  const isEnrolled = courseId ? enrollments.some((e) => e.course_id === courseId) : false;
 
   const { data: progressItems = [], isLoading: progressLoading } = useSectionProgress(courseId);
   const { mutate: markComplete, isPending } = useMarkSectionComplete(courseId);
+
+  // Direkt URL ile girişe karşı güvenlik ağı
+  if (!courseLoading && !enrollmentsLoading && !isEnrolled) return null;
 
   const completedIds = new Set(
     progressItems
@@ -40,7 +67,35 @@ export function SectionActions({
       .map((item) => item.section_id_str),
   );
   const isCurrentCompleted = completedIds.has(currentSectionId);
-  const isButtonDisabled = !courseId || isCurrentCompleted || isPending;
+  const allSectionsCompleted = sections.length > 0 && sections.every((s) => completedIds.has(s.id));
+  const firstIncompleteSection = sections.find((s) => !completedIds.has(s.id));
+  const isButtonDisabled = !courseId || isPending;
+
+  function handleMarkCompleteAndNavigate(navigateTo: string) {
+    if (!courseId) return;
+
+    markComplete(currentSectionId, {
+      onSuccess: () => {
+        toast.success("Bölüm tamamlandı!", {
+          description: "İlerlemeniz kaydedildi.",
+        });
+        router.push(navigateTo);
+      },
+      onError: (error: unknown) => {
+        const axiosError = error as AxiosError;
+
+        if (axiosError?.response?.status === 403) {
+          toast.error("Bu kursa kayıtlı değilsiniz.", {
+            description: "Kursa kaydolarak ilerlemenizi takip edebilirsiniz.",
+          });
+        } else {
+          toast.error("Bölüm kaydedilemedi.", {
+            description: "İlerlemeniz bu oturum için korundu.",
+          });
+        }
+      },
+    });
+  }
 
   function handleMarkComplete() {
     if (!courseId) return;
@@ -67,33 +122,94 @@ export function SectionActions({
     });
   }
 
-  const completeButton = progressLoading ? (
-    <Skeleton className="h-10 w-full rounded-xl" />
-  ) : (
-    <Button
-      onClick={handleMarkComplete}
-      disabled={isButtonDisabled}
-      variant={isCurrentCompleted ? "outline" : "default"}
-      className={`w-full gap-2 rounded-xl text-sm font-bold ${
-        isCurrentCompleted
-          ? "cursor-default border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-          : isButtonDisabled
-            ? "cursor-not-allowed bg-indigo-300 text-white shadow-none dark:bg-indigo-400/40"
-            : "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.97]"
-      }`}
-    >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <CheckCircle2 className="h-4 w-4" />
-      )}
-      {isCurrentCompleted ? "Tamamlandı" : "Tamamladım"}
-    </Button>
-  );
-
   return (
     <div className="flex min-h-0 min-w-0 flex-1 gap-4">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex items-center justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-slate-700 lg:hidden">
+          <Link
+            href={routes.courseDetail(courseSlug)}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Kursa Dön
+          </Link>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-xl border-indigo-200 bg-indigo-50 px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+              >
+                <BookOpen className="h-4 w-4" />
+                Bölümler
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[min(88vw,360px)] gap-0 border-l border-zinc-200 bg-white p-0 dark:border-slate-700 dark:bg-slate-900"
+            >
+              <SheetHeader className="border-b border-zinc-100 px-5 py-4 text-left dark:border-slate-700/80">
+                <SheetTitle className="flex items-center gap-2 text-sm">
+                  <span className="rounded-lg bg-indigo-50 p-1.5 dark:bg-indigo-500/10">
+                    <BookOpen className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  </span>
+                  Bölümler
+                </SheetTitle>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {completedIds.size}/{sections.length} tamamlandı
+                </p>
+              </SheetHeader>
+              <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+                <ul className="space-y-1">
+                  {sections.map((section, index) => {
+                    const isActive = section.id === currentSectionId;
+                    const isCompleted = completedIds.has(section.id);
+
+                    return (
+                      <li key={section.id}>
+                        <SheetClose asChild>
+                          <Link
+                            href={routes.section(courseSlug, section.id)}
+                            className={`group flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
+                              isActive
+                                ? "bg-indigo-50 dark:bg-indigo-500/10"
+                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
+                            }`}
+                          >
+                            {isCompleted ? (
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
+                            ) : (
+                              <span
+                                className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[9px] font-bold ${
+                                  isActive
+                                    ? "border-indigo-400 bg-indigo-100 text-indigo-600 dark:border-indigo-500 dark:bg-indigo-500/20 dark:text-indigo-400"
+                                    : "border-zinc-300 text-zinc-400 dark:border-zinc-600 dark:text-zinc-500"
+                                }`}
+                              >
+                                {index + 1}
+                              </span>
+                            )}
+                            <span
+                              className={`leading-snug ${
+                                isActive
+                                  ? "font-semibold text-indigo-700 dark:text-indigo-300"
+                                  : isCompleted
+                                    ? "font-medium text-zinc-700 dark:text-zinc-300"
+                                    : "font-medium text-zinc-600 group-hover:text-zinc-900 dark:text-zinc-400 dark:group-hover:text-zinc-200"
+                              }`}
+                            >
+                              {section.title}
+                            </span>
+                          </Link>
+                        </SheetClose>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
         <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
 
         <div className="flex items-center justify-between gap-4 border-t border-zinc-200 px-4 py-3 dark:border-slate-700">
@@ -101,11 +217,10 @@ export function SectionActions({
             {prevSection ? (
               <Link
                 href={routes.section(courseSlug, prevSection.id)}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-200 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
               >
-                <ChevronLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">Önceki:</span>
-                <span className="hidden max-w-[200px] truncate sm:inline">{prevSection.title}</span>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Önceki</span>
               </Link>
             ) : (
               <span />
@@ -113,17 +228,65 @@ export function SectionActions({
           </div>
 
           <div className="flex flex-1 justify-end">
-            {nextSection ? (
+            {enrollmentsLoading || progressLoading ? (
+              <Skeleton className="h-9 w-40 rounded-xl" />
+            ) : isEnrolled && !isCurrentCompleted && nextSection ? (
+              <Button
+                onClick={() =>
+                  handleMarkCompleteAndNavigate(routes.section(courseSlug, nextSection.id))
+                }
+                disabled={isButtonDisabled}
+                className="gap-2 rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.97]"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Tamamla ve Devam Et
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : isEnrolled && !isCurrentCompleted && !nextSection ? (
+              <Button
+                onClick={handleMarkComplete}
+                disabled={isButtonDisabled}
+                className="gap-2 rounded-xl bg-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.97]"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                Bölümü Tamamla
+              </Button>
+            ) : nextSection ? (
               <Link
                 href={routes.section(courseSlug, nextSection.id)}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-100 px-4 py-2 text-sm font-semibold text-indigo-700 transition-colors hover:bg-indigo-200 hover:border-indigo-300 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
               >
-                <span className="hidden sm:inline">Sonraki:</span>
-                <span className="hidden max-w-[200px] truncate sm:inline">{nextSection.title}</span>
-                <ChevronRight className="h-4 w-4" />
+                Sonraki
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            ) : allSectionsCompleted ? (
+              <Link
+                href={routes.quiz(courseSlug)}
+                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 transition-colors"
+              >
+                Quiz&apos;e Git
+                <ArrowRight className="h-4 w-4" />
               </Link>
             ) : (
-              <span />
+              <Link
+                href={
+                  firstIncompleteSection
+                    ? routes.section(courseSlug, firstIncompleteSection.id)
+                    : routes.courseDetail(courseSlug)
+                }
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800 transition-colors hover:bg-amber-200 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+              >
+                {sections.length - completedIds.size} bölüm kaldı
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
             )}
           </div>
         </div>
@@ -135,9 +298,6 @@ export function SectionActions({
           {sections.map((section) => (
             <Skeleton key={section.id} className="h-9 w-full rounded-xl" />
           ))}
-          <div className="mt-auto pt-4">
-            <Skeleton className="h-10 w-full rounded-xl" />
-          </div>
         </aside>
       ) : (
         <SectionSidebar
@@ -145,7 +305,6 @@ export function SectionActions({
           currentSectionId={currentSectionId}
           slug={courseSlug}
           completedIds={completedIds}
-          footerSlot={completeButton}
         />
       )}
     </div>

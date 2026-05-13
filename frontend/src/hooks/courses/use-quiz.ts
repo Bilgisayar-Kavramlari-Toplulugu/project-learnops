@@ -1,29 +1,40 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
-import type { QuizSession } from "@/types";
+import type { QuizMeta, QuizSession } from "@/types";
 
 /**
- * GET /courses/{courseId}/quiz
+ * Adım 1 — GET /courses/{slug}/quiz
  *
- * Her mount'ta backend'den taze veri alınır (started_at buradan hesaplanır).
- * Timer localStorage'da saklanmaz — FE-13 kabul kriteri.
- *
- * staleTime: 0 → sayfa yenilenince backend'den tekrar istek yapılır,
- * ancak aynı session_id için React Query cache devreye girmez çünkü
- * `started_at` değişmemelidir (backend aynı session_id'yi döner).
+ * Quiz meta bilgisini döndürür: quiz_id, soru sayısı, süre, geçme notu.
+ * Attempt başlatmak için quiz_id gereklidir.
+ * staleTime: Infinity → meta değişmez, cache'den servis edilir.
  */
-export function useQuiz(courseId: string | undefined) {
+export function useQuizMeta(slug: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.quiz.session(courseId ?? ""),
+    queryKey: queryKeys.quiz.meta(slug ?? ""),
     queryFn: async () => {
-      const { data } = await api.get<QuizSession>(`/courses/${courseId}/quiz`);
+      const { data } = await api.get<QuizMeta>(`/courses/${slug}/quiz`);
       return data;
     },
-    enabled: Boolean(courseId),
-    staleTime: 0, // Timer doğruluğu için her mount'ta backend'e gidilir
-    gcTime: 0, // Unmount'ta eski started_at cache'ini temizle; timer flicker önlenir
-    refetchOnWindowFocus: false, // Odak değişiminde yeniden fetch yapılmasın
-    retry: false, // Quiz session hataları sessizce yutulmasın
+    enabled: Boolean(slug),
+    staleTime: Infinity,
+    retry: false,
+  });
+}
+
+/**
+ * Adım 2 — POST /quizzes/{quizId}/attempts
+ *
+ * Yeni quiz attempt başlatır. Sorular randomize sırayla,
+ * correct_index GÖNDERİLMEZ (TC-SEC-01).
+ * Mutation çünkü her "başla" tıklaması yeni bir attempt oluşturur.
+ */
+export function useStartAttempt() {
+  return useMutation({
+    mutationFn: async (quizId: string): Promise<QuizSession> => {
+      const { data } = await api.post<QuizSession>(`/quizzes/${quizId}/attempts`);
+      return data;
+    },
   });
 }

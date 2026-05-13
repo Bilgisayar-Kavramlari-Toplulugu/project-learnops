@@ -57,8 +57,11 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         client_ip = self.get_client_ip(request)
         path = request.url.path
 
-        # Skip health check
-        if path in ["/", "/health", "/docs", "/redoc"]:
+        # Skip health check and testing environment
+        if (
+            path in ["/", "/health", "/docs", "/redoc"]
+            or settings.ENVIRONMENT == "testing"
+        ):
             return await call_next(request)
 
         # Bypass rate limiting for load tests when a valid secret is provided.

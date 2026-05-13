@@ -7,9 +7,10 @@ interface SidebarMainNavProps {
   items: SidebarItem[];
   activePath: string;
   hideLabel?: boolean;
+  onNavigate?: () => void;
 }
 
-export function SidebarMainNav({ items, activePath, hideLabel }: SidebarMainNavProps) {
+export function SidebarMainNav({ items, activePath, hideLabel, onNavigate }: SidebarMainNavProps) {
   return (
     <div className="space-y-2">
       {!hideLabel && (
@@ -28,6 +29,7 @@ export function SidebarMainNav({ items, activePath, hideLabel }: SidebarMainNavP
             <Link
               key={item.label}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "group relative flex items-center gap-3 rounded-2xl border px-3 py-2.5 transition",
                 isActive

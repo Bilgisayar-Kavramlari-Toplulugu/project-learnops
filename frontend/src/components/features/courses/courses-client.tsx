@@ -4,8 +4,15 @@ import { useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import CourseItem from "@/components/features/courses/course-item";
 import { Course } from "@/types";
-import { Search, SlidersHorizontal, XCircle } from "lucide-react";
-import { Button, Input } from "@/components/ui";
+import { Check, ChevronDown, Search, SlidersHorizontal, XCircle } from "lucide-react";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+} from "@/components/ui";
 
 interface CoursesClientProps {
   courses: Course[];
@@ -13,10 +20,7 @@ interface CoursesClientProps {
   headerSlot: ReactNode;
 }
 
-export default function CoursesClient({
-  courses,
-  headerSlot,
-}: CoursesClientProps) {
+export default function CoursesClient({ courses, headerSlot }: CoursesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
@@ -46,15 +50,15 @@ export default function CoursesClient({
     setSelectedCategory("");
     setSelectedDifficulty("");
   };
+  const selectedCategoryLabel = selectedCategory || "Tüm Kategoriler";
+  const selectedDifficultyLabel = selectedDifficulty || "Tüm Seviyeler";
 
   return (
     <div className="space-y-10 w-full motion-safe:animate-[fadeIn_0.5s_ease-out_both]">
       {/* Header & Search Area */}
       <div className="flex flex-col xl:flex-row gap-6 items-end justify-between w-full bg-white dark:bg-zinc-900/20 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <div className="flex-1 w-full space-y-6">
-          <div className="flex items-center gap-4">
-            {headerSlot}
-          </div>
+          <div className="flex items-center gap-4">{headerSlot}</div>
 
           <div className="relative w-full max-w-2xl group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
@@ -81,41 +85,73 @@ export default function CoursesClient({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full xl:w-auto">
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full p-2 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <div className="flex items-center pl-3 gap-2 text-zinc-500 dark:text-zinc-400 w-full sm:w-auto">
+        <div className="flex min-w-0 items-center gap-3 w-full xl:w-auto">
+          <div className="grid w-full min-w-0 grid-cols-1 items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-2 sm:grid-cols-2 lg:flex lg:w-auto dark:border-zinc-800 dark:bg-zinc-900/50">
+            <div className="flex w-full items-center gap-2 pl-3 text-zinc-500 sm:col-span-2 lg:w-auto dark:text-zinc-400">
               <SlidersHorizontal className="w-4 h-4" />
               <span className="text-sm font-semibold uppercase tracking-wider">Filtreler</span>
             </div>
-            <div className="hidden sm:block w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2" />
+            <div className="hidden h-6 w-px bg-zinc-200 lg:block dark:bg-zinc-700" />
 
-            <select
-              aria-label="Kategori filtresi"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full sm:w-40 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer shadow-sm appearance-none"
-            >
-              <option value="">Tüm Kategoriler</option>
-              {allCategories.map((c) => (
-                <option key={c ?? ""} value={c ?? ""}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Kategori filtresi"
+                  className="flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 text-left text-sm font-semibold text-zinc-700 shadow-sm outline-none transition-all hover:border-indigo-200 hover:bg-white focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-500/10 lg:w-44 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:border-indigo-500/40 dark:hover:bg-zinc-800"
+                >
+                  <span className="truncate">{selectedCategoryLabel}</span>
+                  <ChevronDown className="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-2xl border-zinc-200 bg-white/95 p-1.5 shadow-xl shadow-zinc-950/10 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95"
+              >
+                {["", ...allCategories].map((category) => (
+                  <DropdownMenuItem
+                    key={category || "all-categories"}
+                    onSelect={() => setSelectedCategory(category ?? "")}
+                    className="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-700 outline-none transition-colors focus:bg-indigo-50 focus:text-indigo-700 dark:text-zinc-200 dark:focus:bg-indigo-500/15 dark:focus:text-indigo-200"
+                  >
+                    <span>{category || "Tüm Kategoriler"}</span>
+                    {selectedCategory === (category ?? "") && (
+                      <Check className="size-4 text-indigo-500" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-            <select
-              aria-label="Zorluk seviyesi filtresi"
-              value={selectedDifficulty}
-              onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="w-full sm:w-36 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer shadow-sm appearance-none"
-            >
-              <option value="">Tüm Seviyeler</option>
-              {allDifficulties.map((d) => (
-                <option key={d ?? ""} value={d ?? ""}>
-                  {d}
-                </option>
-              ))}
-            </select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Zorluk seviyesi filtresi"
+                  className="flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 text-left text-sm font-semibold text-zinc-700 shadow-sm outline-none transition-all hover:border-indigo-200 hover:bg-white focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-500/10 lg:w-40 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:border-indigo-500/40 dark:hover:bg-zinc-800"
+                >
+                  <span className="truncate">{selectedDifficultyLabel}</span>
+                  <ChevronDown className="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-2xl border-zinc-200 bg-white/95 p-1.5 shadow-xl shadow-zinc-950/10 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95"
+              >
+                {["", ...allDifficulties].map((difficulty) => (
+                  <DropdownMenuItem
+                    key={difficulty || "all-difficulties"}
+                    onSelect={() => setSelectedDifficulty(difficulty ?? "")}
+                    className="flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-700 outline-none transition-colors focus:bg-indigo-50 focus:text-indigo-700 dark:text-zinc-200 dark:focus:bg-indigo-500/15 dark:focus:text-indigo-200"
+                  >
+                    <span>{difficulty || "Tüm Seviyeler"}</span>
+                    {selectedDifficulty === (difficulty ?? "") && (
+                      <Check className="size-4 text-indigo-500" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
