@@ -6,7 +6,7 @@ const items = [
     desc: "Her kurs küçük, sindirilebilir bölümlere ayrılmış. Kaybolmazsın.",
     icon: BookMarked,
     color: "text-blue-500",
-    span: "sm:col-span-2 sm:row-span-2",
+    span: "row-span-2 sm:col-span-2",
     accent: "from-blue-500/25 to-transparent",
     big: true,
   },
@@ -64,13 +64,13 @@ export function BentoGrid() {
         </h2>
       </div>
 
-      <div className="grid auto-rows-[140px] grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid auto-rows-[116px] grid-cols-1 gap-3 sm:auto-rows-[140px] sm:grid-cols-3">
         {items.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.title}
-              className={`group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg ${item.span}`}
+              className={`group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-3.5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg sm:p-5 ${item.span}`}
             >
               <div
                 className={`pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-gradient-to-br ${item.accent} opacity-50 blur-2xl transition-opacity duration-500 group-hover:opacity-100`}
@@ -90,7 +90,7 @@ export function BentoGrid() {
 
                 {/* Büyük kutuda bonus visual */}
                 {"big" in item && (
-                  <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
+                  <div className="mt-auto flex flex-wrap gap-1.5 pt-3 sm:pt-4">
                     {["1. Linux Temelleri", "2. Bash", "3. Servisler", "+12 daha"].map((c) => (
                       <span
                         key={c}
