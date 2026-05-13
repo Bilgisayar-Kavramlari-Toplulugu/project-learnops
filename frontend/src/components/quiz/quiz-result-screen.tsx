@@ -1,7 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home, History } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  Clock,
+  Trophy,
+  RotateCcw,
+  Home,
+  History,
+} from "lucide-react";
 
 import { Button } from "@/components/ui";
 
@@ -29,28 +38,28 @@ interface QuizResultScreenProps {
   onViewHistory?: () => void;
 }
 
-// Renk şeması (story'den) — hex kodları
+// Renk şeması — transparan bg, renkli kenarlık (light + dark mode uyumlu)
 const COLORS = {
   correct: {
-    bg: "bg-[#DCFCE7]",
-    border: "border-[#BBF7D0]",
-    text: "text-[#166534]",
-    icon: "text-[#16A34A]",
-    badge: "bg-[#DCFCE7] text-[#166534]",
+    bg: "bg-transparent",
+    border: "border-[#16A34A]/50 dark:border-[#4ADE80]/40",
+    text: "text-[#166534] dark:text-[#4ADE80]",
+    icon: "text-[#16A34A] dark:text-[#4ADE80]",
+    badge: "bg-[#DCFCE7] text-[#166534] dark:bg-[#166534]/20 dark:text-[#4ADE80]",
   },
   incorrect: {
-    bg: "bg-[#FEE2E2]",
-    border: "border-[#FECACA]",
-    text: "text-[#991B1B]",
-    icon: "text-[#DC2626]",
-    badge: "bg-[#FEE2E2] text-[#991B1B]",
+    bg: "bg-transparent",
+    border: "border-[#DC2626]/50 dark:border-[#F87171]/40",
+    text: "text-[#991B1B] dark:text-[#F87171]",
+    icon: "text-[#DC2626] dark:text-[#F87171]",
+    badge: "bg-[#FEE2E2] text-[#991B1B] dark:bg-[#991B1B]/20 dark:text-[#F87171]",
   },
   unanswered: {
-    bg: "bg-[#FEF9C3]",
-    border: "border-[#FEF08A]",
-    text: "text-[#854D0E]",
-    icon: "text-[#CA8A04]",
-    badge: "bg-[#FEF9C3] text-[#854D0E]",
+    bg: "bg-transparent",
+    border: "border-[#EAB308]/50 dark:border-[#FACC15]/40",
+    text: "text-[#854D0E] dark:text-[#FACC15]",
+    icon: "text-[#CA8A04] dark:text-[#FACC15]",
+    badge: "bg-[#FEF9C3] text-[#854D0E] dark:bg-[#854D0E]/20 dark:text-[#FACC15]",
   },
 };
 
@@ -191,17 +200,17 @@ export function QuizResultScreen({
           return (
             <div
               key={answer.question_id}
-              className={`rounded-xl border p-4 ${style.bg} ${style.border}`}
+              className={`rounded-xl border-4 p-4 ${style.bg} ${style.border}`}
             >
               <div className="flex items-start gap-3">
                 {/* Durum İkonu */}
-                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white dark:bg-[#111827]">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   {answer.selected_index === null ? (
-                    <div className="h-3 w-3 rounded-full bg-[#EAB308]" />
+                    <MinusCircle className={`h-6 w-6 ${style.icon}`} />
                   ) : answer.is_correct ? (
-                    <CheckCircle2 className={`h-4 w-4 ${style.icon}`} />
+                    <CheckCircle2 className={`h-6 w-6 ${style.icon}`} />
                   ) : (
-                    <XCircle className={`h-4 w-4 ${style.icon}`} />
+                    <XCircle className={`h-6 w-6 ${style.icon}`} />
                   )}
                 </div>
 
@@ -211,15 +220,7 @@ export function QuizResultScreen({
                     <span className="text-sm font-semibold text-[#6B7280] dark:text-[#9CA3AF]">
                       Soru {index + 1}
                     </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        answer.selected_index === null
-                          ? "bg-[#FEF9C3] text-[#854D0E] dark:bg-[#854D0E]/30 dark:text-[#FACC15]"
-                          : answer.is_correct
-                            ? "bg-[#DCFCE7] text-[#166534] dark:bg-[#166534]/30 dark:text-[#4ADE80]"
-                            : "bg-[#FEE2E2] text-[#991B1B] dark:bg-[#991B1B]/30 dark:text-[#F87171]"
-                      }`}
-                    >
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${style.badge}`}>
                       {answer.selected_index === null
                         ? "Cevapsız"
                         : answer.is_correct
@@ -233,26 +234,47 @@ export function QuizResultScreen({
                     {answer.question_text}
                   </p>
 
-                  {/* Kullanıcının cevabı (vurgulanmış) */}
-                  <p className="mt-2 text-sm text-[#4B5563] dark:text-[#D1D5DB]">
-                    <span className="font-medium">Senin cevabın: </span>
-                    {answer.selected_index !== null
-                      ? answer.options[answer.selected_index]
-                      : "Cevap verilmedi"}
-                  </p>
+                  {/* Tüm seçenekler — kutu olarak */}
+                  <div className="mt-3 space-y-1.5">
+                    {answer.options.map((option, optIdx) => {
+                      const isCorrectOpt = optIdx === answer.correct_index;
+                      const isSelectedOpt = optIdx === answer.selected_index;
+                      const isWrongSelected = isSelectedOpt && !isCorrectOpt;
 
-                  {/* Cevapsız durumunda not */}
+                      let boxClass =
+                        "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ";
+                      if (isCorrectOpt) {
+                        boxClass += "border-[#16A34A] dark:border-[#4ADE80]/70 ";
+                      } else if (isWrongSelected) {
+                        boxClass += "border-[#DC2626] dark:border-[#F87171]/70 ";
+                      } else {
+                        boxClass += "border-[#E5E7EB] dark:border-[#374151] opacity-50 ";
+                      }
+
+                      return (
+                        <div key={optIdx} className={boxClass}>
+                          {isCorrectOpt ? (
+                            <CheckCircle2 className="h-4 w-4 shrink-0 text-[#16A34A] dark:text-[#4ADE80]" />
+                          ) : isWrongSelected ? (
+                            <XCircle className="h-4 w-4 shrink-0 text-[#DC2626] dark:text-[#F87171]" />
+                          ) : (
+                            <div className="h-4 w-4 shrink-0" />
+                          )}
+                          <span className="text-[#374151] dark:text-[#D1D5DB]">{option}</span>
+                          {isSelectedOpt && (
+                            <span className="ml-auto shrink-0 rounded-full bg-[#F3F4F6] px-1.5 py-0.5 text-xs font-medium text-[#6B7280] dark:bg-[#374151] dark:text-[#9CA3AF]">
+                              Seçildi
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Cevapsız uyarısı */}
                   {answer.selected_index === null && (
-                    <p className="mt-2 text-sm text-[#854D0E] dark:text-[#FACC15]">
+                    <p className="mt-2 text-xs text-[#854D0E] dark:text-[#FACC15]">
                       Süre dolmadan önce bu soruya cevap verilemedi.
-                    </p>
-                  )}
-
-                  {/* Yanlış cevap durumunda doğru cevabı göster */}
-                  {!answer.is_correct && answer.selected_index !== null && (
-                    <p className="mt-2 text-sm text-[#991B1B] dark:text-[#FCA5A5]">
-                      <span className="font-semibold">Doğru cevap: </span>
-                      {answer.options[answer.correct_index]}
                     </p>
                   )}
 

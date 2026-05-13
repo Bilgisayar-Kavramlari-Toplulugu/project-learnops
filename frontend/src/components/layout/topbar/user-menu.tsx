@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { routes } from "@/lib/routes";
+import { useLogoutGuard } from "@/providers/logout-guard-provider";
 import type { DashboardProfile } from "@/types";
 import { dropdownItemClass, dropdownPanelClass } from "./topbar-menu-styles";
 
@@ -23,7 +24,9 @@ interface UserMenuProps {
 }
 export function UserMenu({ user }: UserMenuProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const { logout } = useAuth();
+  const { triggerGuard } = useLogoutGuard();
 
   if (!user) {
     return (
@@ -42,16 +45,30 @@ export function UserMenu({ user }: UserMenuProps) {
 
   async function handleLogout() {
     if (isLoggingOut) return;
+
+    // Quiz aktifse guard devreye girer: dropdown kapanır, dialog açılır, logout ertelenir.
+    const guarded = triggerGuard(async () => {
+      setIsLoggingOut(true);
+      try {
+        await logout();
+      } catch {
+        setIsLoggingOut(false);
+      }
+    });
+    if (guarded) {
+      setDropdownOpen(false);
+      return;
+    }
+
     setIsLoggingOut(true);
     try {
       await logout();
     } catch {
       setIsLoggingOut(false);
-    } finally {
     }
   }
   return (
-    <DropdownMenu>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -86,8 +103,7 @@ export function UserMenu({ user }: UserMenuProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem
-          onSelect={(event) => {
-            event.preventDefault();
+          onSelect={() => {
             void handleLogout();
           }}
           className={cn(
