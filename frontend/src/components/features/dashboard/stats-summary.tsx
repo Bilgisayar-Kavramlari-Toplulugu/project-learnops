@@ -24,7 +24,7 @@ interface StatsSummaryProps {
 
 export function StatsSummary({ items }: StatsSummaryProps) {
   return (
-    <section className="grid gap-4 md:grid-cols-3">
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((item) => {
         const Icon = statIconMap[item.key];
 
@@ -33,22 +33,24 @@ export function StatsSummary({ items }: StatsSummaryProps) {
             key={item.key}
             className="gap-0 rounded-[24px] border-blue-100/80 bg-white/85 py-0 shadow-sm shadow-blue-100/35 dark:border-slate-700 dark:bg-slate-900/80 dark:shadow-black/20"
           >
-            <CardContent className="flex items-start justify-between gap-4 p-5">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
+            <CardContent className="flex min-w-0 flex-col gap-4 p-5">
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <p className="min-w-0 text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
                   {item.label}
                 </p>
+                <div
+                  className={`flex size-11 shrink-0 items-center justify-center rounded-2xl border ${statToneMap[item.key]}`}
+                >
+                  <Icon className="size-5" />
+                </div>
+              </div>
+              <div className="min-w-0 space-y-2">
                 <p className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                   {item.value}
                 </p>
                 <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                   {item.description}
                 </p>
-              </div>
-              <div
-                className={`flex size-12 shrink-0 items-center justify-center rounded-2xl border ${statToneMap[item.key]}`}
-              >
-                <Icon className="size-5" />
               </div>
             </CardContent>
           </Card>
