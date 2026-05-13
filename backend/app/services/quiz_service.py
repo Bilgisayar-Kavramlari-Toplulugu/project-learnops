@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -92,48 +92,34 @@ async def create_quiz_attempt(
             detail="Bu quizde aktif soru bulunmuyor",
         )
 
-    # get-or-create dönüşü için veriler flush'tan ÖNCE hesaplanır.
-    # rollback() tüm tracked nesneleri expire eder; quiz ve quiz.questions
-    # dahil. IntegrityError bloğunda bu nesnelere erişim MissingGreenlet /
-    # DetachedInstanceError'a yol açar.
-    # Not: get-or-create dönüşünde q.id sırası kullanılır (sabit sıra).
-    # Normal akışta sorular randomize edilir; soru sırasının attempt'e özgü
-    # DB'de saklanmaması mimari bir eksiklik olup v2.0 kapsamına alınmıştır.
-    get_or_create_questions = sorted(active_questions, key=lambda q: q.id)
-
-    # 3. Yeni bir Attempt oluştur — total_questions snapshot olarak kaydedilir
+    # 3. Yeni bir Attempt oluştur —
+    # ON CONFLICT DO NOTHING ile race-condition'a karşı korumalı.
+    # Eş zamanlı iki istek geldiğinde biri INSERT yapar, diğeri sessizce geçer;
+    # her iki istek de ardından aktif attempt'i SELECT eder. IntegrityError riski yok.
     started_at = datetime.now(timezone.utc)
-    attempt = QuizAttempt(
-        user_id=user_id,
-        quiz_id=quiz_id,
-        started_at=started_at,
-        total_questions=len(active_questions),
-    )
-    db.add(attempt)
-
-    try:
-        await db.flush()  # attempt.id oluşması + unique index kontrolü için
-    except IntegrityError:
-        await db.rollback()
-        existing_retry = await db.scalar(
-            select(QuizAttempt).where(
-                QuizAttempt.user_id == user_id,
-                QuizAttempt.quiz_id == quiz_id,
-                QuizAttempt.submitted_at.is_(None),
-            )
+    stmt = (
+        pg_insert(QuizAttempt)
+        .values(
+            user_id=user_id,
+            quiz_id=quiz_id,
+            started_at=started_at,
+            total_questions=len(active_questions),
         )
-        if existing_retry:
-            fresh_quiz = await db.scalar(
-                select(Quiz)
-                .options(selectinload(Quiz.questions))
-                .where(Quiz.id == quiz_id)
-            )
-            if not fresh_quiz:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Quiz bulunamadı",
-                )
-            return existing_retry, get_or_create_questions, fresh_quiz
+        .on_conflict_do_nothing()
+    )
+    await db.execute(stmt)
+
+    attempt = await db.scalar(
+        select(QuizAttempt).where(
+            QuizAttempt.user_id == user_id,
+            QuizAttempt.quiz_id == quiz_id,
+            QuizAttempt.submitted_at.is_(None),
+        )
+    )
+
+    if not attempt:
+        # ON CONFLICT DO NOTHING devreye girdi ama aktif attempt bulunamadı.
+        # Teorik edge case: süresi dolmuş attempt kapatma ile eş zamanlı istek.
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Zaten aktif bir attempt mevcut",

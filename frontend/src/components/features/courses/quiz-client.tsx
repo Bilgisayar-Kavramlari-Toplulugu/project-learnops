@@ -71,9 +71,11 @@ export default function QuizClient({ slug }: QuizClientProps) {
   } = useStartAttempt();
 
   // ─── Attempt Başlatma ──────────────────────────────────────────────────────
-  // Ref yerine mutation state kullanılır: session yoksa ve istek devam etmiyorsa
-  // attempt başlat. Next.js freeze/thaw senaryosunda ref sıfırlanmaz ama
-  // mutation data temizlenir; bu yaklaşım her iki durumu da doğru ele alır.
+  // StrictMode'da bu effect iki kez çalışır ve eş zamanlı iki POST gidebilir.
+  // Backend IntegrityError bloğu her iki isteğe de 201 döner (mevcut attempt);
+  // useMutation son gelen yanıtı alır, quiz sorunsuz açılır.
+  // Ref ile tek-çağrı garantisi denendi fakat StrictMode ref'i korurken
+  // mutation state'ini sıfırladığından ekran "Sınav yükleniyor..."'da takılıyordu.
   useEffect(() => {
     if (quizMeta?.quiz_id && !session && !isPending && !sessionError) {
       startAttempt(quizMeta.quiz_id);
@@ -101,6 +103,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Logout guard: quiz aktifken logout isteği gelirse, submit sonrası çalıştırılır.
   const pendingLogoutRef = useRef<(() => void) | null>(null);
+  const logoutConfirmedRef = useRef(false);
   const { registerGuard, unregisterGuard } = useLogoutGuard();
 
   // ─── Logout Guard ─────────────────────────────────────────────────────────
@@ -136,6 +139,14 @@ export default function QuizClient({ slug }: QuizClientProps) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       hasSubmittedRef.current = true;
       unregisterGuard();
+
+      // Bekleyen logout varsa sonuç ekranını gösterme — direkt logout yap.
+      if (pendingLogoutRef.current) {
+        pendingLogoutRef.current();
+        pendingLogoutRef.current = null;
+        return;
+      }
+
       const enriched: QuizResult = {
         ...raw,
         quiz_id: session.quiz_id,
@@ -148,12 +159,6 @@ export default function QuizClient({ slug }: QuizClientProps) {
         }),
       };
       setQuizResult(enriched);
-
-      // Quiz submit sonrası bekleyen logout varsa çalıştır.
-      if (pendingLogoutRef.current) {
-        pendingLogoutRef.current();
-        pendingLogoutRef.current = null;
-      }
     },
     onError: () => {
       hasSubmittedRef.current = false;
@@ -413,7 +418,16 @@ export default function QuizClient({ slug }: QuizClientProps) {
         )}
 
         {/* Dialog her soruda mount edilmiş olmalı — logout guard herhangi bir sorudan tetiklenebilir */}
-        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialog
+          open={confirmOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              if (!logoutConfirmedRef.current) pendingLogoutRef.current = null;
+              logoutConfirmedRef.current = false;
+            }
+            setConfirmOpen(open);
+          }}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Sınavı bitirmek istiyor musun?</AlertDialogTitle>
@@ -427,18 +441,11 @@ export default function QuizClient({ slug }: QuizClientProps) {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel
-                onClick={() => {
-                  // İptal: bekleyen logout varsa temizle.
-                  pendingLogoutRef.current = null;
-                }}
-              >
-                Geri Dön
-              </AlertDialogCancel>
+              <AlertDialogCancel>Geri Dön</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
+                  logoutConfirmedRef.current = true;
                   handleSubmit(false);
-                  // pendingLogoutRef temizlenmez — onSuccess içinde çalıştırılacak.
                 }}
               >
                 Evet, Gönder
