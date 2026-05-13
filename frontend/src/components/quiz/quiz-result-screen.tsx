@@ -1,7 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CheckCircle2, XCircle, Clock, Trophy, RotateCcw, Home, History } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  Clock,
+  Trophy,
+  RotateCcw,
+  Home,
+  History,
+} from "lucide-react";
 
 import { Button } from "@/components/ui";
 
@@ -191,13 +200,13 @@ export function QuizResultScreen({
           return (
             <div
               key={answer.question_id}
-              className={`rounded-xl border-[3px] p-4 ${style.bg} ${style.border}`}
+              className={`rounded-xl border-4 p-4 ${style.bg} ${style.border}`}
             >
               <div className="flex items-start gap-3">
                 {/* Durum İkonu */}
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
                   {answer.selected_index === null ? (
-                    <div className="h-5 w-5 rounded-full border-2 border-[#EAB308] dark:border-[#FACC15]" />
+                    <MinusCircle className={`h-6 w-6 ${style.icon}`} />
                   ) : answer.is_correct ? (
                     <CheckCircle2 className={`h-6 w-6 ${style.icon}`} />
                   ) : (

@@ -78,6 +78,8 @@ async def create_quiz_attempt(
         existing.score = 0
         existing.total_questions = len(active_questions)
         existing.passed = False
+        # ORM sütun adı "time_spent_secs" — MVP dokümanı bu alanı "time_spent_seconds"
+        # olarak adlandırıyor; DB şeması ve response'ta "time_spent_secs" kullanılıyor.
         existing.time_spent_secs = int(elapsed)
         await db.flush()
 
@@ -317,6 +319,8 @@ async def submit_quiz_attempt(
     attempt.score = correct_count
     attempt.total_questions = actual_total
     attempt.passed = passed
+    # ORM sütun adı "time_spent_secs" — MVP dokümanı bu alanı "time_spent_seconds"
+    # olarak adlandırıyor; DB şeması ve response'ta "time_spent_secs" kullanılıyor.
     attempt.time_spent_secs = time_spent_secs
 
     logger.info(

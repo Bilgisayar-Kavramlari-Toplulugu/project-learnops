@@ -10,6 +10,7 @@ import { useCourseDetail } from "@/hooks/courses/use-course-detail";
 import { useQuizMeta, useStartAttempt } from "@/hooks/courses/use-quiz";
 import { useQuizHistory } from "@/hooks/courses/use-quiz-history";
 import { QuizResultScreen } from "@/components/quiz/quiz-result-screen";
+import { useLogoutGuard } from "@/providers/logout-guard-provider";
 import { api } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import {
@@ -64,7 +65,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   const {
     mutate: startAttempt,
     data: session,
-    isPending: sessionLoading,
+    isPending,
     isError: sessionError,
     error: sessionErrorRaw,
   } = useStartAttempt();
@@ -74,10 +75,10 @@ export default function QuizClient({ slug }: QuizClientProps) {
   // attempt başlat. Next.js freeze/thaw senaryosunda ref sıfırlanmaz ama
   // mutation data temizlenir; bu yaklaşım her iki durumu da doğru ele alır.
   useEffect(() => {
-    if (quizMeta?.quiz_id && !session && !sessionLoading && !sessionError) {
+    if (quizMeta?.quiz_id && !session && !isPending && !sessionError) {
       startAttempt(quizMeta.quiz_id);
     }
-  }, [quizMeta?.quiz_id, session, sessionLoading, sessionError, startAttempt]);
+  }, [quizMeta?.quiz_id, session, isPending, sessionError, startAttempt]);
 
   // 403 → kursa kayıtsız kullanıcıyı kurs detay sayfasına yönlendir
   useEffect(() => {
@@ -98,6 +99,25 @@ export default function QuizClient({ slug }: QuizClientProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const hasSubmittedRef = useRef(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Logout guard: quiz aktifken logout isteği gelirse, submit sonrası çalıştırılır.
+  const pendingLogoutRef = useRef<(() => void) | null>(null);
+  const { registerGuard, unregisterGuard } = useLogoutGuard();
+
+  // ─── Logout Guard ─────────────────────────────────────────────────────────
+  // Quiz aktifken (session var, henüz submit edilmedi) logout guard'ı kaydet.
+  useEffect(() => {
+    if (session && !quizResult) {
+      registerGuard((proceed) => {
+        pendingLogoutRef.current = proceed;
+        setConfirmOpen(true);
+      });
+    } else {
+      unregisterGuard();
+    }
+  }, [session, quizResult, registerGuard, unregisterGuard]);
+
+  // Unmount'ta guard'ı temizle.
+  useEffect(() => () => unregisterGuard(), [unregisterGuard]);
 
   // ─── Geçmiş (TC-QUIZ-12) ───────────────────────────────────────────────────
   const { data: attemptHistory = [] } = useQuizHistory(quizResult?.quiz_id);
@@ -115,6 +135,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
       if (!session) return;
       if (intervalRef.current) clearInterval(intervalRef.current);
       hasSubmittedRef.current = true;
+      unregisterGuard();
       const enriched: QuizResult = {
         ...raw,
         quiz_id: session.quiz_id,
@@ -127,6 +148,12 @@ export default function QuizClient({ slug }: QuizClientProps) {
         }),
       };
       setQuizResult(enriched);
+
+      // Quiz submit sonrası bekleyen logout varsa çalıştır.
+      if (pendingLogoutRef.current) {
+        pendingLogoutRef.current();
+        pendingLogoutRef.current = null;
+      }
     },
     onError: () => {
       hasSubmittedRef.current = false;
@@ -165,6 +192,8 @@ export default function QuizClient({ slug }: QuizClientProps) {
     setRemaining(null);
     hasSubmittedRef.current = false;
     if (quizMeta?.quiz_id) {
+      // mutate() çağrısı TanStack Query'de önceki error/data/isPending state'ini
+      // sıfırlar; bu sayede useEffect guard'ı yeni attempt'i başlatabilir.
       startAttempt(quizMeta.quiz_id);
     }
   }
@@ -199,7 +228,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
   }, [session]);
 
   // ─── Loading / Error States ────────────────────────────────────────────────
-  if (courseLoading || metaLoading || sessionLoading || (!session && !sessionError && !metaError)) {
+  if (courseLoading || metaLoading || isPending || (!session && !sessionError && !metaError)) {
     return (
       <div className="flex items-center justify-center py-24">
         <p className="text-muted-foreground animate-pulse">Sınav yükleniyor…</p>
@@ -335,7 +364,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
               <Button
                 key={option.index.toString()}
                 type="button"
-                variant="outline"
+                variant={isSelected ? "selected" : "outline"}
                 onClick={() =>
                   setAnswers((prev) => {
                     if (prev[currentQuestion.id] === option.index) {
@@ -346,11 +375,7 @@ export default function QuizClient({ slug }: QuizClientProps) {
                     return { ...prev, [currentQuestion.id]: option.index };
                   })
                 }
-                className={`h-auto justify-start rounded-lg px-4 py-3 text-left text-sm whitespace-normal ${
-                  isSelected
-                    ? "!border-2 !border-primary !bg-transparent !text-primary font-medium"
-                    : "border-border hover:bg-accent hover:text-accent-foreground"
-                }`}
+                className="h-auto justify-start rounded-lg px-4 py-3 text-left text-sm whitespace-normal"
                 disabled={isSubmitting}
               >
                 {option.text}
@@ -372,37 +397,9 @@ export default function QuizClient({ slug }: QuizClientProps) {
         </Button>
 
         {isLast ? (
-          <>
-            <Button onClick={() => setConfirmOpen(true)} disabled={isSubmitting} size="sm">
-              {isSubmitting ? "Gönderiliyor…" : "Sınavı Bitir"}
-            </Button>
-            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Sınavı bitirmek istiyor musun?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Gönderilen sınav bir daha düzenlenemez.{" "}
-                    {answeredCount < session.questions.length && (
-                      <span className="font-medium text-orange-500">
-                        {session.questions.length - answeredCount} soru cevaplanmadı.
-                      </span>
-                    )}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Geri Dön</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      setConfirmOpen(false);
-                      handleSubmit(false);
-                    }}
-                  >
-                    Evet, Gönder
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
+          <Button onClick={() => setConfirmOpen(true)} disabled={isSubmitting} size="sm">
+            {isSubmitting ? "Gönderiliyor…" : "Sınavı Bitir"}
+          </Button>
         ) : (
           <Button
             variant="outline"
@@ -414,6 +411,41 @@ export default function QuizClient({ slug }: QuizClientProps) {
             <ChevronRight size={16} />
           </Button>
         )}
+
+        {/* Dialog her soruda mount edilmiş olmalı — logout guard herhangi bir sorudan tetiklenebilir */}
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sınavı bitirmek istiyor musun?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Gönderilen sınav bir daha düzenlenemez.{" "}
+                {answeredCount < session.questions.length && (
+                  <span className="font-medium text-orange-500">
+                    {session.questions.length - answeredCount} soru cevaplanmadı.
+                  </span>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  // İptal: bekleyen logout varsa temizle.
+                  pendingLogoutRef.current = null;
+                }}
+              >
+                Geri Dön
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  handleSubmit(false);
+                  // pendingLogoutRef temizlenmez — onSuccess içinde çalıştırılacak.
+                }}
+              >
+                Evet, Gönder
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 pt-2">
