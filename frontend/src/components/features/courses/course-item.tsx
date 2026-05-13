@@ -17,7 +17,7 @@ export default function CourseItem({ course }: { course: Course }) {
   return (
     <Link
       href={`/courses/${course.slug}`}
-      className="group relative flex flex-col justify-between p-6 rounded-3xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-sm"
+      className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-zinc-300/75 bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.10)] ring-1 ring-zinc-200/55 backdrop-blur-sm transition-all duration-300 hover:border-indigo-500/55 hover:shadow-2xl hover:shadow-indigo-500/15 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900/90 dark:hover:ring-indigo-400/35"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
