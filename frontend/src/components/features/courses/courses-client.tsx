@@ -85,20 +85,20 @@ export default function CoursesClient({ courses, headerSlot }: CoursesClientProp
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full xl:w-auto">
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full p-2 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <div className="flex items-center pl-3 gap-2 text-zinc-500 dark:text-zinc-400 w-full sm:w-auto">
+        <div className="flex min-w-0 items-center gap-3 w-full xl:w-auto">
+          <div className="grid w-full min-w-0 grid-cols-1 items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-2 sm:grid-cols-2 lg:flex lg:w-auto dark:border-zinc-800 dark:bg-zinc-900/50">
+            <div className="flex w-full items-center gap-2 pl-3 text-zinc-500 sm:col-span-2 lg:w-auto dark:text-zinc-400">
               <SlidersHorizontal className="w-4 h-4" />
               <span className="text-sm font-semibold uppercase tracking-wider">Filtreler</span>
             </div>
-            <div className="hidden sm:block w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-2" />
+            <div className="hidden h-6 w-px bg-zinc-200 lg:block dark:bg-zinc-700" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
                   aria-label="Kategori filtresi"
-                  className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 text-left text-sm font-semibold text-zinc-700 shadow-sm outline-none transition-all hover:border-indigo-200 hover:bg-white focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-500/10 sm:w-44 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:border-indigo-500/40 dark:hover:bg-zinc-800"
+                  className="flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 text-left text-sm font-semibold text-zinc-700 shadow-sm outline-none transition-all hover:border-indigo-200 hover:bg-white focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-500/10 lg:w-44 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:border-indigo-500/40 dark:hover:bg-zinc-800"
                 >
                   <span className="truncate">{selectedCategoryLabel}</span>
                   <ChevronDown className="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
@@ -128,7 +128,7 @@ export default function CoursesClient({ courses, headerSlot }: CoursesClientProp
                 <button
                   type="button"
                   aria-label="Zorluk seviyesi filtresi"
-                  className="flex h-11 w-full items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 text-left text-sm font-semibold text-zinc-700 shadow-sm outline-none transition-all hover:border-indigo-200 hover:bg-white focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-500/10 sm:w-40 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:border-indigo-500/40 dark:hover:bg-zinc-800"
+                  className="flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 text-left text-sm font-semibold text-zinc-700 shadow-sm outline-none transition-all hover:border-indigo-200 hover:bg-white focus-visible:border-indigo-400 focus-visible:ring-4 focus-visible:ring-indigo-500/10 lg:w-40 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:border-indigo-500/40 dark:hover:bg-zinc-800"
                 >
                   <span className="truncate">{selectedDifficultyLabel}</span>
                   <ChevronDown className="size-4 shrink-0 text-zinc-400 dark:text-zinc-500" />
