@@ -76,6 +76,34 @@ const mdxComponents = {
   ),
 };
 
+function normalizeHeadingText(value: string): string {
+  return value
+    .replace(/\\([\\`*_[\]{}()#+\-.!>])/g, "$1")
+    .replace(/[*_`~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLocaleLowerCase("tr-TR");
+}
+
+function removeDuplicateLeadingH1(content: string, title: string): string {
+  const lines = content.split(/\r?\n/);
+  const firstContentLineIndex = lines.findIndex((line) => line.trim().length > 0);
+
+  if (firstContentLineIndex === -1) return content;
+
+  const firstContentLine = lines[firstContentLineIndex].trim();
+  const match = firstContentLine.match(/^#(?!#)\s+(.+?)\s*#*\s*$/);
+
+  if (!match) return content;
+
+  const headingText = normalizeHeadingText(match[1]);
+  const titleText = normalizeHeadingText(title);
+
+  if (headingText !== titleText) return content;
+
+  return lines.filter((_, index) => index !== firstContentLineIndex).join("\n").trimStart();
+}
+
 // ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
@@ -108,13 +136,13 @@ export default async function SectionPage({ params }: PageProps) {
   const prevSection = currentIndex > 0 ? allSections[currentIndex - 1] : null;
   const nextSection = currentIndex < allSections.length - 1 ? allSections[currentIndex + 1] : null;
 
-  const content = section.content ?? "";
   const frontmatter = {
     id: courseSection.section_id_str,
     title: courseSection.title,
     order_index: courseSection.order_index,
     filename: "",
   };
+  const content = removeDuplicateLeadingH1(section.content ?? "", frontmatter.title);
 
   return (
     <div className="flex h-full min-w-0 bg-zinc-50 dark:bg-slate-900/40 p-3 sm:p-4 lg:p-6 gap-4 rounded-2xl">
