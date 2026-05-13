@@ -11,6 +11,7 @@ import { dashboardSidebarItems } from "@/lib/dashboard-ui.config";
 import { useProfile } from "@/hooks/profile/use-profile";
 import { DashboardErrorState } from "@/components/ui";
 import { mergeAccounts } from "@/lib/auth";
+import { LogoutGuardProvider } from "@/providers/logout-guard-provider";
 import type { DashboardProfile } from "@/types";
 
 interface DashboardLayoutClientProps {
@@ -64,8 +65,10 @@ export function DashboardLayoutClient({
   }
 
   return (
-    <DashboardShell user={profile} sidebarItems={dashboardSidebarItems} activePath={pathname}>
-      {children}
-    </DashboardShell>
+    <LogoutGuardProvider>
+      <DashboardShell user={profile} sidebarItems={dashboardSidebarItems} activePath={pathname}>
+        {children}
+      </DashboardShell>
+    </LogoutGuardProvider>
   );
 }
