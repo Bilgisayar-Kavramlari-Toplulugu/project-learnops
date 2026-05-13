@@ -106,7 +106,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="col-span-1 lg:col-span-2 space-y-8">
+        <div className="col-span-1 lg:col-span-2">
           <Card className="relative overflow-hidden rounded-3xl border-zinc-200 p-0 shadow-sm backdrop-blur-xl dark:border-zinc-800">
             <CardContent className="p-8">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
@@ -143,8 +143,9 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               </p>
             </CardContent>
           </Card>
+        </div>
 
-          <div className="bg-white dark:bg-zinc-900/50 rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm backdrop-blur-xl">
+        <div className="order-3 bg-white dark:bg-zinc-900/50 rounded-3xl p-8 border border-zinc-200 dark:border-zinc-800 shadow-sm backdrop-blur-xl lg:order-none lg:col-span-2">
             <div className="flex items-center gap-4 mb-8 pb-6 border-b border-zinc-100 dark:border-zinc-800">
               <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl shadow-inner">
                 <BookOpen className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
@@ -166,7 +167,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                     <Link
                       href={`/courses/${course.slug}/sections/${section.section_id_str}`}
                       key={section.id}
-                      className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
+                      className="group block rounded-2xl border border-zinc-300/75 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200/55 transition-all hover:border-indigo-500/55 hover:shadow-xl hover:shadow-indigo-500/10 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900/80 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900 dark:hover:ring-indigo-400/35"
                     >
                       <div className="flex w-full gap-5">
                         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shadow-sm">
@@ -192,7 +193,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                           description: "İçeriği görüntülemek için önce kursa kaydolun.",
                         })
                       }
-                      className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
+                      className="group block cursor-pointer rounded-2xl border border-zinc-300/75 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200/55 transition-all hover:border-indigo-500/55 hover:shadow-xl hover:shadow-indigo-500/10 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900/80 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900 dark:hover:ring-indigo-400/35"
                     >
                       <div className="flex w-full gap-5">
                         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800 transition-all shadow-sm">
@@ -218,10 +219,9 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                 </div>
               )}
             </div>
-          </div>
         </div>
 
-        <div className="col-span-1 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 rounded-3xl p-6 lg:p-8 shadow-xl shadow-zinc-200/40 dark:shadow-none lg:sticky lg:top-24 h-fit backdrop-blur-xl">
+        <div className="order-2 col-span-1 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 rounded-3xl p-6 lg:p-8 shadow-xl shadow-zinc-200/40 dark:shadow-none lg:order-none lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-24 h-fit backdrop-blur-xl">
           <h3 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-50 mb-3">
             {!isAlreadyEnrolled
               ? "Kursa Katıl"
@@ -242,7 +242,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               <Button
                 disabled
                 size="lg"
-                className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
+                className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-emerald-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl hover:bg-emerald-700 active:scale-[0.98] xl:text-lg"
               >
                 <Loader2 className="w-6 h-6 animate-spin" />
                 Hazırlanıyor...
@@ -251,7 +251,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               <Button
                 asChild
                 size="lg"
-                className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98]"
+                className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-indigo-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-[0.98] xl:text-lg"
               >
                 <Link href={routes.quiz(course.slug)}>
                   Quiz&apos;e Git
@@ -262,7 +262,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               <Button
                 asChild
                 size="lg"
-                className="h-auto w-full gap-2.5 rounded-2xl bg-emerald-600 px-4 py-4 text-lg font-bold shadow-xl hover:bg-emerald-700 active:scale-[0.98]"
+                className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-emerald-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl hover:bg-emerald-700 active:scale-[0.98] xl:text-lg"
               >
                 <Link href={continueHref}>
                   <ArrowRight className="w-6 h-6" />
@@ -275,7 +275,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
               onClick={handleEnroll}
               disabled={isEnrolling || enrollmentsLoading}
               size="lg"
-              className="h-auto w-full gap-2.5 rounded-2xl bg-indigo-600 px-4 py-4 text-lg font-bold shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 active:scale-[0.98]"
+              className="h-auto w-full min-w-0 whitespace-normal rounded-2xl bg-indigo-600 px-4 py-4 text-center text-base font-bold leading-tight shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-indigo-600/40 active:scale-[0.98] xl:text-lg"
             >
               {isEnrolling ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
