@@ -166,7 +166,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                     <Link
                       href={`/courses/${course.slug}/sections/${section.section_id_str}`}
                       key={section.id}
-                      className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
+                      className="group block rounded-2xl border border-zinc-300/75 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200/55 transition-all hover:border-indigo-500/55 hover:shadow-xl hover:shadow-indigo-500/10 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900/80 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900 dark:hover:ring-indigo-400/35"
                     >
                       <div className="flex w-full gap-5">
                         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 dark:group-hover:bg-indigo-500/20 dark:group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all shadow-sm">
@@ -192,7 +192,7 @@ export default function CourseDetailClient({ course, isAuthenticated }: CourseDe
                           description: "İçeriği görüntülemek için önce kursa kaydolun.",
                         })
                       }
-                      className="flex gap-5 p-5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-white dark:hover:bg-zinc-800 transition-all hover:shadow-md group cursor-pointer block"
+                      className="group block cursor-pointer rounded-2xl border border-zinc-300/75 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-zinc-200/55 transition-all hover:border-indigo-500/55 hover:shadow-xl hover:shadow-indigo-500/10 hover:ring-indigo-200/60 dark:border-zinc-600/75 dark:bg-zinc-900/80 dark:shadow-none dark:ring-zinc-600/55 dark:hover:border-indigo-400/60 dark:hover:bg-zinc-900 dark:hover:ring-indigo-400/35"
                     >
                       <div className="flex w-full gap-5">
                         <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 font-extrabold text-lg flex items-center justify-center group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800 transition-all shadow-sm">
