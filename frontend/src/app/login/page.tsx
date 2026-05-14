@@ -178,14 +178,14 @@ export default async function LoginPage({
                       <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">
                         Giriş yaparak{" "}
                         <Link
-                          href="/legal#terms"
+                          href={`${routes.termsOfService}#terms`}
                           className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
                         >
                           Kullanım Koşulları
                         </Link>{" "}
                         ve{" "}
                         <Link
-                          href="/legal#privacy"
+                          href={`${routes.termsOfService}#privacy`}
                           className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
                         >
                           Gizlilik / KVKK Metni

@@ -67,19 +67,7 @@ export default function LegalPage() {
           <div className="space-y-12">
             <section id="terms" className="scroll-mt-8 space-y-5">
               <h2 className="text-2xl font-semibold tracking-tight">Kullanım Koşulları</h2>
-              <LegalBlock title="0. Veri Sorumlusu">
-                LearnOps; DevOps, bulut teknolojileri ve yazılım geliştirme alanlarında eğitim
-                sunan, gönüllü bir topluluk tarafından yürütülen açık kaynaklı bir öğrenme
-                platformudur. Platform kapsamında işlenen kişisel veriler bakımından veri sorumlusu
-                LearnOps Topluluk Platformu&lsquo;dur. KVKK kapsamındaki başvurularınız için{" "}
-                <a
-                  href="mailto:kvkk@learnops.dev"
-                  className="font-medium underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
-                >
-                  kvkk@learnops.dev
-                </a>{" "}
-                adresine yazabilirsiniz.
-              </LegalBlock>
+
               <LegalBlock title="1. Platformun amacı">
                 LearnOps; DevOps, backend geliştirme, container teknolojileri, CI/CD, Linux ve
                 benzeri teknik konularda eğitim içerikleri, quizler ve öğrenme takibi sunan bir
@@ -121,7 +109,19 @@ export default function LegalPage() {
               <h2 className="text-2xl font-semibold tracking-tight">
                 Gizlilik ve KVKK Aydınlatma Metni
               </h2>
-
+              <LegalBlock title="0. Veri Sorumlusu">
+                LearnOps; DevOps, bulut teknolojileri ve yazılım geliştirme alanlarında eğitim
+                sunan, gönüllü bir topluluk tarafından yürütülen açık kaynaklı bir öğrenme
+                platformudur. Platform kapsamında işlenen kişisel veriler bakımından veri sorumlusu
+                LearnOps Topluluk Platformu&rsquo;dur. KVKK kapsamındaki başvurularınız için{" "}
+                <a
+                  href="mailto:kvkk@learnops.dev"
+                  className="font-medium underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
+                >
+                  kvkk@learnops.dev
+                </a>{" "}
+                adresine yazabilirsiniz.
+              </LegalBlock>
               <LegalBlock title="1. İşlenen veriler">
                 Platformu kullandığında görünen ad, e-posta adresi, giriş sağlayıcısı bilgisi,
                 kullanıcı kimlik bilgileri, kurs ilerleme verileri, quiz sonuçları, tamamlanan
@@ -171,7 +171,7 @@ export default function LegalPage() {
               <LegalBlock title="9. Yurt dışına veri aktarımı">
                 Google, GitHub veya LinkedIn ile kimlik doğrulama yapılması halinde, ilgili
                 sağlayıcıların sunucularına Avrupa Birliği dışında konumlanmış olabilecek temel
-                kimlik bilgileri aktarılabilir. Bu aktarımlar KVKK&lsquo;nın 9. maddesi kapsamında
+                kimlik bilgileri aktarılabilir. Bu aktarımlar KVKK&rsquo;nın 9. maddesi kapsamında
                 değerlendirilir; ilgili sağlayıcılar kendi gizlilik politikaları çerçevesinde veri
                 işlemektedir.
               </LegalBlock>
