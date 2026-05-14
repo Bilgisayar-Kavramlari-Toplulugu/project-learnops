@@ -31,6 +31,8 @@ export default function DashboardPage() {
     enrollments,
     isLoading: isEnrollmentsLoading,
     isError: isEnrollmentsError,
+    errorMessage: enrollmentsErrorMessage,
+    refetch: refetchEnrollments,
   } = useEnrollments();
 
   const [showSkeleton, setShowSkeleton] = useState(false);
@@ -40,7 +42,8 @@ export default function DashboardPage() {
   const completedCourses = enrollments.filter(
     (item) => item.completed_at || item.progress_percent >= 100,
   );
-
+  const displayErrorMessage =
+    isEnrollmentsError && !isError ? enrollmentsErrorMessage : errorMessage;
   const hasAnyDashboardData =
     courses.length > 0 || completedCourses.length > 0 || Boolean(lastQuizResult);
 
@@ -61,9 +64,12 @@ export default function DashboardPage() {
   if (isError || isEnrollmentsError) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 rounded-3xl border border-red-100 bg-red-50/50 p-8 text-center dark:border-red-900/30 dark:bg-red-950/20">
-        <p className="text-sm font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
+        <p className="text-sm font-medium text-red-600 dark:text-red-400">{displayErrorMessage}</p>
         <Button
-          onClick={() => refetch()}
+          onClick={() => {
+            void refetch();
+            void refetchEnrollments();
+          }}
           variant="outline"
           className="rounded-xl border-red-200 text-red-700 hover:bg-red-100"
         >
