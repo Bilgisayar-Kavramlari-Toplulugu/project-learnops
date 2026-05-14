@@ -27,7 +27,11 @@ export default function DashboardPage() {
     refetch,
   } = useDashboard();
 
-  const { enrollments, isLoading: isEnrollmentsLoading } = useEnrollments();
+  const {
+    enrollments,
+    isLoading: isEnrollmentsLoading,
+    isError: isEnrollmentsError,
+  } = useEnrollments();
 
   const [showSkeleton, setShowSkeleton] = useState(false);
 
@@ -54,7 +58,7 @@ export default function DashboardPage() {
   if (pageLoading && showSkeleton) return <DashboardSkeleton />;
   if (pageLoading && !showSkeleton) return null;
 
-  if (isError) {
+  if (isError || isEnrollmentsError) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 rounded-3xl border border-red-100 bg-red-50/50 p-8 text-center dark:border-red-900/30 dark:bg-red-950/20">
         <p className="text-sm font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
