@@ -6,6 +6,7 @@ export const routes = {
   myCourses: "/my-courses",
   profile: "/profile",
   team: "/team",
+  termsOfService: "/legal",
   courseDetail: (slug: string) => `/courses/${slug}`,
   section: (slug: string, sectionIdStr: string) => `/courses/${slug}/sections/${sectionIdStr}`,
   quiz: (slug: string) => `/courses/${slug}/quiz`,
