@@ -11,44 +11,56 @@ interface CompletedCoursesSectionProps {
 
 function formatDuration(minutes: number | null): string {
   if (!minutes) return "Süre belirtilmedi";
-  if (minutes < 60) return `${minutes} dk`;
+
+  if (minutes < 60) {
+    return `${minutes} dk`;
+  }
 
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
 
-  return remainingMinutes > 0 ? `${hours} sa ${remainingMinutes} dk` : `${hours} sa`;
+  if (remainingMinutes === 0) {
+    return `${hours} sa`;
+  }
+
+  return `${hours} sa ${remainingMinutes} dk`;
 }
 
-function formatCompletedDate(value: string | null): string | null {
-  if (!value) return null;
+function formatCompletedDate(date: string | null): string | null {
+  if (!date) return null;
 
   return new Intl.DateTimeFormat("tr-TR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(new Date(date));
 }
 
-export function CompletedCoursesSection({ courses }: CompletedCoursesSectionProps) {
-  if (courses.length === 0) return null;
+export function CompletedCoursesSection({
+  courses,
+}: CompletedCoursesSectionProps) {
+  if (courses.length === 0) {
+    return null;
+  }
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h3 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             Tamamlanan Kurslar
           </h3>
+
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            Bitirdiğin eğitimleri buradan tekrar açabilir veya quizlerine dönebilirsin.
+            Bitirdiğin eğitimleri tekrar açabilir veya quizlerine dönebilirsin.
           </p>
         </div>
 
         <Badge
           variant="outline"
-          className="w-fit rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300"
+          className="w-fit rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold tracking-[0.08em] text-emerald-700 uppercase dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300"
         >
-          {courses.length} kurs tamamlandı
+          {courses.length} tamamlanan kurs
         </Badge>
       </div>
 
@@ -65,7 +77,7 @@ export function CompletedCoursesSection({ courses }: CompletedCoursesSectionProp
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300">
                         <CheckCircle2 className="size-5" />
                       </div>
 
@@ -77,26 +89,33 @@ export function CompletedCoursesSection({ courses }: CompletedCoursesSectionProp
                       </Badge>
                     </div>
 
-                    <h4 className="truncate text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-                      {item.course.title}
-                    </h4>
+                    <div className="space-y-1">
+                      <h4 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                        {item.course.title}
+                      </h4>
 
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                      <span>{item.course.category ?? "Genel"}</span>
-                      <span>•</span>
-                      <span>{item.course.difficulty ?? "Seviye yok"}</span>
-                      <span>•</span>
-                      <span className="inline-flex items-center gap-1">
-                        <Clock3 className="size-3.5" />
-                        {formatDuration(item.course.duration_minutes)}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                        <span>{item.course.category ?? "Genel"}</span>
+
+                        <span>•</span>
+
+                        <span>{item.course.difficulty ?? "Seviye yok"}</span>
+
+                        <span>•</span>
+
+                        <span className="inline-flex items-center gap-1">
+                          <Clock3 className="size-3.5" />
+                          {formatDuration(item.course.duration_minutes)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-right dark:border-emerald-900/50 dark:bg-emerald-950/25">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 px-4 py-3 text-right dark:border-emerald-900/50 dark:bg-emerald-950/25">
                     <p className="text-xs font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-slate-400">
                       İlerleme
                     </p>
+
                     <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                       %{Math.round(item.progress_percent)}
                     </p>
