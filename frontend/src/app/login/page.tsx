@@ -85,13 +85,12 @@ export default async function LoginPage({
                   </p>
 
                   <h2 className="max-w-sm text-2xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-3xl md:text-2xl">
-                    Öğrenmeyi daha düzenli, takip edilebilir ve sürdürülebilir
-                    hale getir.
+                    Öğrenmeyi daha düzenli, takip edilebilir ve sürdürülebilir hale getir.
                   </h2>
 
                   <p className="mt-4 max-w-sm text-sm leading-6 text-slate-700 dark:text-slate-300">
-                    DevOps kavramlarını kendi hızında öğren, kaldığın yeri takip
-                    et ve quizlerle ilerlemeni ölç.
+                    DevOps kavramlarını kendi hızında öğren, kaldığın yeri takip et ve quizlerle
+                    ilerlemeni ölç.
                   </p>
                 </div>
 
@@ -154,9 +153,7 @@ export default async function LoginPage({
                 </p>
 
                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                  {isAccountConflict
-                    ? "Hesap birleştirme"
-                    : "Giriş yap"}
+                  {isAccountConflict ? "Hesap birleştirme" : "Giriş yap"}
                 </h1>
 
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -165,43 +162,13 @@ export default async function LoginPage({
                     : "Devam etmek için aşağıdaki giriş seçeneklerinden birini kullan."}
                 </p>
 
-<<<<<<< feat/kvkk
-              {errorMessage && (
-                <p className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                  {errorMessage}
-                </p>
-              )}
-
-              {isAccountConflict ? (
-                <MergeAccountForm mergeToken={merge_token} />
-              ) : (
-                <>
-                  <OAuthButtonContainer />
-                  <p className="text-center text-[11px] text-muted-foreground">
-                   Giriş yaparak{" "}
-                      <Link
-                        href="/legal#terms"
-                        className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
-                      >
-                        Kullanım Koşulları
-                      </Link>{" "}
-                      ve{" "}
-                      <Link
-                        href="/legal#privacy"
-                        className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
-                      >
-                        Gizlilik / KVKK Metni
-                      </Link>
-                      ’ni kabul etmiş olursun.
-=======
-                {errorMessage && (
-                  <p className="mt-5 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm leading-5 text-destructive">
-                    {errorMessage}
->>>>>>> release
-                  </p>
-                )}
-
                 <div className="mt-6">
+                  {errorMessage && (
+                    <p className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm leading-5 text-destructive">
+                      {errorMessage}
+                    </p>
+                  )}
+
                   {isAccountConflict ? (
                     <MergeAccountForm mergeToken={merge_token} />
                   ) : (
@@ -210,10 +177,20 @@ export default async function LoginPage({
 
                       <p className="mt-5 text-center text-[11px] leading-5 text-muted-foreground">
                         Giriş yaparak{" "}
-                        <span className="cursor-pointer underline underline-offset-4">
-                          kullanım koşullarını
-                        </span>{" "}
-                        kabul etmiş olursun.
+                        <Link
+                          href="/legal#terms"
+                          className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
+                        >
+                          Kullanım Koşulları
+                        </Link>{" "}
+                        ve{" "}
+                        <Link
+                          href="/legal#privacy"
+                          className="underline underline-offset-4 transition hover:text-slate-900 dark:hover:text-slate-100"
+                        >
+                          Gizlilik / KVKK Metni
+                        </Link>
+                        &lsquo;ni kabul etmiş olursun.
                       </p>
                     </>
                   )}
